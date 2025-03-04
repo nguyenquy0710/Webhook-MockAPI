@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('Home')">
+    <title>Home - Mock Webhook</title>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+    <div class="jumbotron text-center my-5">
+        <h1 class="display-4">Welcome to Mock Webhook</h1>
+        <p class="lead">Create, test, and monitor webhook APIs with ease.</p>
+        <hr class="my-4">
+        <p>Register to get started or login if you already have an account.</p>
+        <div class="d-flex justify-content-center">
+            <a class="btn btn-primary btn-lg me-3" th:href="@{/register}" role="button">Register</a>
+            <a class="btn btn-outline-primary btn-lg" th:href="@{/login}" role="button">Login</a>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-rocket fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Create Mock APIs</h5>
+                    <p class="card-text">Create custom API endpoints with your own response data and HTTP status codes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-eye fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Monitor Requests</h5>
+                    <p class="card-text">View detailed logs of incoming requests including headers, body, and parameters.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-export fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">Export Logs</h5>
+                    <p class="card-text">Export request logs to Excel for further analysis and documentation.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

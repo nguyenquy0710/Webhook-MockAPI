@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('Dashboard')">
+    <title>Dashboard - Mock Webhook</title>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+    <div th:replace="fragments/navigation :: navigation"></div>
+
+    <h2 class="mb-4">Welcome, <span th:text="${username}">Username</span>!</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Your Webhook URL</h5>
+                    <p class="card-text">
+                        <code th:text="${'https://domain/api/@' + username}">https://domain/api/@username</code>
+                    </p>
+                    <button class="btn btn-sm btn-primary copy-btn" th:data-clipboard-text="${'https://domain/api/@' + username}">
+                        <i class="fas fa-copy me-1"></i> Copy
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title">API Configurations</h5>
+                    <p class="card-text">Manage your webhook API configurations</p>
+                    <a th:href="@{/api-configs}" class="btn btn-success">
+                        <i class="fas fa-cogs me-1"></i> Manage APIs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Request Logs</h5>
+                    <p class="card-text">View incoming webhook request logs</p>
+                    <a th:href="@{|/view/${'@' + username}|}" class="btn btn-info">
+                        <i class="fas fa-history me-1"></i> View Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Quick Start Guide</h5>
+        </div>
+        <div class="card-body">
+            <ol>
+                <li>
+                    <strong>Create API Configs:</strong>
+                    Go to API Configurations to create endpoints with customized responses
+                </li>
+                <li>
+                    <strong>Test Your Webhook:</strong>
+                    Send requests to your webhook URL: <code th:text="${'https://domain/api/@' + username + '/your-path'}">https://domain/api/@username/your-path</code>
+                </li>
+                <li>
+                    <strong>View Request Logs:</strong>
+                    Check the Request Logs page to see detailed information about incoming requests
+                </li>
+                <li>
+                    <strong>Share Your Webhook:</strong>
+                    Give others your webhook URL to let them send requests to your mock API
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    // Simple clipboard functionality
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const text = this.getAttribute('data-clipboard-text');
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-success');
+
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-primary');
+                }, 2000);
+            });
+        });
+    });
+</script>
+</body>
+</html>

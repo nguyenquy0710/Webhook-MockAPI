@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('Register')">
+    <title>Register - Mock Webhook</title>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header">
+                    <h3 class="text-center font-weight-light my-4">Create Account</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}">
+                        Error message
+                    </div>
+                    <form th:action="@{/register}" th:object="${registerRequest}" method="post">
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="username" type="text" th:field="*{username}" placeholder="Username" required />
+                            <label for="username">Username</label>
+                            <div class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                            <small class="form-text text-muted">Your webhook API URL will be: https://domain/api/@username</small>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="email" type="email" th:field="*{email}" placeholder="name@example.com" required />
+                            <label for="email">Email address</label>
+                            <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="password" type="password" th:field="*{password}" placeholder="Password" required />
+                            <label for="password">Password</label>
+                            <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="confirmPassword" type="password" th:field="*{confirmPassword}" placeholder="Confirm Password" required />
+                            <label for="confirmPassword">Confirm Password</label>
+                            <div class="text-danger" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
+                            <a class="small" th:href="@{/login}">Have an account? Login!</a>
+                            <button class="btn btn-primary" type="submit">Create Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

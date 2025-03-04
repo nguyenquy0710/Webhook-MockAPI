@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('Request Logs')">
+    <title>Request Logs - Mock Webhook</title>
+    <style>
+        .log-details {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        pre {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+    <div th:replace="fragments/navigation :: navigation"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Request Logs for @<span th:text="${targetUsername}">username</span></h2>
+        <div class="current-time" th:attr="data-username=${targetUsername}">
+            <strong>Current Time (UTC):</strong> <span id="current-time-display"></span>
+        </div>
+    </div>
+
+    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.deleted}">
+        All request logs have been deleted successfully.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${param.error}">
+        <span th:text="${param.error == 'unauthorized' ? 'You are not authorized to perform this action.' : param.error}">Error</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                Request History
+                <span class="badge bg-primary request-count" th:text="${totalLogs}">0</span>
+            </h5>
+            <!-- Export button section -->
+            <div>
+                <a th:href="@{|/view/@${targetUsername}/export|}" class="btn btn-outline-success me-2">
+                    <i class="fas fa-file-excel me-1"></i> Export Excel
+                </a>
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                        th:if="${username == targetUsername}">
+                    <i class="fas fa-trash me-1"></i> Clear All
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="requestLogsTable">
+                    <thead>
+                    <tr>
+                        <th>Time (UTC)</th>
+                        <th>Method</th>
+                        <th>Path</th>
+                        <th>Status</th>
+                        <th>Source IP</th>
+                        <th>Details</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${logs.empty}">
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No request logs found.</p>
+                                <p>Send requests to <code th:text="${'https://domain/api/@' + targetUsername}">API URL</code> to see them here.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:each="log : ${logs}" th:attr="data-logid=${log.id}">
+                        <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}">2025-03-04 03:02:04</td>
+                        <td>
+                                    <span th:class="${'badge ' +
+                                         (log.method == 'GET' ? 'bg-success' :
+                                         (log.method == 'POST' ? 'bg-primary' :
+                                         (log.method == 'PUT' ? 'bg-info' :
+                                         (log.method == 'DELETE' ? 'bg-danger' : 'bg-secondary'))))}">
+                                        <span th:text="${log.method}">GET</span>
+                                    </span>
+                        </td>
+                        <td th:text="${log.path}">/path</td>
+                        <td>
+                                    <span th:class="${'badge ' +
+                                         (log.responseStatus >= 200 && log.responseStatus < 300 ? 'bg-success' :
+                                         (log.responseStatus >= 400 ? 'bg-danger' : 'bg-warning'))}"
+                                          th:text="${log.responseStatus}">200</span>
+                        </td>
+                        <td th:text="${log.sourceIp}">127.0.0.1</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-details-btn" data-bs-toggle="modal"
+                                    th:attr="data-bs-target='#detailsModal' + ${log.id}">
+                                <i class="fas fa-eye me-1"></i> View
+                            </button>
+
+                            <!-- Details Modal for each log -->
+                            <div class="modal fade" th:id="'detailsModal' + ${log.id}" tabindex="-1"
+                                 th:attr="aria-labelledby='detailsModalLabel' + ${log.id}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" th:id="'detailsModalLabel' + ${log.id}">
+                                                Request Details - <span th:text="${log.method + ' ' + log.path}">GET /path</span>
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <ul class="nav nav-tabs" role="tablist" th:id="'logTabs' + ${log.id}">
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link active" th:id="'overview-tab' + ${log.id}" data-bs-toggle="tab"
+                                                            th:data-bs-target="'#overview' + ${log.id}" type="button" role="tab">
+                                                        Overview
+                                                    </button>
+                                                </li>
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link" th:id="'headers-tab' + ${log.id}" data-bs-toggle="tab"
+                                                            th:data-bs-target="'#headers' + ${log.id}" type="button" role="tab">
+                                                        Headers
+                                                    </button>
+                                                </li>
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link" th:id="'params-tab' + ${log.id}" data-bs-toggle="tab"
+                                                            th:data-bs-target="'#params' + ${log.id}" type="button" role="tab">
+                                                        Query Params
+                                                    </button>
+                                                </li>
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link" th:id="'body-tab' + ${log.id}" data-bs-toggle="tab"
+                                                            th:data-bs-target="'#body' + ${log.id}" type="button" role="tab">
+                                                        Request Body
+                                                    </button>
+                                                </li>
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link" th:id="'response-tab' + ${log.id}" data-bs-toggle="tab"
+                                                            th:data-bs-target="'#response' + ${log.id}" type="button" role="tab">
+                                                        Response
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                            <div class="tab-content mt-3" th:id="'logTabContent' + ${log.id}">
+                                                <!-- Overview Tab -->
+                                                <div class="tab-pane fade show active" th:id="'overview' + ${log.id}" role="tabpanel">
+                                                    <table class="table table-bordered">
+                                                        <tr>
+                                                            <th style="width: 150px;">Time (UTC)</th>
+                                                            <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}">2025-03-04 03:02:04</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Method</th>
+                                                            <td th:text="${log.method}">GET</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Path</th>
+                                                            <td th:text="${log.path}">/path</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Source IP</th>
+                                                            <td th:text="${log.sourceIp}">127.0.0.1</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Response Status</th>
+                                                            <td th:text="${log.responseStatus}">200</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                                <!-- Headers Tab -->
+                                                <div class="tab-pane fade" th:id="'headers' + ${log.id}" role="tabpanel">
+                                                    <div class="log-details">
+                                                                <pre th:if="${log.requestHeaders != null && log.requestHeaders != ''}"
+                                                                     th:text="${log.requestHeaders}">
+                                                                    {"Content-Type": "application/json"}
+                                                                </pre>
+                                                        <div th:if="${log.requestHeaders == null || log.requestHeaders == ''}"
+                                                             class="text-muted">No headers available</div>
+                                                    </div>
+                                                </div>
+                                                <!-- Query Params Tab -->
+                                                <div class="tab-pane fade" th:id="'params' + ${log.id}" role="tabpanel">
+                                                    <div class="log-details">
+                                                                <pre th:if="${log.queryParams != null && log.queryParams != ''}"
+                                                                     th:text="${log.queryParams}">
+                                                                    param1=value1&param2=value2
+                                                                </pre>
+                                                        <div th:if="${log.queryParams == null || log.queryParams == ''}"
+                                                             class="text-muted">No query parameters available</div>
+                                                    </div>
+                                                </div>
+                                                <!-- Request Body Tab -->
+                                                <div class="tab-pane fade" th:id="'body' + ${log.id}" role="tabpanel">
+                                                    <div class="log-details">
+                                                                <pre th:if="${log.requestBody != null && log.requestBody != ''}"
+                                                                     th:text="${log.requestBody}">
+                                                                    {"key": "value"}
+                                                                </pre>
+                                                        <div th:if="${log.requestBody == null || log.requestBody == ''}"
+                                                             class="text-muted">No request body available</div>
+                                                    </div>
+                                                </div>
+                                                <!-- Response Tab -->
+                                                <div class="tab-pane fade" th:id="'response' + ${log.id}" role="tabpanel">
+                                                    <div class="log-details">
+                                                                <pre th:if="${log.responseBody != null && log.responseBody != ''}"
+                                                                     th:text="${log.responseBody}">
+                                                                    {"response": "data"}
+                                                                </pre>
+                                                        <div th:if="${log.responseBody == null || log.responseBody == ''}"
+                                                             class="text-muted">No response body available</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${logs.totalPages > 0}" class="d-flex justify-content-center mt-4">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=0)}">&laquo;</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=${currentPage - 1})}">&lt;</a>
+                        </li>
+
+                        <li class="page-item" th:each="i: ${#numbers.sequence(0, logs.totalPages - 1)}"
+                            th:classappend="${i == currentPage ? 'active' : ''}">
+                            <a class="page-link" th:text="${i + 1}"
+                               th:href="@{|/view/@${targetUsername}|(page=${i})}">1</a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=${currentPage + 1})}">&gt;</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=${logs.totalPages - 1})}">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete all request logs? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form th:action="@{|/view/@${targetUsername}/delete-all|}" method="post">
+                    <button type="submit" class="btn btn-danger">Delete All</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const username = /*[[${targetUsername}]]*/;
+    const currentUser = /*[[${username}]]*/;
+    /*]]>*/
+</script>
+<script th:src="@{/js/request-log.js}"></script>
+</body>
+</html>
