@@ -133,7 +133,7 @@
                             <div class="d-flex align-items-center">
                                 <code th:text="${'/api/@' + username + config.path}"></code>
                                 <button class="btn btn-sm btn-outline-secondary ms-2 copy-endpoint-btn"
-                                        th:attr="data-endpoint=${'https://domain/api/@' + username + config.path},
+                                        th:attr="data-endpoint=${domain + '/api/@' + username + config.path},
                                                 data-method=${config.method}"
                                         title="Copy full endpoint URL">
                                     <i class="fas fa-copy"></i>

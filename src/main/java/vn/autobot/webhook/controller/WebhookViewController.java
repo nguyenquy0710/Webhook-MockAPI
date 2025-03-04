@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import vn.autobot.webhook.config.AppConfig;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.RequestLogDto;
 import vn.autobot.webhook.service.ApiMockService;
@@ -25,6 +26,7 @@ public class WebhookViewController {
 
     private final ApiMockService apiMockService;
     private final RequestLogService requestLogService;
+    private final AppConfig appConfig;
 
     @GetMapping("/")
     public String home() {
@@ -34,6 +36,7 @@ public class WebhookViewController {
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("username", userDetails.getUsername());
+        model.addAttribute("domain", appConfig.getDomain());
         return "dashboard";
     }
 
@@ -42,6 +45,7 @@ public class WebhookViewController {
         model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
         model.addAttribute("newApiConfig", new ApiConfigDto());
         model.addAttribute("username", userDetails.getUsername());
+        model.addAttribute("domain", appConfig.getDomain());
         return "api-config";
     }
 
@@ -50,6 +54,7 @@ public class WebhookViewController {
                                 @PathVariable Long id, Model model) {
         model.addAttribute("apiConfig", apiMockService.getApiConfig(userDetails.getUsername(), id));
         model.addAttribute("username", userDetails.getUsername());
+        model.addAttribute("domain", appConfig.getDomain());
         return "api-config-edit";
     }
 
@@ -120,6 +125,7 @@ public class WebhookViewController {
         model.addAttribute("totalLogs", totalLogs);
         model.addAttribute("currentPage", pageable.getPageNumber());
         model.addAttribute("totalPages", logs.getTotalPages());
+        model.addAttribute("domain", appConfig.getDomain());
 
         return "request-logs";
     }

@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Set the current user and time to match the provided ones
     const currentUser = 'hades12x1'; // Using the provided username
-    let currentTime = '2025-03-04 04:20:32'; // Using the updated provided time
+    let currentTime = '2025-03-04 05:45:37'; // Using the updated provided time
 
     // Format the current time (UTC)
     const updateCurrentTime = () => {

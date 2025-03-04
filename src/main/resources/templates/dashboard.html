@@ -17,9 +17,9 @@
                 <div class="card-body text-center">
                     <h5 class="card-title">Your Webhook URL</h5>
                     <p class="card-text">
-                        <code th:text="${'https://domain/api/@' + username}">https://domain/api/@username</code>
+                        <code th:text="${domain + '/api/@' + username}">https://domain/api/@username</code>
                     </p>
-                    <button class="btn btn-sm btn-primary copy-btn" th:data-clipboard-text="${'https://domain/api/@' + username}">
+                    <button class="btn btn-sm btn-primary copy-btn" th:data-clipboard-text="${domain + '/api/@' + username}">
                         <i class="fas fa-copy me-1"></i> Copy
                     </button>
                 </div>
@@ -63,7 +63,7 @@
                 </li>
                 <li>
                     <strong>Test Your Webhook:</strong>
-                    Send requests to your webhook URL: <code th:text="${'https://domain/api/@' + username + '/your-path'}">https://domain/api/@username/your-path</code>
+                    Send requests to your webhook URL: <code th:text="${ domain + '/api/@' + username + '/your-path'}">https://domain/api/@username/your-path</code>
                 </li>
                 <li>
                     <strong>View Request Logs:</strong>
@@ -79,7 +79,7 @@
 </div>
 
 <div th:replace="fragments/footer :: footer"></div>
-
+<script th:src="@{/js/dashboard.js}"></script>
 <script>
     // Simple clipboard functionality
     document.querySelectorAll('.copy-btn').forEach(btn => {
