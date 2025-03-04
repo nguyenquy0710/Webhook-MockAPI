@@ -41,7 +41,12 @@ public class RequestLogService {
         requestLog.setUser(user);
         requestLog.setMethod(request.getMethod());
         requestLog.setPath(request.getRequestURI());
-        requestLog.setSourceIp(request.getRemoteAddr());
+
+        String remoteIp = request.getHeader("X-Forwarded-For");
+        if (remoteIp != null && remoteIp.contains(",")) {
+            remoteIp = remoteIp.split(",")[0];
+        }
+        requestLog.setSourceIp(remoteIp);
 
         // Log query parameters
         Map<String, String[]> queryParams = request.getParameterMap();
