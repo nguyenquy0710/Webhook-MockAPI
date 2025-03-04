@@ -2,37 +2,25 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <footer th:fragment="footer" class="bg-light text-center text-lg-start mt-4">
-    <div class="container p-4">
+    <div class="container p-4" style="padding-top: 0px !important;">
         <div class="row">
-            <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+            <div class="col-md-8" style="width: 100%">
                 <h5 class="text-uppercase">Mock Webhook</h5>
                 <p>
                     A simple application to create, manage, and test webhook APIs.
                     Create custom endpoints, view incoming requests, and configure responses.
                 </p>
-            </div>
-
-            <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                <h5 class="text-uppercase">Links</h5>
-                <ul class="list-unstyled mb-0">
-                    <li><a th:href="@{/dashboard}" class="text-dark">Dashboard</a></li>
-                    <li><a th:href="@{/api-configs}" class="text-dark">API Configurations</a></li>
-                </ul>
-            </div>
-
-            <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                <h5 class="text-uppercase">Resources</h5>
-                <ul class="list-unstyled">
-                    <li><a href="https://spring.io/projects/spring-boot" target="_blank" class="text-dark">Spring Boot</a></li>
-                    <li><a href="https://www.thymeleaf.org/" target="_blank" class="text-dark">Thymeleaf</a></li>
-                </ul>
+                <p class="mt-3">
+                    <strong>Part of <a href="https://autobot.site" target="_blank" class="text-primary">Autobot.site</a> tools suite</strong>
+                </p>
             </div>
         </div>
     </div>
 
     <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-        © <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2025</span> Mock Webhook
-        <a class="text-dark" href="/dashboard">Home</a>
+        © <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2025</span>
+        <a href="https://autobot.site" target="_blank" class="text-dark">Autobot.site</a> |
+        Mock Webhook Tool
     </div>
 
     <!-- Bootstrap Bundle with Popper -->
@@ -42,8 +30,6 @@
     <script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.4-next/lib/stomp.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Custom JS -->
-    <script th:src="@{/js/request-log.js}"></script>
 </footer>
 </body>
 </html>
