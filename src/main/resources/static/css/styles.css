@@ -1,7 +1,21 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
 /* Global Styles */
 body {
-    padding-bottom: 70px;
-    background-color: #f8f9fa;
+    padding-bottom: 160px !important; /* Space for footer */
+    margin-bottom: 0;
+    min-height: 100vh;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    min-height: 160px;
+    background-color: #f5f5f5;
 }
 
 /* Card Shadows */
