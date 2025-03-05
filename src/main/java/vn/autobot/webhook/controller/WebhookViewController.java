@@ -2,6 +2,7 @@ package vn.autobot.webhook.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -113,9 +114,11 @@ public class WebhookViewController {
 
     @GetMapping("/view/@{username}")
     public String viewRequestLogs(@PathVariable String username,
-                                  @PageableDefault(size = 10) Pageable pageable,
+                                  @RequestParam(required = false, defaultValue = "10") int size,
+                                  @RequestParam(required = false, defaultValue = "0") int page,
                                   @AuthenticationPrincipal UserDetails userDetails,
                                   Model model) {
+        Pageable pageable = PageRequest.of(page, size);
         Page<RequestLogDto> logs = requestLogService.getRequestLogs(username, pageable);
         long totalLogs = requestLogService.countRequestLogs(username);
 
@@ -124,6 +127,7 @@ public class WebhookViewController {
         model.addAttribute("username", userDetails.getUsername());
         model.addAttribute("totalLogs", totalLogs);
         model.addAttribute("currentPage", pageable.getPageNumber());
+        model.addAttribute("pageSize", size);
         model.addAttribute("totalPages", logs.getTotalPages());
         model.addAttribute("domain", appConfig.getDomain());
 

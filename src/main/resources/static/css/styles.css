@@ -124,6 +124,21 @@ code {
     animation: pulse 2s infinite;
 }
 
+/* Pagination styles */
+.pagination-options {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
 @media (max-width: 576px) {
     /* Increase body padding on mobile to prevent footer overlap */
     body {
