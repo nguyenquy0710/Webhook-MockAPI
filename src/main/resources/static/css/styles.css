@@ -162,6 +162,33 @@ code {
     }
 }
 
+@media (min-width: 577px) and (max-width: 991px) {
+    /* Increase body padding on tablets to prevent footer overlap */
+    body {
+        padding-bottom: 200px !important;
+    }
+
+    /* Add extra bottom margin to card on tablets */
+    .card {
+        margin-bottom: 2.5rem;
+    }
+
+    /* Add more bottom margin to ensure visibility */
+    .container {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Ensure button has enough space */
+    .d-flex.align-items-center.justify-content-between {
+        margin-bottom: 1rem;
+    }
+
+    /* Make the button more prominent */
+    .btn-primary {
+        padding: 0.5rem 1.5rem;
+    }
+}
+
 @keyframes pulse {
     0% {
         box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
