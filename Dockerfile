@@ -1,5 +1,5 @@
-# Bước 1: Chọn image nền Java để build ứng dụng (cập nhật lên JDK 17)
-FROM maven:3.8.4-openjdk-17-slim AS build
+# Bước 1: Chọn image nền Java để build ứng dụng
+FROM maven:3.8.4-openjdk-11-slim AS build
 
 # Bước 2: Thiết lập thư mục làm việc trong container
 WORKDIR /app
@@ -16,8 +16,8 @@ COPY . .
 # Bước 5: Build ứng dụng (package lại thành file .jar)
 RUN mvn clean package -DskipTests
 
-# Bước 6: Chọn image nền nhẹ để chạy ứng dụng (JDK 17)
-FROM openjdk:17-jre-slim
+# Bước 6: Chọn image nền nhẹ để chạy ứng dụng
+FROM openjdk:11-jre-slim
 
 # Bước 7: Thiết lập thư mục làm việc cho ứng dụng
 WORKDIR /app
