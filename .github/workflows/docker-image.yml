@@ -33,4 +33,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          # tags: ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/nguyenquy0710/mockapi:latest
