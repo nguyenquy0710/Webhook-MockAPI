@@ -1,0 +1,36 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main  # Chạy workflow này khi có thay đổi trên nhánh main
+  pull_request:
+    branches:
+      - main  # Chạy workflow khi có PR vào nhánh main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout code từ repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 2. Login vào GitHub Container Registry
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # 3. Build Docker image từ Dockerfile
+    - name: Build Docker image
+      run: |
+        docker build -t ghcr.io/${{ github.repository_owner }}/your-image-name:latest .
+
+    # 4. Push Docker image lên GitHub Container Registry
+    - name: Push Docker image
+      run: |
+        docker push ghcr.io/${{ github.repository_owner }}/your-image-name:latest
