@@ -1,7 +1,7 @@
 # FROM openjdk:17-jdk-slim
 FROM openjdk:17-jdk
 
-LABEL org.opencontainers.image.description "A powerful and user-friendly webhook testing tool that allows developers to create, manage, and test webhook APIs with ease."
+LABEL org.opencontainers.image.description="A powerful and user-friendly webhook testing tool that allows developers to create, manage, and test webhook APIs with ease."
 
 USER root
 
