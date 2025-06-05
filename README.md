@@ -2,7 +2,7 @@
 
 A powerful and user-friendly webhook testing tool that allows developers to create, manage, and test webhook APIs with ease.
 
-## Overview
+## 📖 Overview
 
 WebHookMock is a Spring Boot application designed to simplify webhook development and testing. It provides a seamless way to:
 
@@ -12,27 +12,27 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 - Add intentional delays to simulate real-world API behavior
 - Export request logs for documentation and analysis
 
-## Features
+## ✨ Features
 
-### API Configuration
+### ✅ API Configuration
 - Create custom endpoints with personalized paths
 - Configure HTTP response status codes (200, 201, 400, 404, etc.)
 - Set response content types (JSON, XML, HTML, etc.)
 - Customize response headers
 - Add response delays to simulate latency
 
-### Request Monitoring
+### 📡 Request Monitoring
 - Real-time logging of all incoming requests
 - Detailed view of request headers, body, and parameters
 - WebSocket support for live updates
 - Export logs to Excel for further analysis
 
-### User Management
+### 🔐 User Management
 - Secure registration and authentication
 - User-specific webhook URLs (e.g., `https://domain/api/@username/path`)
 - Isolated environments for each user
 
-## Technology Stack
+## 🧰 Technology Stack
 
 - **Backend**: Spring Boot 2.7.9
 - **Security**: Spring Security
@@ -41,7 +41,7 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 - **Real-time Updates**: WebSocket (STOMP)
 - **Export Functionality**: Apache POI (Excel)
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - Java 17
@@ -64,6 +64,39 @@ mvnw.cmd spring-boot:run
 ```
 
 4. Access the application at `http://localhost:8081`
+
+### 🐳 Docker Deployment
+
+#### Pull from GHCR
+
+```bash
+docker pull ghcr.io/nguyenquy0710/mockapi:1.0.0-rc13
+```
+
+#### Docker Compose
+
+Use the included Docker Compose file to run the app quickly: [docker-compose.yml](/docker-compose.yml)
+
+```bash
+git clone https://github.com/nguyenquy0710/Webhook-MockAPI.git
+cd Webhook-MockAPI
+docker-compose up -d
+```
+Default URL: `http://localhost:8081`
+
+### 📦 Release Info
+
+- Version: 1.0.0-rc13
+- Release Date: 2025-06-05
+- Stability: Release Candidate (RC)
+
+### 🔄 What's New
+
+- Docker & Docker Compose support
+- Live WebSocket-based request logs
+- Export to Excel via Apache POI
+- Modern UI with Bootstrap 5
+- Isolated user environments via URL namespace
 
 ### Configuration
 
