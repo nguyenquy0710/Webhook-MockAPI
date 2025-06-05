@@ -38,6 +38,9 @@ jobs:
           cp target/*.jar staging/app.jar
         shell: bash
 
+      - name: List files in staging/
+        run: ls -lh staging
+
       - uses: actions/upload-artifact@v4
         with:
           name: app-jar
