@@ -24,16 +24,24 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B package
 
-      - name: Run unit tests
+      - name: Run tests
         run: mvn test
 
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
+      - name: List files in target/
+        run: ls -lh target
+
+      - name: Rename and upload JAR as artifact
+        run: |
+          mkdir staging
+          cp target/*.jar staging/app.jar
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
         with:
-          name: my-app-jar
-          path: target/*.jar
+          name: app-jar
+          path: staging/app.jar
 
   release:
     needs: build-test
@@ -41,15 +49,15 @@ jobs:
     if: github.event_name == 'release'
 
     steps:
-      - name: Download JAR artifact
+      - name: Download JAR
         uses: actions/download-artifact@v4
         with:
-          name: my-app-jar
+          name: app-jar
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: "*.jar"
+          files: app.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,6 +69,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -69,9 +82,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        run: |
-          docker build -t ghcr.io/nguyenquy0710/mockapi:latest .
+        run: docker build -t ghcr.io/nguyenquy0710/mockapi:latest .
 
       - name: Push Docker image
-        run: |
-          docker push ghcr.io/nguyenquy0710/mockapi:latest
+        run: docker push ghcr.io/nguyenquy0710/mockapi:latest

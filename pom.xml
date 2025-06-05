@@ -106,6 +106,7 @@
     </dependencies>
 
     <build>
+        <finalName>app</finalName> <!-- Đây là phần bạn cần thêm -->
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
