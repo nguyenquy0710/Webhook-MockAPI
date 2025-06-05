@@ -1,3 +1,3 @@
 FROM openjdk:17-jdk-slim
-COPY target/app.jar /app.jar
+COPY staging/app.jar /app.jar
 ENTRYPOINT ["java", "-jar", "/app.jar"]
