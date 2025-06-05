@@ -11,7 +11,8 @@
     <groupId>vn.autobot.webhook</groupId>
     <artifactId>WebHookMock</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <!-- <packaging>war</packaging> -->
+    <packaging>jar</packaging>
     <name>WebHookMock</name>
     <description>WebHookMock</description>
     <url/>
@@ -106,12 +107,11 @@
     </dependencies>
 
     <build>
-        <!-- Đây là phần bạn cần thêm -->
-        <finalName>app</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.0</version> <!-- Hoặc dùng version phù hợp -->
                 <configuration>
                     <excludes>
                         <exclude>
