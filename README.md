@@ -70,7 +70,7 @@ mvnw.cmd spring-boot:run
 #### Pull from GHCR
 
 ```bash
-docker pull ghcr.io/nguyenquy0710/mockapi:1.0.0-rc13
+docker pull ghcr.io/nguyenquy0710/mockapi:latest
 ```
 
 #### Docker Compose
@@ -86,7 +86,7 @@ Default URL: `http://localhost:8081`
 
 ### 📦 Release Info
 
-- Version: 1.0.0-rc13
+- Version: [1.0.2](https://github.com/nguyenquy0710/Webhook-MockAPI/releases/tag/1.0.2)
 - Release Date: 2025-06-05
 - Stability: Release Candidate (RC)
 
