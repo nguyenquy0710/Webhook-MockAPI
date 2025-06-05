@@ -1,0 +1,27 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# WebHook Mock API
+# -----------------------------------------
+# https://github.com/nguyenquy0710/Webhook-MockAPI
+# -----------------------------------------
+# START: docker-compose up -d --build --force-recreate
+# STOP: docker-compose down -v
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+services:
+  mockapi:
+    image: ghcr.io/nguyenquy0710/mockapi:latest
+    container_name: mockapi
+    restart: unless-stopped
+    # network_mode: host
+    ports:
+      - "8081:8081"  # Map cổng host:container (đổi nếu app dùng cổng khác)
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - SPRING_PROFILES_ACTIVE= default
+      - JAVA_OPTS= "-Xms256m -Xmx512m"
+    env_file:
+      - .env
+    volumes:
+      - ./data/h2db:/app/data  # Lưu trữ database H2 bền vững
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Để kết nối đến localhost của host từ container
