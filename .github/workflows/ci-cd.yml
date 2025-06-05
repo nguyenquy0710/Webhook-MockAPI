@@ -70,8 +70,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/my-java-app:latest .
+          docker build -t ghcr.io/nguyenquy0710/mockapi:latest .
 
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.repository }}/my-java-app:latest
+          docker push ghcr.io/nguyenquy0710/mockapi:latest
