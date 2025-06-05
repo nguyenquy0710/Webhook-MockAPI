@@ -17,11 +17,12 @@ services:
       - "8081:8081"  # Map cổng host:container (đổi nếu app dùng cổng khác)
     environment:
       - TZ=Asia/Ho_Chi_Minh
-      - SPRING_PROFILES_ACTIVE= default
-      - JAVA_OPTS= "-Xms256m -Xmx512m"
+      - SPRING_PROFILES_ACTIVE=default
+      - JAVA_OPTS="-Xms256m -Xmx512m"
+      - APP_DOMAIN=https://mock-api.autobot.site  # ✅ biến môi trường được Spring Boot hiểu là app.domain
     env_file:
       - .env
     volumes:
-      - ./data/h2db:/app/data  # Lưu trữ database H2 bền vững
+      - ./data:/data  # Lưu trữ database H2 bền vững
     extra_hosts:
       - "host.docker.internal:host-gateway" # Để kết nối đến localhost của host từ container
