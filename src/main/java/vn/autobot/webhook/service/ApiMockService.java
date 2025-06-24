@@ -66,6 +66,13 @@ public class ApiMockService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a specific API configuration by ID for the given user.
+     *
+     * @param username The username of the user requesting the configuration.
+     * @param id       The ID of the API configuration to retrieve.
+     * @return The API configuration DTO.
+     */
     public ApiConfigDto getApiConfig(String username, Long id) {
         User user = userService.findByUsername(username);
         ApiConfig apiConfig = apiConfigRepository.findById(id)
@@ -132,7 +139,7 @@ public class ApiMockService {
             new Thread(() -> {
                 try {
                     Thread.sleep(delay);
-                    deferredResult.setResult(buildResponse(apiConfig));
+                    deferredResult.setResult(buildResponse(apiConfig, requestContext));
                 } catch (InterruptedException e) {
                     log.error("Delay interrupted", e);
                     deferredResult.setErrorResult(
@@ -141,7 +148,7 @@ public class ApiMockService {
                 }
             }).start();
         } else {
-            deferredResult.setResult(buildResponse(apiConfig));
+            deferredResult.setResult(buildResponse(apiConfig, requestContext));
         }
 
         return deferredResult;
