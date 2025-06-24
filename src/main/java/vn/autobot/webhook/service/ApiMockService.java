@@ -175,7 +175,7 @@ public class ApiMockService {
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity
                 .status(apiConfig.getStatusCode() != null ? apiConfig.getStatusCode() : 200);
 
-        // Add response headers if they exist
+        // Parse and apply response headers
         if (apiConfig.getResponseHeaders() != null && !apiConfig.getResponseHeaders().isEmpty()) {
             try {
                 @SuppressWarnings("unchecked")
@@ -183,23 +183,27 @@ public class ApiMockService {
                         apiConfig.getResponseHeaders(), HashMap.class);
 
                 for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    // responseBuilder.header(entry.getKey(), entry.getValue());
+                    // Replace placeholders in header values
                     String value = replacePlaceholders(entry.getValue(), requestContext);
                     responseBuilder.header(entry.getKey(), value);
+                    // responseBuilder.header(entry.getKey(), entry.getValue());
                 }
             } catch (JsonProcessingException e) {
                 log.error("Error parsing response headers", e);
             }
         }
 
+        // Add content-type header if defined
         if (apiConfig.getContentType() != null && !apiConfig.getContentType().isEmpty()) {
             responseBuilder.header("Content-Type", apiConfig.getContentType());
         }
 
+        // Build response body with placeholder substitution
         Object responseBody = apiConfig.getResponseBody();
         if (apiConfig.getResponseBody() != null && apiConfig.getContentType() != null
                 && apiConfig.getContentType().contains("application/json")) {
             try {
+                // Replace placeholders in responseBody
                 String raw = apiConfig.getResponseBody();
                 String replaced = replacePlaceholders(raw, requestContext);
                 responseBody = objectMapper.readValue(replaced, Object.class);
@@ -208,6 +212,7 @@ public class ApiMockService {
                 responseBody = apiConfig.getResponseBody();
             }
         } else if (apiConfig.getResponseBody() != null) {
+            // Replace placeholders for non-JSON response body
             responseBody = replacePlaceholders(apiConfig.getResponseBody(), requestContext);
         }
 
@@ -227,20 +232,28 @@ public class ApiMockService {
         return dto;
     }
 
-    private String replacePlaceholders(String input, Map<String, Object> context) {
-        if (input == null)
-            return null;
+    private String replacePlaceholders(String raw, Map<String, Object> requestContext) {
+        // Check if the context is null or empty
+        if (requestContext == null || requestContext.isEmpty()) {
+            return raw;
+        }
 
-        // Nếu context là null, trả về input gốc (không thay thế gì cả)
-        if (context == null)
-            return input;
+        // Loop through each placeholder and replace it
+        for (Map.Entry<String, Object> entry : requestContext.entrySet()) {
+            String placeholder = "{{" + entry.getKey() + "}}"; // Format: {{key}}
+            Object value = entry.getValue();
 
-        // Regex tìm các {{...}}
-        return input.replaceAll("\\{\\{([^}]+)}}", match -> {
-            String key = match.group(1).trim(); // e.g., "header.User-Agent", "name"
-            Object value = resolveContextValue(key, context);
-            return value != null ? value.toString() : "";
-        });
+            // Convert value to string if it's not null
+            if (value != null) {
+                String valueStr = value instanceof Map ? objectMapper.writeValueAsString(value) : value.toString();
+                raw = raw.replace(placeholder, valueStr);
+            } else {
+                // If value is null, replace the placeholder with empty string or handle
+                // accordingly
+                raw = raw.replace(placeholder, "");
+            }
+        }
+        return raw;
     }
 
     private Object resolveContextValue(String key, Map<String, Object> context) {

@@ -68,13 +68,22 @@ public class ApiMockController {
         // Convert response body to string for logging purposes
         String responseBody = apiConfig.get().getResponseBody();
 
-        // Prepare the request context
-        // This can include headers, parameters, etc. as needed
+        // Prepare the request context with headers, parameters, and other useful data
         Map<String, Object> requestContext = new HashMap<>();
+
+        // Extract headers into a map
+        Map<String, String> headers = new HashMap<>();
+        for (String headerName : Collections.list(request.getHeaderNames())) {
+            headers.put(headerName, request.getHeader(headerName));
+        }
+
+        // Extract parameters into a map
+        Map<String, String[]> parameters = request.getParameterMap();
+
         requestContext.put("method", method);
         requestContext.put("path", apiPath);
-        requestContext.put("headers", request.getHeaderNames());
-        requestContext.put("params", request.getParameterMap());
+        requestContext.put("headers", headers);
+        requestContext.put("params", parameters);
         requestContext.put("body", requestBody);
         requestContext.put("user", user);
         requestContext.put("apiConfig", apiConfig.get());
