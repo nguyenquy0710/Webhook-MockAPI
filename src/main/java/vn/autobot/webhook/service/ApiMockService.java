@@ -127,9 +127,8 @@ public class ApiMockService {
      */
     public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig,
             Map<String, Object> requestContext) {
-        if (requestContext == null) {
-            requestContext = new HashMap<>();
-        }
+
+        Map<String, Object> finalRequestContext = requestContext != null ? requestContext : new HashMap<>();
 
         DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>();
 
@@ -139,7 +138,7 @@ public class ApiMockService {
             new Thread(() -> {
                 try {
                     Thread.sleep(delay);
-                    deferredResult.setResult(buildResponse(apiConfig, requestContext));
+                    deferredResult.setResult(buildResponse(apiConfig, finalRequestContext));
                 } catch (InterruptedException e) {
                     log.error("Delay interrupted", e);
                     deferredResult.setErrorResult(
@@ -148,7 +147,7 @@ public class ApiMockService {
                 }
             }).start();
         } else {
-            deferredResult.setResult(buildResponse(apiConfig, requestContext));
+            deferredResult.setResult(buildResponse(apiConfig, finalRequestContext));
         }
 
         return deferredResult;
@@ -173,11 +172,8 @@ public class ApiMockService {
      * @return A ResponseEntity with the configured status, headers, and body.
      */
     private ResponseEntity<Object> buildResponse(ApiConfig apiConfig, Map<String, Object> requestContext) {
-        // Nếu requestContext null, gán thành một Map rỗng để tránh lỗi
-        // NullPointerException
-        if (requestContext == null) {
-            requestContext = new HashMap<>();
-        }
+
+        Map<String, Object> finalRequestContext = requestContext != null ? requestContext : new HashMap<>();
 
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity
                 .status(apiConfig.getStatusCode() != null ? apiConfig.getStatusCode() : 200);
@@ -191,7 +187,7 @@ public class ApiMockService {
 
                 for (Map.Entry<String, String> entry : headers.entrySet()) {
                     // Replace placeholders in header values
-                    String value = replacePlaceholders(entry.getValue(), requestContext);
+                    String value = replacePlaceholders(entry.getValue(), finalRequestContext);
                     responseBuilder.header(entry.getKey(), value);
                     // responseBuilder.header(entry.getKey(), entry.getValue());
                 }
