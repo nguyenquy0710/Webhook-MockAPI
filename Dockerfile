@@ -13,13 +13,6 @@ ENV TZ=Asia/Ho_Chi_Minh \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
 
-RUN apt-get update && \
-    apt-get install -y tzdata locales && \
-    echo "$TZ" > /etc/timezone && \
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    locale-gen en_US.UTF-8 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Cấu hình Java runtime
 ENV JAVA_TOOL_OPTIONS="-Djava.awt.headless=true"
 ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom"
@@ -31,4 +24,4 @@ EXPOSE 8081
 COPY app.jar /app.jar
 
 # Lệnh chạy ứng dụng
-ENTRYPOINT ["java", "$JAVA_OPTS", "-jar", "/app.jar"]
+ENTRYPOINT ["sh", "-c", "java", "$JAVA_OPTS", "-jar", "/app.jar"]
