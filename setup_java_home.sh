@@ -16,6 +16,14 @@ LATEST_JAVA_17=$(printf "%s\n" "${JAVA_17_DIRS[@]}" | sort -Vr | head -n 1)
 export JAVA_HOME="$LATEST_JAVA_17"
 export PATH="$JAVA_HOME/bin:$PATH"
 
+chmod +x "./mvnw"
+chmod +x "$JAVA_HOME/bin/java"
+# Lưu thiết lập vào file .bashrc để tự động áp dụng khi mở terminal mới
+echo "export JAVA_HOME=\"$JAVA_HOME\"" >> ~/.bashrc
+echo "export PATH=\"\$JAVA_HOME/bin:\$PATH\"" >> ~/.bashrc
+# Nạp lại file .bashrc để áp dụng thiết lập ngay lập tức
+source ~/.bashrc
+
 # In ra để xác nhận
 echo "Đã thiết lập JAVA_HOME: $JAVA_HOME"
 echo "PATH hiện tại: $PATH"
