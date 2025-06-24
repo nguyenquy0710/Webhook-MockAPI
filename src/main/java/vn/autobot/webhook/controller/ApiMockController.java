@@ -28,10 +28,10 @@ public class ApiMockController {
     private final RequestLogService requestLogService;
     private final ObjectMapper objectMapper;
 
-    @RequestMapping(value = "/@{username}/**", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
-            RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS, RequestMethod.HEAD})
+    @RequestMapping(value = "/@{username}/**", method = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+            RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS, RequestMethod.HEAD })
     public DeferredResult<ResponseEntity<Object>> handleApiRequest(@PathVariable String username,
-                                                                   HttpServletRequest request) {
+            HttpServletRequest request) {
         if (!userService.existsByUsername(username)) {
             return createErrorResult(404, "User not found");
         }
@@ -68,8 +68,20 @@ public class ApiMockController {
         // Convert response body to string for logging purposes
         String responseBody = apiConfig.get().getResponseBody();
 
+        // Prepare the request context
+        // This can include headers, parameters, etc. as needed
+        Map<String, Object> requestContext = new HashMap<>();
+        requestContext.put("method", method);
+        requestContext.put("path", apiPath);
+        requestContext.put("headers", request.getHeaderNames());
+        requestContext.put("params", request.getParameterMap());
+        requestContext.put("body", requestBody);
+        requestContext.put("user", user);
+        requestContext.put("apiConfig", apiConfig.get());
+        requestContext.put("responseBody", responseBody);
+
         // Create deferred result for the response
-        DeferredResult<ResponseEntity<Object>> result = apiMockService.processWebhook(apiConfig.get());
+        DeferredResult<ResponseEntity<Object>> result = apiMockService.processWebhook(apiConfig.get(), requestContext);
 
         // Log the request after the response is processed
         String finalRequestBody = requestBody;

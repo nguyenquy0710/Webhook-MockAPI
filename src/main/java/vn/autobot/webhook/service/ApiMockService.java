@@ -101,7 +101,29 @@ public class ApiMockService {
         }
     }
 
+    /**
+     * Processes a webhook request asynchronously.
+     *
+     * @param apiConfig The API configuration to use for the response.
+     * @return A DeferredResult that will be completed with the ResponseEntity.
+     */
     public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig) {
+        return processWebhook(apiConfig, null);
+    }
+
+    /**
+     * Processes a webhook request asynchronously with a request context.
+     *
+     * @param apiConfig      The API configuration to use for the response.
+     * @param requestContext Additional context for the request, can be null.
+     * @return A DeferredResult that will be completed with the ResponseEntity.
+     */
+    public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig,
+            Map<String, Object> requestContext) {
+        if (requestContext == null) {
+            requestContext = new HashMap<>();
+        }
+
         DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>();
 
         Integer delay = apiConfig.getDelayMs() != null ? apiConfig.getDelayMs() : 0;
@@ -115,8 +137,7 @@ public class ApiMockService {
                     log.error("Delay interrupted", e);
                     deferredResult.setErrorResult(
                             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                    .body("Error processing webhook")
-                    );
+                                    .body("Error processing webhook"));
                 }
             }).start();
         } else {
@@ -126,10 +147,35 @@ public class ApiMockService {
         return deferredResult;
     }
 
+    /*
+     * * Builds a ResponseEntity based on the ApiConfig.
+     *
+     * @param apiConfig The API configuration to use for the response.
+     * 
+     * @return A ResponseEntity with the configured status, headers, and body.
+     */
     private ResponseEntity<Object> buildResponse(ApiConfig apiConfig) {
+        return buildResponse(apiConfig, null);
+    }
+
+    /**
+     * Builds a ResponseEntity based on the ApiConfig and request context.
+     *
+     * @param apiConfig      The API configuration to use for the response.
+     * @param requestContext Additional context for the request, can be null.
+     * @return A ResponseEntity with the configured status, headers, and body.
+     */
+    private ResponseEntity<Object> buildResponse(ApiConfig apiConfig, Map<String, Object> requestContext) {
+        // Nếu requestContext null, gán thành một Map rỗng để tránh lỗi
+        // NullPointerException
+        if (requestContext == null) {
+            requestContext = new HashMap<>();
+        }
+
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity
                 .status(apiConfig.getStatusCode() != null ? apiConfig.getStatusCode() : 200);
 
+        // Add response headers if they exist
         if (apiConfig.getResponseHeaders() != null && !apiConfig.getResponseHeaders().isEmpty()) {
             try {
                 @SuppressWarnings("unchecked")
@@ -137,7 +183,9 @@ public class ApiMockService {
                         apiConfig.getResponseHeaders(), HashMap.class);
 
                 for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    responseBuilder.header(entry.getKey(), entry.getValue());
+                    // responseBuilder.header(entry.getKey(), entry.getValue());
+                    String value = replacePlaceholders(entry.getValue(), requestContext);
+                    responseBuilder.header(entry.getKey(), value);
                 }
             } catch (JsonProcessingException e) {
                 log.error("Error parsing response headers", e);
@@ -152,11 +200,15 @@ public class ApiMockService {
         if (apiConfig.getResponseBody() != null && apiConfig.getContentType() != null
                 && apiConfig.getContentType().contains("application/json")) {
             try {
-                responseBody = objectMapper.readValue(apiConfig.getResponseBody(), Object.class);
+                String raw = apiConfig.getResponseBody();
+                String replaced = replacePlaceholders(raw, requestContext);
+                responseBody = objectMapper.readValue(replaced, Object.class);
             } catch (JsonProcessingException e) {
                 log.warn("Could not parse JSON response body, returning as string", e);
                 responseBody = apiConfig.getResponseBody();
             }
+        } else if (apiConfig.getResponseBody() != null) {
+            responseBody = replacePlaceholders(apiConfig.getResponseBody(), requestContext);
         }
 
         return responseBuilder.body(responseBody);
@@ -173,5 +225,40 @@ public class ApiMockService {
         dto.setResponseHeaders(apiConfig.getResponseHeaders());
         dto.setDelayMs(apiConfig.getDelayMs());
         return dto;
+    }
+
+    private String replacePlaceholders(String input, Map<String, Object> context) {
+        if (input == null)
+            return null;
+
+        // Nếu context là null, trả về input gốc (không thay thế gì cả)
+        if (context == null)
+            return input;
+
+        // Regex tìm các {{...}}
+        return input.replaceAll("\\{\\{([^}]+)}}", match -> {
+            String key = match.group(1).trim(); // e.g., "header.User-Agent", "name"
+            Object value = resolveContextValue(key, context);
+            return value != null ? value.toString() : "";
+        });
+    }
+
+    private Object resolveContextValue(String key, Map<String, Object> context) {
+        if (context == null)
+            return null; // Nếu context là null, trả về null ngay lập tức.
+
+        // Kiểm tra nếu key có dạng "header.User-Agent" hoặc "name"
+        if (key.contains(".")) {
+            String[] parts = key.split("\\.");
+            if (parts.length == 2) {
+                Object parent = context.get(parts[0]);
+                if (parent instanceof Map<?, ?> map) {
+                    return map.get(parts[1]);
+                }
+            }
+        } else {
+            return context.get(key);
+        }
+        return null;
     }
 }
