@@ -25,291 +25,324 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApiMockService {
 
-    private final ApiConfigRepository apiConfigRepository;
-    private final UserService userService;
-    private final ObjectMapper objectMapper;
+  private final ApiConfigRepository apiConfigRepository;
+  private final UserService userService;
+  private final ObjectMapper objectMapper;
 
-    @Transactional
-    public ApiConfig saveApiConfig(String username, ApiConfigDto apiConfigDto) {
-        User user = userService.findByUsername(username);
+  @Transactional
+  public ApiConfig saveApiConfig(String username, ApiConfigDto apiConfigDto) {
+    User user = userService.findByUsername(username);
 
-        ApiConfig apiConfig;
-        if (apiConfigDto.getId() != null) {
-            apiConfig = apiConfigRepository.findById(apiConfigDto.getId())
-                    .orElseThrow(() -> new RuntimeException("API configuration not found"));
+    ApiConfig apiConfig;
+    if (apiConfigDto.getId() != null) {
+      apiConfig = apiConfigRepository.findById(apiConfigDto.getId())
+          .orElseThrow(() -> new RuntimeException("API configuration not found"));
 
-            if (!apiConfig.getUser().getId().equals(user.getId())) {
-                throw new RuntimeException("You don't have permission to update this API configuration");
-            }
-        } else {
-            apiConfig = new ApiConfig();
-            apiConfig.setUser(user);
+      if (!apiConfig.getUser().getId().equals(user.getId())) {
+        throw new RuntimeException("You don't have permission to update this API configuration");
+      }
+    } else {
+      apiConfig = new ApiConfig();
+      apiConfig.setUser(user);
+    }
+
+    apiConfig.setPath(apiConfigDto.getPath());
+    apiConfig.setMethod(apiConfigDto.getMethod());
+    apiConfig.setContentType(apiConfigDto.getContentType());
+    apiConfig.setStatusCode(apiConfigDto.getStatusCode());
+    apiConfig.setResponseBody(apiConfigDto.getResponseBody());
+    apiConfig.setResponseHeaders(apiConfigDto.getResponseHeaders());
+    apiConfig.setDelayMs(apiConfigDto.getDelayMs());
+
+    return apiConfigRepository.save(apiConfig);
+  }
+
+  /**
+   * Converts ApiConfig to ApiConfigDto.
+   *
+   * @param apiConfig The API configuration to convert.
+   * @return The converted API configuration DTO.
+   */
+  public List<ApiConfigDto> getApiConfigs(String username) {
+    User user = userService.findByUsername(username);
+    List<ApiConfig> apiConfigs = apiConfigRepository.findByUser(user);
+
+    return apiConfigs.stream()
+        .map(this::convertToDto)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Retrieves a specific API configuration by ID for the given user.
+   *
+   * @param username The username of the user requesting the configuration.
+   * @param id       The ID of the API configuration to retrieve.
+   * @return The API configuration DTO.
+   */
+  public ApiConfigDto getApiConfig(String username, Long id) {
+    User user = userService.findByUsername(username);
+    ApiConfig apiConfig = apiConfigRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("API configuration not found"));
+
+    if (!apiConfig.getUser().getId().equals(user.getId())) {
+      throw new RuntimeException("You don't have permission to view this API configuration");
+    }
+
+    return convertToDto(apiConfig);
+  }
+
+  @Transactional
+  public void deleteApiConfig(String username, Long id) {
+    User user = userService.findByUsername(username);
+    ApiConfig apiConfig = apiConfigRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("API configuration not found"));
+
+    if (!apiConfig.getUser().getId().equals(user.getId())) {
+      throw new RuntimeException("You don't have permission to delete this API configuration");
+    }
+
+    apiConfigRepository.delete(apiConfig);
+  }
+
+  /**
+   * Converts ApiConfig to ApiConfigDto.
+   *
+   * @param apiConfig The API configuration to convert.
+   * @return The converted API configuration DTO.
+   */
+  public Optional<ApiConfig> findApiConfig(String username, String path, String method) {
+    try {
+      User user = userService.findByUsername(username);
+      return apiConfigRepository.findByUserAndPathAndMethod(user, path, method);
+    } catch (Exception e) {
+      log.error("Error finding API configuration", e);
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Processes a webhook request asynchronously.
+   *
+   * @param apiConfig The API configuration to use for the response.
+   * @return A DeferredResult that will be completed with the ResponseEntity.
+   */
+  public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig) {
+    return processWebhook(apiConfig, null);
+  }
+
+  /**
+   * Processes a webhook request asynchronously with a request context.
+   *
+   * @param apiConfig      The API configuration to use for the response.
+   * @param requestContext Additional context for the request, can be null.
+   * @return A DeferredResult that will be completed with the ResponseEntity.
+   */
+  public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig,
+      Map<String, Object> requestContext) {
+
+    // Dùng requestContext an toàn
+    Map<String, Object> finalRequestContext = requestContext != null ? requestContext : new HashMap<>();
+
+    // Timeout mặc định là 10 giây (có thể điều chỉnh)
+    long timeoutMs = 10_000L;
+
+    // Tạo DeferredResult với timeout
+    DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>(timeoutMs);
+
+    // Xử lý khi timeout xảy ra
+    deferredResult.onTimeout(() -> {
+      log.warn("Request processing timed out");
+      deferredResult.setErrorResult(
+          ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+              .body("Request timed out"));
+    });
+
+    // Xử lý khi có lỗi bất ngờ (ví dụ thread chết)
+    deferredResult.onError((Throwable t) -> {
+      log.error("Unexpected error during webhook processing", t);
+      deferredResult.setErrorResult(
+          ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("Internal error while processing webhook"));
+    });
+
+    // Xử lý delay nếu có
+    Integer delay = apiConfig.getDelayMs() != null ? apiConfig.getDelayMs() : 0;
+
+    Runnable task = () -> {
+      try {
+        if (delay > 0) {
+          Thread.sleep(delay);
         }
+        deferredResult.setResult(buildResponse(apiConfig, finalRequestContext));
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt(); // khôi phục trạng thái interrupted
+        log.error("Delay interrupted", e);
+        deferredResult.setErrorResult(
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Interrupted while processing webhook"));
+      } catch (Exception e) {
+        log.error("Exception during webhook processing", e);
+        deferredResult.setErrorResult(
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error processing webhook"));
+      }
+    };
 
-        apiConfig.setPath(apiConfigDto.getPath());
-        apiConfig.setMethod(apiConfigDto.getMethod());
-        apiConfig.setContentType(apiConfigDto.getContentType());
-        apiConfig.setStatusCode(apiConfigDto.getStatusCode());
-        apiConfig.setResponseBody(apiConfigDto.getResponseBody());
-        apiConfig.setResponseHeaders(apiConfigDto.getResponseHeaders());
-        apiConfig.setDelayMs(apiConfigDto.getDelayMs());
+    // Khởi chạy xử lý trong thread riêng
+    new Thread(task).start();
 
-        return apiConfigRepository.save(apiConfig);
-    }
+    return deferredResult;
+  }
 
-    public List<ApiConfigDto> getApiConfigs(String username) {
-        User user = userService.findByUsername(username);
-        List<ApiConfig> apiConfigs = apiConfigRepository.findByUser(user);
+  /*
+   * * Builds a ResponseEntity based on the ApiConfig.
+   *
+   * @param apiConfig The API configuration to use for the response.
+   * 
+   * @return A ResponseEntity with the configured status, headers, and body.
+   */
+  private ResponseEntity<Object> buildResponse(ApiConfig apiConfig) {
+    return buildResponse(apiConfig, null);
+  }
 
-        return apiConfigs.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
+  /**
+   * Builds a ResponseEntity based on the ApiConfig and request context.
+   *
+   * @param apiConfig      The API configuration to use for the response.
+   * @param requestContext Additional context for the request, can be null.
+   * @return A ResponseEntity with the configured status, headers, and body.
+   */
+  private ResponseEntity<Object> buildResponse(ApiConfig apiConfig, Map<String, Object> requestContext) {
 
-    /**
-     * Retrieves a specific API configuration by ID for the given user.
-     *
-     * @param username The username of the user requesting the configuration.
-     * @param id       The ID of the API configuration to retrieve.
-     * @return The API configuration DTO.
-     */
-    public ApiConfigDto getApiConfig(String username, Long id) {
-        User user = userService.findByUsername(username);
-        ApiConfig apiConfig = apiConfigRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("API configuration not found"));
+    Map<String, Object> finalRequestContext = requestContext != null ? requestContext : new HashMap<>();
 
-        if (!apiConfig.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("You don't have permission to view this API configuration");
+    ResponseEntity.BodyBuilder responseBuilder = ResponseEntity
+        .status(apiConfig.getStatusCode() != null ? apiConfig.getStatusCode() : 200);
+
+    // Parse and apply response headers
+    if (apiConfig.getResponseHeaders() != null && !apiConfig.getResponseHeaders().isEmpty()) {
+      try {
+        @SuppressWarnings("unchecked")
+        Map<String, String> headers = objectMapper.readValue(
+            apiConfig.getResponseHeaders(), HashMap.class);
+
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+          // Replace placeholders in header values
+          String value = replacePlaceholders(entry.getValue(), finalRequestContext);
+          responseBuilder.header(entry.getKey(), value);
+          // responseBuilder.header(entry.getKey(), entry.getValue());
         }
-
-        return convertToDto(apiConfig);
+      } catch (JsonProcessingException e) {
+        log.error("Error parsing response headers", e);
+      }
     }
 
-    @Transactional
-    public void deleteApiConfig(String username, Long id) {
-        User user = userService.findByUsername(username);
-        ApiConfig apiConfig = apiConfigRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("API configuration not found"));
-
-        if (!apiConfig.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("You don't have permission to delete this API configuration");
-        }
-
-        apiConfigRepository.delete(apiConfig);
+    // Add content-type header if defined
+    if (apiConfig.getContentType() != null && !apiConfig.getContentType().isEmpty()) {
+      responseBuilder.header("Content-Type", apiConfig.getContentType());
     }
 
-    public Optional<ApiConfig> findApiConfig(String username, String path, String method) {
+    // Build response body with placeholder substitution
+    Object responseBody = apiConfig.getResponseBody();
+    if (apiConfig.getResponseBody() != null && apiConfig.getContentType() != null
+        && apiConfig.getContentType().contains("application/json")) {
+      try {
+        // Replace placeholders in responseBody
+        String raw = apiConfig.getResponseBody();
+        String replaced = replacePlaceholders(raw, requestContext);
+        responseBody = objectMapper.readValue(replaced, Object.class);
+      } catch (JsonProcessingException e) {
+        log.warn("Could not parse JSON response body, returning as string", e);
+        responseBody = apiConfig.getResponseBody();
+      }
+    } else if (apiConfig.getResponseBody() != null) {
+      // Replace placeholders for non-JSON response body
+      responseBody = replacePlaceholders(apiConfig.getResponseBody(), requestContext);
+    }
+
+    return responseBuilder.body(responseBody);
+  }
+
+  /**
+   * Converts ApiConfig to ApiConfigDto.
+   *
+   * @param apiConfig The API configuration to convert.
+   * @return The converted API configuration DTO.
+   */
+  private ApiConfigDto convertToDto(ApiConfig apiConfig) {
+    ApiConfigDto dto = new ApiConfigDto();
+    dto.setId(apiConfig.getId());
+    dto.setPath(apiConfig.getPath());
+    dto.setMethod(apiConfig.getMethod());
+    dto.setContentType(apiConfig.getContentType());
+    dto.setStatusCode(apiConfig.getStatusCode());
+    dto.setResponseBody(apiConfig.getResponseBody());
+    dto.setResponseHeaders(apiConfig.getResponseHeaders());
+    dto.setDelayMs(apiConfig.getDelayMs());
+    return dto;
+  }
+
+  /**
+   * Replaces placeholders in the raw string with values from the request context.
+   *
+   * @param raw            The raw string containing placeholders.
+   * @param requestContext The context map containing values for placeholders.
+   * @return The string with placeholders replaced by actual values.
+   */
+  private String replacePlaceholders(String raw, Map<String, Object> requestContext) {
+    // Check if the context is null or empty
+    if (requestContext == null || requestContext.isEmpty()) {
+      return raw;
+    }
+
+    // Loop through each placeholder and replace it
+    for (Map.Entry<String, Object> entry : requestContext.entrySet()) {
+      String placeholder = "{{" + entry.getKey() + "}}"; // Format: {{key}}
+      Object value = entry.getValue();
+
+      // Convert value to string if it's not null
+      if (value != null) {
+        String valueStr;
         try {
-            User user = userService.findByUsername(username);
-            return apiConfigRepository.findByUserAndPathAndMethod(user, path, method);
-        } catch (Exception e) {
-            log.error("Error finding API configuration", e);
-            return Optional.empty();
+          valueStr = value instanceof Map ? objectMapper.writeValueAsString(value) : value.toString();
+        } catch (JsonProcessingException e) {
+          log.error("Error serializing value for placeholder: {}", entry.getKey(), e);
+          valueStr = value.toString(); // fallback to .toString() if serialization fails
         }
+        raw = raw.replace(placeholder, valueStr);
+      } else {
+        // If value is null, replace the placeholder with empty string or handle
+        // accordingly
+        raw = raw.replace(placeholder, "");
+      }
     }
+    return raw;
+  }
 
-    /**
-     * Processes a webhook request asynchronously.
-     *
-     * @param apiConfig The API configuration to use for the response.
-     * @return A DeferredResult that will be completed with the ResponseEntity.
-     */
-    public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig) {
-        return processWebhook(apiConfig, null);
-    }
+  /**
+   * Resolves a context value based on the provided key and context map.
+   *
+   * @param key     The key to resolve, can be in the format "header.User-Agent"
+   *                or "name".
+   * @param context The context map containing values.
+   * @return The resolved value or null if not found.
+   */
+  private Object resolveContextValue(String key, Map<String, Object> context) {
+    if (context == null)
+      return null; // Nếu context là null, trả về null ngay lập tức.
 
-    /**
-     * Processes a webhook request asynchronously with a request context.
-     *
-     * @param apiConfig      The API configuration to use for the response.
-     * @param requestContext Additional context for the request, can be null.
-     * @return A DeferredResult that will be completed with the ResponseEntity.
-     */
-    public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig,
-            Map<String, Object> requestContext) {
-
-        // Dùng requestContext an toàn
-        Map<String, Object> finalRequestContext = requestContext != null ? requestContext : new HashMap<>();
-
-        // Timeout mặc định là 10 giây (có thể điều chỉnh)
-        long timeoutMs = 10_000L;
-
-        // Tạo DeferredResult với timeout
-        DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>(timeoutMs);
-
-        // Xử lý khi timeout xảy ra
-        deferredResult.onTimeout(() -> {
-            log.warn("Request processing timed out");
-            deferredResult.setErrorResult(
-                    ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
-                            .body("Request timed out"));
-        });
-
-        // Xử lý khi có lỗi bất ngờ (ví dụ thread chết)
-        deferredResult.onError((Throwable t) -> {
-            log.error("Unexpected error during webhook processing", t);
-            deferredResult.setErrorResult(
-                    ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body("Internal error while processing webhook"));
-        });
-
-        // Xử lý delay nếu có
-        Integer delay = apiConfig.getDelayMs() != null ? apiConfig.getDelayMs() : 0;
-
-        Runnable task = () -> {
-            try {
-                if (delay > 0) {
-                    Thread.sleep(delay);
-                }
-                deferredResult.setResult(buildResponse(apiConfig, finalRequestContext));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); // khôi phục trạng thái interrupted
-                log.error("Delay interrupted", e);
-                deferredResult.setErrorResult(
-                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .body("Interrupted while processing webhook"));
-            } catch (Exception e) {
-                log.error("Exception during webhook processing", e);
-                deferredResult.setErrorResult(
-                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .body("Error processing webhook"));
-            }
-        };
-
-        // Khởi chạy xử lý trong thread riêng
-        new Thread(task).start();
-
-        return deferredResult;
-    }
-
-    /*
-     * * Builds a ResponseEntity based on the ApiConfig.
-     *
-     * @param apiConfig The API configuration to use for the response.
-     * 
-     * @return A ResponseEntity with the configured status, headers, and body.
-     */
-    private ResponseEntity<Object> buildResponse(ApiConfig apiConfig) {
-        return buildResponse(apiConfig, null);
-    }
-
-    /**
-     * Builds a ResponseEntity based on the ApiConfig and request context.
-     *
-     * @param apiConfig      The API configuration to use for the response.
-     * @param requestContext Additional context for the request, can be null.
-     * @return A ResponseEntity with the configured status, headers, and body.
-     */
-    private ResponseEntity<Object> buildResponse(ApiConfig apiConfig, Map<String, Object> requestContext) {
-
-        Map<String, Object> finalRequestContext = requestContext != null ? requestContext : new HashMap<>();
-
-        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity
-                .status(apiConfig.getStatusCode() != null ? apiConfig.getStatusCode() : 200);
-
-        // Parse and apply response headers
-        if (apiConfig.getResponseHeaders() != null && !apiConfig.getResponseHeaders().isEmpty()) {
-            try {
-                @SuppressWarnings("unchecked")
-                Map<String, String> headers = objectMapper.readValue(
-                        apiConfig.getResponseHeaders(), HashMap.class);
-
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    // Replace placeholders in header values
-                    String value = replacePlaceholders(entry.getValue(), finalRequestContext);
-                    responseBuilder.header(entry.getKey(), value);
-                    // responseBuilder.header(entry.getKey(), entry.getValue());
-                }
-            } catch (JsonProcessingException e) {
-                log.error("Error parsing response headers", e);
-            }
+    // Kiểm tra nếu key có dạng "header.User-Agent" hoặc "name"
+    if (key.contains(".")) {
+      String[] parts = key.split("\\.");
+      if (parts.length == 2) {
+        Object parent = context.get(parts[0]);
+        if (parent instanceof Map<?, ?> map) {
+          return map.get(parts[1]);
         }
-
-        // Add content-type header if defined
-        if (apiConfig.getContentType() != null && !apiConfig.getContentType().isEmpty()) {
-            responseBuilder.header("Content-Type", apiConfig.getContentType());
-        }
-
-        // Build response body with placeholder substitution
-        Object responseBody = apiConfig.getResponseBody();
-        if (apiConfig.getResponseBody() != null && apiConfig.getContentType() != null
-                && apiConfig.getContentType().contains("application/json")) {
-            try {
-                // Replace placeholders in responseBody
-                String raw = apiConfig.getResponseBody();
-                String replaced = replacePlaceholders(raw, requestContext);
-                responseBody = objectMapper.readValue(replaced, Object.class);
-            } catch (JsonProcessingException e) {
-                log.warn("Could not parse JSON response body, returning as string", e);
-                responseBody = apiConfig.getResponseBody();
-            }
-        } else if (apiConfig.getResponseBody() != null) {
-            // Replace placeholders for non-JSON response body
-            responseBody = replacePlaceholders(apiConfig.getResponseBody(), requestContext);
-        }
-
-        return responseBuilder.body(responseBody);
+      }
+    } else {
+      return context.get(key);
     }
-
-    private ApiConfigDto convertToDto(ApiConfig apiConfig) {
-        ApiConfigDto dto = new ApiConfigDto();
-        dto.setId(apiConfig.getId());
-        dto.setPath(apiConfig.getPath());
-        dto.setMethod(apiConfig.getMethod());
-        dto.setContentType(apiConfig.getContentType());
-        dto.setStatusCode(apiConfig.getStatusCode());
-        dto.setResponseBody(apiConfig.getResponseBody());
-        dto.setResponseHeaders(apiConfig.getResponseHeaders());
-        dto.setDelayMs(apiConfig.getDelayMs());
-        return dto;
-    }
-
-    private String replacePlaceholders(String raw, Map<String, Object> requestContext) {
-        // Check if the context is null or empty
-        if (requestContext == null || requestContext.isEmpty()) {
-            return raw;
-        }
-
-        // Loop through each placeholder and replace it
-        for (Map.Entry<String, Object> entry : requestContext.entrySet()) {
-            String placeholder = "{{" + entry.getKey() + "}}"; // Format: {{key}}
-            Object value = entry.getValue();
-
-            // Convert value to string if it's not null
-            if (value != null) {
-                String valueStr;
-                try {
-                    valueStr = value instanceof Map ? objectMapper.writeValueAsString(value) : value.toString();
-                } catch (JsonProcessingException e) {
-                    log.error("Error serializing value for placeholder: {}", entry.getKey(), e);
-                    valueStr = value.toString(); // fallback to .toString() if serialization fails
-                }
-                raw = raw.replace(placeholder, valueStr);
-            } else {
-                // If value is null, replace the placeholder with empty string or handle
-                // accordingly
-                raw = raw.replace(placeholder, "");
-            }
-        }
-        return raw;
-    }
-
-    private Object resolveContextValue(String key, Map<String, Object> context) {
-        if (context == null)
-            return null; // Nếu context là null, trả về null ngay lập tức.
-
-        // Kiểm tra nếu key có dạng "header.User-Agent" hoặc "name"
-        if (key.contains(".")) {
-            String[] parts = key.split("\\.");
-            if (parts.length == 2) {
-                Object parent = context.get(parts[0]);
-                if (parent instanceof Map<?, ?> map) {
-                    return map.get(parts[1]);
-                }
-            }
-        } else {
-            return context.get(key);
-        }
-        return null;
-    }
+    return null;
+  }
 }

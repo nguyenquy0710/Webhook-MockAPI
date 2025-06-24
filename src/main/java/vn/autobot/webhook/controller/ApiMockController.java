@@ -26,112 +26,126 @@ import java.util.Collections;
 @Slf4j
 public class ApiMockController {
 
-    private final ApiMockService apiMockService;
-    private final UserService userService;
-    private final RequestLogService requestLogService;
-    private final ObjectMapper objectMapper;
+  private final ApiMockService apiMockService;
+  private final UserService userService;
+  private final RequestLogService requestLogService;
+  private final ObjectMapper objectMapper;
 
-    @RequestMapping(value = "/@{username}/**", method = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
-            RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS, RequestMethod.HEAD })
-    public DeferredResult<ResponseEntity<Object>> handleApiRequest(@PathVariable String username,
-            HttpServletRequest request) {
-        if (!userService.existsByUsername(username)) {
-            return createErrorResult(404, "User not found");
-        }
-
-        String method = request.getMethod();
-        String fullPath = request.getRequestURI();
-        String basePath = "/api/@" + username;
-        String apiPath = fullPath.substring(basePath.length());
-        if (apiPath.isEmpty()) {
-            apiPath = "/";
-        }
-
-        User user;
-        try {
-            user = userService.findByUsername(username);
-        } catch (Exception e) {
-            return createErrorResult(404, "User not found");
-        }
-
-        Optional<ApiConfig> apiConfig = apiMockService.findApiConfig(username, apiPath, method);
-        if (apiConfig.isEmpty()) {
-            return createErrorResult(404, "API endpoint not configured for this path and method");
-        }
-
-        // Read the request body
-        String requestBody;
-        try {
-            requestBody = readRequestBody(request);
-        } catch (IOException e) {
-            log.error("Error reading request body", e);
-            requestBody = "Error reading request body: " + e.getMessage();
-        }
-
-        // Convert response body to string for logging purposes
-        String responseBody = apiConfig.get().getResponseBody();
-
-        // Prepare the request context with headers, parameters, and other useful data
-        Map<String, Object> requestContext = new HashMap<>();
-
-        // Extract headers into a map
-        Map<String, String> headers = new HashMap<>();
-        for (String headerName : Collections.list(request.getHeaderNames())) {
-            headers.put(headerName, request.getHeader(headerName));
-        }
-
-        // Extract parameters into a map
-        Map<String, String[]> parameters = request.getParameterMap();
-
-        requestContext.put("method", method);
-        requestContext.put("path", apiPath);
-        requestContext.put("headers", headers);
-        requestContext.put("params", parameters);
-        requestContext.put("body", requestBody);
-        requestContext.put("user", user);
-        requestContext.put("apiConfig", apiConfig.get());
-        requestContext.put("responseBody", responseBody);
-
-        // Create deferred result for the response
-        DeferredResult<ResponseEntity<Object>> result = apiMockService.processWebhook(apiConfig.get(), requestContext);
-
-        // Log the request after the response is processed
-        String finalRequestBody = requestBody;
-        result.onCompletion(() -> {
-            try {
-                Object resultObj = result.getResult();
-
-                int status;
-                if (resultObj instanceof ResponseEntity<?> response) {
-                    status = response.getStatusCodeValue();
-                } else {
-                    // Không phải ResponseEntity, có thể là exception → giả định lỗi
-                    status = 500;
-                }
-
-                requestLogService.logRequest(user, request, finalRequestBody, status, responseBody);
-            } catch (Exception e) {
-                log.error("Error logging request", e);
-            }
-        });
-
-        return result;
+  @RequestMapping(value = "/@{username}/**", method = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+      RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS, RequestMethod.HEAD })
+  public DeferredResult<ResponseEntity<Object>> handleApiRequest(@PathVariable String username,
+      HttpServletRequest request) {
+    if (!userService.existsByUsername(username)) {
+      return createErrorResult(404, "User not found");
     }
 
-    private String readRequestBody(HttpServletRequest request) throws IOException {
-        StringBuilder requestBody = new StringBuilder();
-        try (BufferedReader reader = request.getReader()) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                requestBody.append(line);
-            }
-        }
-        return requestBody.toString();
+    String method = request.getMethod();
+    String fullPath = request.getRequestURI();
+    String basePath = "/api/@" + username;
+    String apiPath = fullPath.substring(basePath.length());
+    if (apiPath.isEmpty()) {
+      apiPath = "/";
     }
 
-    private DeferredResult<ResponseEntity<Object>> createErrorResult(int status, String message) {
-        DeferredResult<ResponseEntity<Object>> result = new DeferredResult<>();
-        result.setResult(ResponseEntity.status(status).body(message));
-        return result;
+    User user;
+    try {
+      user = userService.findByUsername(username);
+    } catch (Exception e) {
+      return createErrorResult(404, "User not found");
     }
+
+    Optional<ApiConfig> apiConfig = apiMockService.findApiConfig(username, apiPath, method);
+    if (apiConfig.isEmpty()) {
+      return createErrorResult(404, "API endpoint not configured for this path and method");
+    }
+
+    // Read the request body
+    String requestBody;
+    try {
+      requestBody = readRequestBody(request);
+    } catch (IOException e) {
+      log.error("Error reading request body", e);
+      requestBody = "Error reading request body: " + e.getMessage();
+    }
+
+    // Convert response body to string for logging purposes
+    String responseBody = apiConfig.get().getResponseBody();
+
+    // Prepare the request context with headers, parameters, and other useful data
+    Map<String, Object> requestContext = new HashMap<>();
+
+    // Extract headers into a map
+    Map<String, String> headers = new HashMap<>();
+    for (String headerName : Collections.list(request.getHeaderNames())) {
+      headers.put(headerName, request.getHeader(headerName));
+    }
+
+    // Extract parameters into a map
+    Map<String, String[]> parameters = request.getParameterMap();
+
+    requestContext.put("method", method);
+    requestContext.put("path", apiPath);
+    requestContext.put("headers", headers);
+    requestContext.put("params", parameters);
+    requestContext.put("body", requestBody);
+    requestContext.put("user", user);
+    requestContext.put("apiConfig", apiConfig.get());
+    requestContext.put("responseBody", responseBody);
+
+    // Create deferred result for the response
+    DeferredResult<ResponseEntity<Object>> result = apiMockService.processWebhook(apiConfig.get(), requestContext);
+
+    // Log the request after the response is processed
+    String finalRequestBody = requestBody;
+    result.onCompletion(() -> {
+      try {
+        Object resultObj = result.getResult();
+
+        int status;
+        if (resultObj instanceof ResponseEntity<?> response) {
+          status = response.getStatusCodeValue();
+        } else {
+          // Không phải ResponseEntity, có thể là exception → giả định lỗi
+          status = 500;
+        }
+
+        requestLogService.logRequest(user, request, finalRequestBody, status, responseBody);
+      } catch (Exception e) {
+        log.error("Error logging request", e);
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * Reads the request body from the HttpServletRequest.
+   *
+   * @param request the HttpServletRequest
+   * @return the request body as a String
+   * @throws IOException if an I/O error occurs while reading the request body
+   */
+  private String readRequestBody(HttpServletRequest request) throws IOException {
+    StringBuilder requestBody = new StringBuilder();
+    try (BufferedReader reader = request.getReader()) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        requestBody.append(line);
+      }
+    }
+    return requestBody.toString();
+  }
+
+  /**
+   * Creates a DeferredResult with an error response.
+   *
+   * @param status  the HTTP status code
+   * @param message the error message
+   * @return a DeferredResult containing the error response
+   */
+  private DeferredResult<ResponseEntity<Object>> createErrorResult(int status, String message) {
+    DeferredResult<ResponseEntity<Object>> result = new DeferredResult<>();
+    result.setResult(ResponseEntity.status(status).body(message));
+    return result;
+  }
 }

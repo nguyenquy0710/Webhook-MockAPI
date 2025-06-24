@@ -12,27 +12,32 @@ import java.util.Map;
 @Service
 public class WebSocketService {
 
-    private final SimpMessagingTemplate messagingTemplate;
-    private final RequestLogRepository requestLogRepository;
-    private final UserService userService;
+  private final SimpMessagingTemplate messagingTemplate;
+  private final RequestLogRepository requestLogRepository;
+  private final UserService userService;
 
-    public WebSocketService(SimpMessagingTemplate messagingTemplate,
-                            RequestLogRepository requestLogRepository,
-                            UserService userService) {
-        this.messagingTemplate = messagingTemplate;
-        this.requestLogRepository = requestLogRepository;
-        this.userService = userService;
-    }
+  public WebSocketService(SimpMessagingTemplate messagingTemplate,
+      RequestLogRepository requestLogRepository,
+      UserService userService) {
+    this.messagingTemplate = messagingTemplate;
+    this.requestLogRepository = requestLogRepository;
+    this.userService = userService;
+  }
 
-    public void sendRequestUpdate(String username) {
-        User user = userService.findByUsername(username);
-        long count = requestLogRepository.countByUser(user);
+  /**
+   * Sends a WebSocket message to update the request count for a specific user.
+   *
+   * @param username the username of the user to send the update to
+   */
+  public void sendRequestUpdate(String username) {
+    User user = userService.findByUsername(username);
+    long count = requestLogRepository.countByUser(user);
 
-        Map<String, Object> message = new HashMap<>();
-        message.put("type", "REQUEST_UPDATE");
-        message.put("count", count);
-        message.put("timestamp", System.currentTimeMillis());
+    Map<String, Object> message = new HashMap<>();
+    message.put("type", "REQUEST_UPDATE");
+    message.put("count", count);
+    message.put("timestamp", System.currentTimeMillis());
 
-        messagingTemplate.convertAndSend("/topic/requests/" + username, message);
-    }
+    messagingTemplate.convertAndSend("/topic/requests/" + username, message);
+  }
 }
