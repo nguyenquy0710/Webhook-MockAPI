@@ -24,4 +24,4 @@ EXPOSE 8081
 COPY app.jar /app.jar
 
 # Lệnh chạy ứng dụng
-ENTRYPOINT ["sh", "-c", "java", "$JAVA_OPTS", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "$JAVA_OPTS", "-jar", "/app.jar"]
