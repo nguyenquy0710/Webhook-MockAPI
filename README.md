@@ -15,6 +15,7 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 ## ✨ Features
 
 ### ✅ API Configuration
+
 - Create custom endpoints with personalized paths
 - Configure HTTP response status codes (200, 201, 400, 404, etc.)
 - Set response content types (JSON, XML, HTML, etc.)
@@ -22,12 +23,14 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 - Add response delays to simulate latency
 
 ### 📡 Request Monitoring
+
 - Real-time logging of all incoming requests
 - Detailed view of request headers, body, and parameters
 - WebSocket support for live updates
 - Export logs to Excel for further analysis
 
 ### 🔐 User Management
+
 - Secure registration and authentication
 - User-specific webhook URLs (e.g., `https://domain/api/@username/path`)
 - Isolated environments for each user
@@ -44,6 +47,7 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Java 17
 - Maven 3.6+ (or use the included Maven wrapper)
 
@@ -54,7 +58,23 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 3. Run the application using Maven:
 
 ```bash
+# Xóa thư mục target (build cũ)
+./mvnw clean
+
+# Build và cài đặt vào local repo
+./mvnw install
+
+# Build ra file JAR hoặc WAR trong target/
+./mvnw package
+
+# Chạy ứng dụng Spring Boot
 ./mvnw spring-boot:run
+
+# Chạy test unit
+./mvnw test
+
+# Xem cây dependency
+./mvnw dependency:tree
 ```
 
 Or on Windows:
@@ -82,6 +102,7 @@ git clone https://github.com/nguyenquy0710/Webhook-MockAPI.git
 cd Webhook-MockAPI
 docker-compose up -d
 ```
+
 Default URL: `http://localhost:8081`
 
 ### 📦 Release Info
@@ -127,12 +148,14 @@ The application uses an H2 database by default, with the database file stored in
 ## Security
 
 The application implements standard Spring Security features:
+
 - Password encryption using BCrypt
 - Form-based authentication
 - Request path authorization
 - CSRF protection (disabled for webhook APIs for easier integration)
 
 ## Nginx Config
+
 ```
 server {
     server_name mock-api.autobot.site www.mock-api.autobot.site;
@@ -149,7 +172,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;  # Forward the Upgrade header
         proxy_set_header Connection 'upgrade';  # Forward the Connection header
-        proxy_set_header Referer $http_referer; 
+        proxy_set_header Referer $http_referer;
         proxy_hide_header Access-Control-Allow-Origin;
         add_header Access-Control-Allow-Origin * always;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -179,6 +202,40 @@ server {
 ## Author
 
 Developed by: nchuyen128@gmail.com FROM https://autobot.site
+
+## Github Codespaces
+
+- Nếu bạn dùng **SDKMAN**
+
+  ```bash
+  sdk list java
+
+  sdk use java 17.0.14-ms
+  ```
+
+- Kiểm tra phiên bản hiện tại
+  ```bash
+  java -version
+  javac -version
+  ```
+- Kiểm tra danh sách phiên bản đang có:
+  ```bash
+  ls -la /home/codespace/java/
+  ```
+- Export thủ công
+  ```bash
+  export JAVA_HOME=/home/codespace/java/17.0.14-ms
+  export PATH=$JAVA_HOME/bin:$PATH
+  ```
+- Tự động dùng JDK 17 mỗi lần mở Codespace
+
+  ```bash
+  echo 'export JAVA_HOME=/home/codespace/java/17.0.14-ms' >> ~/.bashrc
+  echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.bashrc
+
+  # Rồi chạy:
+  source ~/.bashrc
+  ```
 
 ---
 

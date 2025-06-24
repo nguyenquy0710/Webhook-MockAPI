@@ -245,7 +245,13 @@ public class ApiMockService {
 
             // Convert value to string if it's not null
             if (value != null) {
-                String valueStr = value instanceof Map ? objectMapper.writeValueAsString(value) : value.toString();
+                String valueStr;
+                try {
+                    valueStr = value instanceof Map ? objectMapper.writeValueAsString(value) : value.toString();
+                } catch (JsonProcessingException e) {
+                    log.error("Error serializing value for placeholder: {}", entry.getKey(), e);
+                    valueStr = value.toString(); // fallback to .toString() if serialization fails
+                }
                 raw = raw.replace(placeholder, valueStr);
             } else {
                 // If value is null, replace the placeholder with empty string or handle
