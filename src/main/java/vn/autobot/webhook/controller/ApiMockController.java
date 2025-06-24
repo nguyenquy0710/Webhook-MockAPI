@@ -99,8 +99,16 @@ public class ApiMockController {
         String finalRequestBody = requestBody;
         result.onCompletion(() -> {
             try {
-                ResponseEntity<?> response = (ResponseEntity<?>) result.getResult();
-                int status = response != null ? response.getStatusCodeValue() : 500;
+                Object resultObj = result.getResult();
+
+                int status;
+                if (resultObj instanceof ResponseEntity<?> response) {
+                    status = response.getStatusCodeValue();
+                } else {
+                    // Không phải ResponseEntity, có thể là exception → giả định lỗi
+                    status = 500;
+                }
+
                 requestLogService.logRequest(user, request, finalRequestBody, status, responseBody);
             } catch (Exception e) {
                 log.error("Error logging request", e);
