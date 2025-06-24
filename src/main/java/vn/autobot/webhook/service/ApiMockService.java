@@ -128,27 +128,56 @@ public class ApiMockService {
     public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig,
             Map<String, Object> requestContext) {
 
+        // Dùng requestContext an toàn
         Map<String, Object> finalRequestContext = requestContext != null ? requestContext : new HashMap<>();
 
-        DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>();
+        // Timeout mặc định là 10 giây (có thể điều chỉnh)
+        long timeoutMs = 10_000L;
 
+        // Tạo DeferredResult với timeout
+        DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>(timeoutMs);
+
+        // Xử lý khi timeout xảy ra
+        deferredResult.onTimeout(() -> {
+            log.warn("Request processing timed out");
+            deferredResult.setErrorResult(
+                    ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                            .body("Request timed out"));
+        });
+
+        // Xử lý khi có lỗi bất ngờ (ví dụ thread chết)
+        deferredResult.onError((Throwable t) -> {
+            log.error("Unexpected error during webhook processing", t);
+            deferredResult.setErrorResult(
+                    ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Internal error while processing webhook"));
+        });
+
+        // Xử lý delay nếu có
         Integer delay = apiConfig.getDelayMs() != null ? apiConfig.getDelayMs() : 0;
 
-        if (delay > 0) {
-            new Thread(() -> {
-                try {
+        Runnable task = () -> {
+            try {
+                if (delay > 0) {
                     Thread.sleep(delay);
-                    deferredResult.setResult(buildResponse(apiConfig, finalRequestContext));
-                } catch (InterruptedException e) {
-                    log.error("Delay interrupted", e);
-                    deferredResult.setErrorResult(
-                            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                    .body("Error processing webhook"));
                 }
-            }).start();
-        } else {
-            deferredResult.setResult(buildResponse(apiConfig, finalRequestContext));
-        }
+                deferredResult.setResult(buildResponse(apiConfig, finalRequestContext));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // khôi phục trạng thái interrupted
+                log.error("Delay interrupted", e);
+                deferredResult.setErrorResult(
+                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body("Interrupted while processing webhook"));
+            } catch (Exception e) {
+                log.error("Exception during webhook processing", e);
+                deferredResult.setErrorResult(
+                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body("Error processing webhook"));
+            }
+        };
+
+        // Khởi chạy xử lý trong thread riêng
+        new Thread(task).start();
 
         return deferredResult;
     }
