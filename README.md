@@ -226,13 +226,13 @@ Developed by: nchuyen128@gmail.com FROM https://autobot.site
   ```
 - Export thủ công
   ```bash
-  export JAVA_HOME=/home/codespace/java/17.0.14-ms
+  export JAVA_HOME=/home/codespace/java/17.0.15-ms
   export PATH=$JAVA_HOME/bin:$PATH
   ```
 - Tự động dùng JDK 17 mỗi lần mở Codespace
 
   ```bash
-  echo 'export JAVA_HOME=/home/codespace/java/17.0.14-ms' >> ~/.bashrc
+  echo 'export JAVA_HOME=/home/codespace/java/17.0.15-ms' >> ~/.bashrc
   echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.bashrc
 
   # Rồi chạy:
