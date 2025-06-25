@@ -1,4 +1,6 @@
-<!-- file: templates/fragments/variables/request-vars.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
 <div th:fragment="requestVars">
 
   <!-- Hướng dẫn context variables -->
@@ -132,3 +134,5 @@
 
   <!-- Accordion HTML for context variables -->
 </div>
+</body>
+</html>
