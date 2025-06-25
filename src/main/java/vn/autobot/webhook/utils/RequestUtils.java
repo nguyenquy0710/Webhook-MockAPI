@@ -5,13 +5,23 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
+
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Utility class for handling HTTP request-related operations.
  */
+@Slf4j
 public class RequestUtils {
 
   /**
@@ -152,7 +162,7 @@ public class RequestUtils {
    * @param statusCode The HTTP status code to include in the context.
    * @return The processed template string with variables replaced.
    */
-  private String applyTemplate(String template, HttpServletRequest request, Integer statusCode) {
+  public static String applyTemplate(String template, HttpServletRequest request, Integer statusCode) {
     if (request == null) {
       return template; // Return original template if request is null
     }
