@@ -292,15 +292,26 @@ public class ApiMockService {
     StringBuffer sb = new StringBuffer();
 
     while (matcher.find()) {
-      String expr = matcher.group(1); // e.g., headers.cookie
-      String[] parts = expr.split("\\.");
-      Object value = context.get(parts[0]);
+      try {
+        String expr = matcher.group(1); // e.g., headers.cookie
+        String[] parts = expr.split("\\.");
+        Object value = context.get(parts[0]);
 
-      for (int i = 1; i < parts.length && value instanceof Map; i++) {
-        value = ((Map<?, ?>) value).get(parts[i]);
+        for (int i = 1; i < parts.length && value instanceof Map; i++) {
+          value = ((Map<?, ?>) value).get(parts[i]);
+        }
+
+        // Nếu value là null hoặc không phải String thì vẫn đảm bảo không lỗi
+        String replacement = value != null ? value.toString() : "";
+        matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+
+        // matcher.appendReplacement(sb, Matcher.quoteReplacement(value != null ?
+        // value.toString() : ""));
+      } catch (Exception e) {
+        log.warn("Error processing template variable: {}", matcher.group(0), e);
+        // Nếu có lỗi, giữ nguyên biến trong template
+        matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
       }
-
-      matcher.appendReplacement(sb, Matcher.quoteReplacement(value != null ? value.toString() : ""));
     }
     matcher.appendTail(sb);
     return sb.toString();
