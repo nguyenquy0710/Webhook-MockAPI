@@ -13,12 +13,18 @@ import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.model.ApiConfig;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.repository.ApiConfigRepository;
+import vn.autobot.webhook.utils.RequestUtils;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -145,9 +151,15 @@ public class ApiMockService {
   }
 
   private ResponseEntity<Object> buildResponse(ApiConfig apiConfig) {
+    return buildResponse(apiConfig, null);
+  }
+
+  private ResponseEntity<Object> buildResponse(ApiConfig apiConfig, HttpServletRequest request) {
+    int statusCode = apiConfig.getStatusCode() != null ? apiConfig.getStatusCode() : 200;
     ResponseEntity.BodyBuilder responseBuilder = ResponseEntity
         .status(apiConfig.getStatusCode() != null ? apiConfig.getStatusCode() : 200);
 
+    // Parse response headers
     if (apiConfig.getResponseHeaders() != null && !apiConfig.getResponseHeaders().isEmpty()) {
       try {
         @SuppressWarnings("unchecked")
@@ -166,15 +178,37 @@ public class ApiMockService {
       responseBuilder.header("Content-Type", apiConfig.getContentType());
     }
 
+    // Build context for template replacement
+    Map<String, Object> context = RequestUtils.buildTemplateContext(request, statusCode);
+
+    // Replace template variables in responseBody (if it's a String)
     Object responseBody = apiConfig.getResponseBody();
-    if (apiConfig.getResponseBody() != null && apiConfig.getContentType() != null
-        && apiConfig.getContentType().contains("application/json")) {
-      try {
-        responseBody = objectMapper.readValue(apiConfig.getResponseBody(), Object.class);
-      } catch (JsonProcessingException e) {
-        log.warn("Could not parse JSON response body, returning as string", e);
-        responseBody = apiConfig.getResponseBody();
+    try {
+      String responseBodyStr = "{}";
+      if (responseBody instanceof String) {
+        responseBodyStr = (String) responseBody;
+      } else if (responseBody != null) {
+        // Convert non-string response body to JSON string
+        responseBodyStr = objectMapper.writeValueAsString(responseBody);
       }
+
+      // ✅ Replace variables in JSON string
+      String processedBody = applyTemplate(responseBodyStr, request, apiConfig.getStatusCode());
+
+      // Convert processed string back to JSON
+      responseBody = objectMapper.readValue(processedBody, Object.class);
+
+      for (Map.Entry<String, Object> entry : context.entrySet()) {
+        responseBodyStr = responseBodyStr.replace("{{" + entry.getKey() + "}}", entry.getValue().toString());
+      }
+      responseBody = responseBodyStr;
+
+    } catch (JsonProcessingException e) {
+      log.warn("Could not parse JSON response body, returning as string", e);
+      responseBody = apiConfig.getResponseBody(); // Fallback to original body
+    } catch (Exception e) {
+      log.error("Error replacing template variables in response body", e);
+      responseBody = apiConfig.getResponseBody(); // Fallback to original body
     }
 
     return responseBuilder.body(responseBody);
@@ -198,4 +232,45 @@ public class ApiMockService {
     dto.setDelayMs(apiConfig.getDelayMs());
     return dto;
   }
+
+  private String applyTemplate(String template, HttpServletRequest request, Integer statusCode) {
+    Map<String, Object> context = new HashMap<>();
+    context.put("status", statusCode != null ? statusCode : 200);
+    context.put("method", request.getMethod());
+    context.put("path", request.getRequestURI());
+
+    Map<String, String> headers = new HashMap<>();
+    Enumeration<String> headerNames = request.getHeaderNames();
+    while (headerNames.hasMoreElements()) {
+        String header = headerNames.nextElement();
+        headers.put(header, request.getHeader(header));
+    }
+    context.put("headers", headers);
+
+    Map<String, String> params = new HashMap<>();
+    Map<String, String[]> paramMap = request.getParameterMap();
+    for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
+        params.put(entry.getKey(), entry.getValue()[0]);
+    }
+    context.put("params", params);
+
+    Pattern pattern = Pattern.compile("\\{\\{([^}]+)}}");
+    Matcher matcher = pattern.matcher(template);
+    StringBuffer sb = new StringBuffer();
+
+    while (matcher.find()) {
+        String expr = matcher.group(1); // e.g., headers.cookie
+        String[] parts = expr.split("\\.");
+        Object value = context.get(parts[0]);
+        
+        for (int i = 1; i < parts.length && value instanceof Map; i++) {
+            value = ((Map<?, ?>) value).get(parts[i]);
+        }
+        
+        matcher.appendReplacement(sb, Matcher.quoteReplacement(value != null ? value.toString() : ""));
+    }
+    matcher.appendTail(sb);
+    return sb.toString();
+  }
+
 }
