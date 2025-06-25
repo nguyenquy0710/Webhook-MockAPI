@@ -225,18 +225,10 @@ public class ApiMockService {
       }
 
       // ✅ Replace variables in JSON string
-      String processedBody = applyTemplate(responseBodyStr, request, apiConfig.getStatusCode());
+      String processedBody = RequestUtils.applyTemplate(responseBodyStr, request, apiConfig.getStatusCode());
 
       // Convert processed string back to JSON
       responseBody = objectMapper.readValue(processedBody, Object.class);
-
-      for (Map.Entry<String, Object> entry : context.entrySet()) {
-        String key = entry.getKey();
-        Object rawValue = entry.getValue();
-        String value = rawValue != null ? rawValue.toString() : ""; // hoặc "null" hoặc giữ nguyên null
-        responseBodyStr = responseBodyStr.replace("{{" + key + "}}", value);
-      }
-      responseBody = responseBodyStr;
 
     } catch (JsonProcessingException e) {
       log.warn("Could not parse JSON response body, returning as string", e);
@@ -266,61 +258,6 @@ public class ApiMockService {
     dto.setResponseHeaders(apiConfig.getResponseHeaders());
     dto.setDelayMs(apiConfig.getDelayMs());
     return dto;
-  }
-
-  /**
-   * Applies a template to the request context, replacing variables in the
-   * template
-   * with values from the request.
-   *
-   * @param template   The template string containing variables to replace.
-   * @param request    The HttpServletRequest object containing request details.
-   * @param statusCode The HTTP status code to include in the context.
-   * @return The processed template string with variables replaced.
-   */
-  private String applyTemplate(String template, HttpServletRequest request, Integer statusCode) {
-    if (request == null) {
-      return template; // Return original template if request is null
-    }
-
-    // Tạo context chứa thông tin từ request
-    Map<String, Object> context = RequestUtils.extractRequestContext(request, statusCode);
-
-    // Thay thế biến trong template: {{headers.User-Agent}}, {{params.name}}, ...
-    Pattern pattern = Pattern.compile("\\{\\{([^}]+)}}");
-    Matcher matcher = pattern.matcher(template);
-    StringBuffer sb = new StringBuffer();
-
-    while (matcher.find()) {
-      try {
-        String expr = matcher.group(1); // e.g., headers.cookie
-        String[] parts = expr.split("\\.", -1); // dùng -1 để giữ mọi phần
-        Object value = context.get(parts[0]);
-
-        for (int i = 1; i < parts.length && value instanceof Map; i++) {
-          value = ((Map<?, ?>) value).get(parts[i]);
-        }
-
-        // Nếu value là null hoặc không phải String thì vẫn đảm bảo không lỗi
-        String replacement = value != null ? value.toString() : "";
-        log.info("Processing template variable: {} -> {}", expr, replacement);
-        matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
-
-        // matcher.appendReplacement(sb, Matcher.quoteReplacement(value != null ?
-        // value.toString() : ""));
-      } catch (Exception e) {
-        log.warn("Error processing template variable: {}", matcher.group(0), e);
-        // Nếu có lỗi, giữ nguyên biến trong template
-        matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
-      }
-    }
-
-    matcher.appendTail(sb);
-    String rendered = sb.toString();
-    log.info("Rendered template: {}", rendered);
-
-    // Trả về chuỗi đã render
-    return rendered;
   }
 
 }
