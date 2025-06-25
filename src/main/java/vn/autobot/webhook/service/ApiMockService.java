@@ -211,7 +211,7 @@ public class ApiMockService {
     }
 
     // Build context for template replacement
-    Map<String, Object> context = RequestUtils.buildTemplateContext(request, statusCode);
+    Map<String, Object> context = RequestUtils.extractRequestContext(request, statusCode);
 
     // Replace template variables in responseBody (if it's a String)
     Object responseBody = apiConfig.getResponseBody();
@@ -276,30 +276,14 @@ public class ApiMockService {
    * @return The processed template string with variables replaced.
    */
   private String applyTemplate(String template, HttpServletRequest request, Integer statusCode) {
-    Map<String, Object> context = new HashMap<>();
     if (request == null) {
       return template; // Return original template if request is null
     }
 
-    context.put("status", statusCode != null ? statusCode : 200);
-    context.put("method", request.getMethod());
-    context.put("path", request.getRequestURI());
+    // Tạo context chứa thông tin từ request
+    Map<String, Object> context = RequestUtils.extractRequestContext(request, statusCode);
 
-    Map<String, String> headers = new HashMap<>();
-    Enumeration<String> headerNames = request.getHeaderNames();
-    while (headerNames.hasMoreElements()) {
-      String header = headerNames.nextElement();
-      headers.put(header, request.getHeader(header));
-    }
-    context.put("headers", headers);
-
-    Map<String, String> params = new HashMap<>();
-    Map<String, String[]> paramMap = request.getParameterMap();
-    for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
-      params.put(entry.getKey(), entry.getValue()[0]);
-    }
-    context.put("params", params);
-
+    // Thay thế biến trong template: {{headers.User-Agent}}, {{params.name}}, ...
     Pattern pattern = Pattern.compile("\\{\\{([^}]+)}}");
     Matcher matcher = pattern.matcher(template);
     StringBuffer sb = new StringBuffer();
