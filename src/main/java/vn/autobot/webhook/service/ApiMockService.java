@@ -301,6 +301,8 @@ public class ApiMockService {
           value = ((Map<?, ?>) value).get(parts[i]);
         }
 
+        log.info("Processing template variable: {} -> {}", expr, value);
+
         // Nếu value là null hoặc không phải String thì vẫn đảm bảo không lỗi
         String replacement = value != null ? value.toString() : "";
         matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
