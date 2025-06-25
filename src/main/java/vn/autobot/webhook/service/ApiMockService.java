@@ -126,7 +126,25 @@ public class ApiMockService {
     }
   }
 
+  /**
+   * Processes a webhook request based on the provided ApiConfig.
+   *
+   * @param apiConfig The API configuration to process.
+   * @return A DeferredResult containing the response entity.
+   */
   public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig) {
+    return processWebhook(apiConfig, null);
+  }
+
+  /**
+   * Processes a webhook request based on the provided ApiConfig and
+   * HttpServletRequest.
+   *
+   * @param apiConfig The API configuration to process.
+   * @param request   The HttpServletRequest to use for context.
+   * @return A DeferredResult containing the response entity.
+   */
+  public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig, HttpServletRequest request) {
     DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>();
 
     Integer delay = apiConfig.getDelayMs() != null ? apiConfig.getDelayMs() : 0;
@@ -135,7 +153,7 @@ public class ApiMockService {
       new Thread(() -> {
         try {
           Thread.sleep(delay);
-          deferredResult.setResult(buildResponse(apiConfig));
+          deferredResult.setResult(buildResponse(apiConfig, request));
         } catch (InterruptedException e) {
           log.error("Delay interrupted", e);
           deferredResult.setErrorResult(
@@ -144,16 +162,29 @@ public class ApiMockService {
         }
       }).start();
     } else {
-      deferredResult.setResult(buildResponse(apiConfig));
+      deferredResult.setResult(buildResponse(apiConfig, request));
     }
 
     return deferredResult;
   }
 
+  /**
+   * Builds a ResponseEntity based on the ApiConfig.
+   *
+   * @param apiConfig The API configuration to build the response from.
+   * @return A ResponseEntity containing the response body and headers.
+   */
   private ResponseEntity<Object> buildResponse(ApiConfig apiConfig) {
     return buildResponse(apiConfig, null);
   }
 
+  /**
+   * Builds a ResponseEntity based on the ApiConfig and HttpServletRequest.
+   *
+   * @param apiConfig The API configuration to build the response from.
+   * @param request   The HttpServletRequest to use for context.
+   * @return A ResponseEntity containing the response body and headers.
+   */
   private ResponseEntity<Object> buildResponse(ApiConfig apiConfig, HttpServletRequest request) {
     int statusCode = apiConfig.getStatusCode() != null ? apiConfig.getStatusCode() : 200;
     ResponseEntity.BodyBuilder responseBuilder = ResponseEntity
@@ -242,15 +273,15 @@ public class ApiMockService {
     Map<String, String> headers = new HashMap<>();
     Enumeration<String> headerNames = request.getHeaderNames();
     while (headerNames.hasMoreElements()) {
-        String header = headerNames.nextElement();
-        headers.put(header, request.getHeader(header));
+      String header = headerNames.nextElement();
+      headers.put(header, request.getHeader(header));
     }
     context.put("headers", headers);
 
     Map<String, String> params = new HashMap<>();
     Map<String, String[]> paramMap = request.getParameterMap();
     for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
-        params.put(entry.getKey(), entry.getValue()[0]);
+      params.put(entry.getKey(), entry.getValue()[0]);
     }
     context.put("params", params);
 
@@ -259,15 +290,15 @@ public class ApiMockService {
     StringBuffer sb = new StringBuffer();
 
     while (matcher.find()) {
-        String expr = matcher.group(1); // e.g., headers.cookie
-        String[] parts = expr.split("\\.");
-        Object value = context.get(parts[0]);
-        
-        for (int i = 1; i < parts.length && value instanceof Map; i++) {
-            value = ((Map<?, ?>) value).get(parts[i]);
-        }
-        
-        matcher.appendReplacement(sb, Matcher.quoteReplacement(value != null ? value.toString() : ""));
+      String expr = matcher.group(1); // e.g., headers.cookie
+      String[] parts = expr.split("\\.");
+      Object value = context.get(parts[0]);
+
+      for (int i = 1; i < parts.length && value instanceof Map; i++) {
+        value = ((Map<?, ?>) value).get(parts[i]);
+      }
+
+      matcher.appendReplacement(sb, Matcher.quoteReplacement(value != null ? value.toString() : ""));
     }
     matcher.appendTail(sb);
     return sb.toString();

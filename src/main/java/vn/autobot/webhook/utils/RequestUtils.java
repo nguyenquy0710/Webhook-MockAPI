@@ -3,10 +3,24 @@ package vn.autobot.webhook.utils;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
+/**
+ * Utility class for handling HTTP request-related operations.
+ */
 public class RequestUtils {
 
+  /**
+   * Builds a context map for template rendering based on the HTTP request.
+   *
+   * @param request    the HttpServletRequest object
+   * @param statusCode the HTTP status code to include in the context
+   * @return a map containing request details suitable for template rendering
+   */
   public static Map<String, Object> buildTemplateContext(HttpServletRequest request, int statusCode) {
     Map<String, Object> context = new HashMap<>();
+
+    if (request == null) {
+      return context;
+    }
 
     context.put("status", statusCode);
     context.put("method", request.getMethod());
