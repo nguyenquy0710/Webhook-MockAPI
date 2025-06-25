@@ -231,7 +231,10 @@ public class ApiMockService {
       responseBody = objectMapper.readValue(processedBody, Object.class);
 
       for (Map.Entry<String, Object> entry : context.entrySet()) {
-        responseBodyStr = responseBodyStr.replace("{{" + entry.getKey() + "}}", entry.getValue().toString());
+        String key = entry.getKey();
+        Object rawValue = entry.getValue();
+        String value = rawValue != null ? rawValue.toString() : ""; // hoặc "null" hoặc giữ nguyên null
+        responseBodyStr = responseBodyStr.replace("{{" + key + "}}", value);
       }
       responseBody = responseBodyStr;
 
