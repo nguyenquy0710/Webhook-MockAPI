@@ -1,4 +1,4 @@
-<!-- fragments/variables/request-vars.html -->
+<!-- file: templates/fragments/variables/request-vars.html -->
 <div th:fragment="requestVars">
 
   <!-- Hướng dẫn context variables -->

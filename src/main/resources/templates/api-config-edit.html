@@ -75,7 +75,8 @@
             </div>
 
             <!-- Include the context variable guide fragment -->
-            <div th:replace="fragments/variables/request-vars :: requestVars"></div>
+            <!-- <div th:replace="fragments/variables/request-vars :: requestVars"></div> -->
+            <div th:insert="fragments/variables/request-vars :: requestVars"></div>
 
             <div class="mb-3">
               <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
