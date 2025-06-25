@@ -1,208 +1,221 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head('API Configurations')">
+
+  <head th:replace="fragments/header :: head('API Configurations')">
     <title>API Configurations - Mock Webhook</title>
-</head>
-<body>
-<div th:replace="fragments/header :: header"></div>
+  </head>
 
-<div class="container">
-    <div th:replace="fragments/navigation :: navigation"></div>
+  <body>
+    <div th:replace="fragments/header :: header"></div>
 
-    <h2 class="mb-4">API Configurations</h2>
+    <div class="container">
+      <div th:replace="fragments/navigation :: navigation"></div>
 
-    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.saved}">
+      <h2 class="mb-4">API Configurations</h2>
+
+      <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.saved}">
         API configuration saved successfully!
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+      </div>
 
-    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.deleted}">
+      <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.deleted}">
         API configuration deleted successfully!
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+      </div>
 
-    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.updated}">
+      <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.updated}">
         API configuration updated successfully!
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+      </div>
 
-    <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${errorMessage}">
+      <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${errorMessage}">
         <span th:text="${errorMessage}">Error message</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+      </div>
 
-    <!-- Create New API Form -->
-    <div class="card mb-4">
+      <!-- Create New API Form -->
+      <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Create New API Configuration</h5>
-            <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#newApiForm" aria-expanded="false" aria-controls="newApiForm">
-                <i class="fas fa-plus me-1"></i> New API
-            </button>
+          <h5 class="mb-0">Create New API Configuration</h5>
+          <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#newApiForm" aria-expanded="false"
+            aria-controls="newApiForm">
+            <i class="fas fa-plus me-1"></i> New API
+          </button>
         </div>
         <div class="collapse" id="newApiForm">
-            <div class="card-body">
-                <form th:action="@{/api-configs}" th:object="${newApiConfig}" method="post">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="path" class="form-label">Path*</label>
-                            <div class="input-group">
-                                <span class="input-group-text" th:text="${'/api/@' + username}"></span>
-                                <input type="text" class="form-control" id="path" th:field="*{path}" required placeholder="/hello">
-                            </div>
-                            <small class="text-muted">The path to your API endpoint (e.g., /hello, /users/123)</small>
-                            <div class="text-danger" th:if="${#fields.hasErrors('path')}" th:errors="*{path}"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="method" class="form-label">HTTP Method*</label>
-                            <select class="form-select" id="method" th:field="*{method}" required>
-                                <option value="GET">GET</option>
-                                <option value="POST">POST</option>
-                                <option value="PUT">PUT</option>
-                                <option value="DELETE">DELETE</option>
-                                <option value="PATCH">PATCH</option>
-                                <option value="OPTIONS">OPTIONS</option>
-                                <option value="HEAD">HEAD</option>
-                            </select>
-                            <div class="text-danger" th:if="${#fields.hasErrors('method')}" th:errors="*{method}"></div>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="statusCode" class="form-label">Status Code*</label>
-                            <input type="number" class="form-control" id="statusCode" th:field="*{statusCode}" required min="100" max="599" value="200">
-                            <small class="text-muted">HTTP status code for the response (e.g., 200, 201, 400, 404, 500)</small>
-                            <div class="text-danger" th:if="${#fields.hasErrors('statusCode')}" th:errors="*{statusCode}"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="contentType" class="form-label">Content Type*</label>
-                            <select class="form-select" id="contentType" th:field="*{contentType}" required>
-                                <option value="application/json">application/json</option>
-                                <option value="text/plain">text/plain</option>
-                                <option value="text/html">text/html</option>
-                                <option value="application/xml">application/xml</option>
-                                <option value="application/octet-stream">application/octet-stream</option>
-                            </select>
-                            <div class="text-danger" th:if="${#fields.hasErrors('contentType')}" th:errors="*{contentType}"></div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="responseBody" class="form-label">Response Body</label>
-                        <textarea class="form-control" id="responseBody" th:field="*{responseBody}" rows="5" placeholder='{"message": "Hello World!"}'></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
-                        <textarea class="form-control" id="responseHeaders" th:field="*{responseHeaders}" rows="3" placeholder='{"X-Custom-Header": "Custom Value"}'></textarea>
-                        <small class="text-muted">Enter response headers in JSON format</small>
-                    </div>
-                    <div class="mb-3">
-                        <label for="delayMs" class="form-label">Response Delay (ms)</label>
-                        <input type="number" class="form-control" id="delayMs" th:field="*{delayMs}" min="0" max="60000" value="0">
-                        <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
-                        <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create API</button>
-                </form>
-            </div>
-        </div>
-    </div>
+          <div class="card-body">
+            <form th:action="@{/api-configs}" th:object="${newApiConfig}" method="post">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="path" class="form-label">Path*</label>
+                  <div class="input-group">
+                    <span class="input-group-text" th:text="${'/api/@' + username}"></span>
+                    <input type="text" class="form-control" id="path" th:field="*{path}" required placeholder="/hello">
+                  </div>
+                  <small class="text-muted">The path to your API endpoint (e.g., /hello, /users/123)</small>
+                  <div class="text-danger" th:if="${#fields.hasErrors('path')}" th:errors="*{path}"></div>
+                </div>
+                <div class="col-md-6">
+                  <label for="method" class="form-label">HTTP Method*</label>
+                  <select class="form-select" id="method" th:field="*{method}" required>
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="OPTIONS">OPTIONS</option>
+                    <option value="HEAD">HEAD</option>
+                  </select>
+                  <div class="text-danger" th:if="${#fields.hasErrors('method')}" th:errors="*{method}"></div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="statusCode" class="form-label">Status Code*</label>
+                  <input type="number" class="form-control" id="statusCode" th:field="*{statusCode}" required min="100" max="599"
+                    value="200">
+                  <small class="text-muted">HTTP status code for the response (e.g., 200, 201, 400, 404, 500)</small>
+                  <div class="text-danger" th:if="${#fields.hasErrors('statusCode')}" th:errors="*{statusCode}"></div>
+                </div>
+                <div class="col-md-6">
+                  <label for="contentType" class="form-label">Content Type*</label>
+                  <select class="form-select" id="contentType" th:field="*{contentType}" required>
+                    <option value="application/json">application/json</option>
+                    <option value="text/plain">text/plain</option>
+                    <option value="text/html">text/html</option>
+                    <option value="application/xml">application/xml</option>
+                    <option value="application/octet-stream">application/octet-stream</option>
+                  </select>
+                  <div class="text-danger" th:if="${#fields.hasErrors('contentType')}" th:errors="*{contentType}"></div>
+                </div>
+              </div>
 
-    <!-- API Configurations List -->
-    <div class="card">
+              <!-- Response Body -->
+              <div class="mb-3">
+                <label for="responseBody" class="form-label">Response Body</label>
+                <textarea class="form-control" id="responseBody" th:field="*{responseBody}" rows="5"
+                  placeholder='{"message": "Hello World!"}'></textarea>
+              </div>
+
+              <!-- Include the context variable guide fragment -->
+              <div th:insert="fragments/request-vars :: requestVars"></div>
+
+              <div class="mb-3">
+                <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
+                <textarea class="form-control" id="responseHeaders" th:field="*{responseHeaders}" rows="3"
+                  placeholder='{"X-Custom-Header": "Custom Value"}'></textarea>
+                <small class="text-muted">Enter response headers in JSON format</small>
+              </div>
+              <div class="mb-3">
+                <label for="delayMs" class="form-label">Response Delay (ms)</label>
+                <input type="number" class="form-control" id="delayMs" th:field="*{delayMs}" min="0" max="60000" value="0">
+                <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
+                <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
+              </div>
+              <button type="submit" class="btn btn-primary">Create API</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Configurations List -->
+      <div class="card">
         <div class="card-header">
-            <h5>Your API Configurations</h5>
+          <h5>Your API Configurations</h5>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>Path</th>
-                        <th>Method</th>
-                        <th>Status</th>
-                        <th>Content Type</th>
-                        <th>Delay</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:if="${apiConfigs.empty}">
-                        <td colspan="6" class="text-center">No API configurations found. Create one above.</td>
-                    </tr>
-                    <tr th:each="config : ${apiConfigs}">
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <code th:text="${'/api/@' + username + config.path}"></code>
-                                <button class="btn btn-sm btn-outline-secondary ms-2 copy-endpoint-btn"
-                                        th:attr="data-endpoint=${domain + '/api/@' + username + config.path},
-                                                data-method=${config.method}"
-                                        title="Copy full endpoint URL">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-primary" th:text="${config.method}">GET</span></td>
-                        <td>
-                            <span th:class="${'badge ' + (config.statusCode >= 200 && config.statusCode < 300 ? 'bg-success' : (config.statusCode >= 400 ? 'bg-danger' : 'bg-warning'))}"
-                                  th:text="${config.statusCode}">200</span>
-                        </td>
-                        <td><span class="badge bg-secondary" th:text="${config.contentType}">application/json</span></td>
-                        <td th:text="${config.delayMs + ' ms'}">0 ms</td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a th:href="@{/api-configs/{id}(id=${config.id})}" class="btn btn-outline-primary">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <button type="button" class="btn btn-outline-danger"
-                                        th:attr="onclick='confirmDelete(' + ${config.id} + ', \'' + ${config.path} + '\', \'' + ${config.method} + '\')'">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Path</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Content Type</th>
+                  <th>Delay</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:if="${apiConfigs.empty}">
+                  <td colspan="6" class="text-center">No API configurations found. Create one above.</td>
+                </tr>
+                <tr th:each="config : ${apiConfigs}">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <code th:text="${'/api/@' + username + config.path}"></code>
+                      <button class="btn btn-sm btn-outline-secondary ms-2 copy-endpoint-btn" th:attr="data-endpoint=${domain + '/api/@' + username + config.path},
+                                                data-method=${config.method}" title="Copy full endpoint URL">
+                        <i class="fas fa-copy"></i>
+                      </button>
+                    </div>
+                  </td>
+                  <td><span class="badge bg-primary" th:text="${config.method}">GET</span></td>
+                  <td>
+                    <span
+                      th:class="${'badge ' + (config.statusCode >= 200 && config.statusCode < 300 ? 'bg-success' : (config.statusCode >= 400 ? 'bg-danger' : 'bg-warning'))}"
+                      th:text="${config.statusCode}">200</span>
+                  </td>
+                  <td><span class="badge bg-secondary" th:text="${config.contentType}">application/json</span></td>
+                  <td th:text="${config.delayMs + ' ms'}">0 ms</td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <a th:href="@{/api-configs/{id}(id=${config.id})}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit
+                      </a>
+                      <button type="button" class="btn btn-outline-danger"
+                        th:attr="onclick='confirmDelete(' + ${config.id} + ', \'' + ${config.path} + '\', \'' + ${config.method} + '\')'">
+                        <i class="fas fa-trash"></i> Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
+
+      <!-- Copy Success Toast Notification -->
+      <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+        <div id="copyToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive"
+          aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="fas fa-check-circle me-2"></i> <span id="copyToastMessage">Endpoint URL copied to clipboard!</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Copy Success Toast Notification -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
-        <div id="copyToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-check-circle me-2"></i> <span id="copyToastMessage">Endpoint URL copied to clipboard!</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete the API configuration for
-                <span id="deleteMethod" class="fw-bold"></span>
-                <span id="deletePath" class="fw-bold"></span>?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteForm" method="post">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete the API configuration for
+            <span id="deleteMethod" class="fw-bold"></span>
+            <span id="deletePath" class="fw-bold"></span>?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <form id="deleteForm" method="post">
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="fragments/footer :: footer"></div>
 
-<script th:src="@{/js/api-config.js}"></script>
-</body>
+    <script th:src="@{/js/api-config.js}"></script>
+  </body>
+
 </html>
