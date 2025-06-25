@@ -1,0 +1,10 @@
+# Custom Dictionary Words
+bitnami
+changeme
+cpus
+FLUSHDB
+isready
+minipc
+ovpn
+POSTGRESDB
+sysctls
