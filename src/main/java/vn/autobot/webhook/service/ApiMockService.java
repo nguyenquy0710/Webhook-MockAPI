@@ -294,17 +294,16 @@ public class ApiMockService {
     while (matcher.find()) {
       try {
         String expr = matcher.group(1); // e.g., headers.cookie
-        String[] parts = expr.split("\\.");
+        String[] parts = expr.split("\\.", -1); // dùng -1 để giữ mọi phần
         Object value = context.get(parts[0]);
 
         for (int i = 1; i < parts.length && value instanceof Map; i++) {
           value = ((Map<?, ?>) value).get(parts[i]);
         }
 
-        log.info("Processing template variable: {} -> {}", expr, value);
-
         // Nếu value là null hoặc không phải String thì vẫn đảm bảo không lỗi
         String replacement = value != null ? value.toString() : "";
+        log.info("Processing template variable: {} -> {}", expr, replacement);
         matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
 
         // matcher.appendReplacement(sb, Matcher.quoteReplacement(value != null ?
@@ -315,8 +314,13 @@ public class ApiMockService {
         matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
       }
     }
+
     matcher.appendTail(sb);
-    return sb.toString();
+    String rendered = sb.toString();
+    log.info("Rendered template: {}", rendered);
+
+    // Trả về chuỗi đã render
+    return rendered;
   }
 
 }
