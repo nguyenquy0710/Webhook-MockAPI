@@ -1,0 +1,35 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "files.eol": "\n",
+    "files.exclude": {
+      "**/.vs": true, // .NET-specific (Visual Studio folder)
+      "**/.svn": true, // SVN folders (any language)
+      "**/.git": true, // Git folders
+      "**/.DS_Store": true, // macOS system file
+      "**/packages": true, // .NET: NuGet packages or node packages
+      "**/node_modules": true, // JS/TS: Node modules
+      "**/__pycache__": true, // Python cache
+      "**/.venv": true, // Python virtual environment
+      "**/env": true, // Python env (alt name)
+      "**/bin": true, // .NET/Python: Build output
+      "**/obj": true, // .NET: Intermediate build output
+      "**/$RECYCLE.BIN": true, // Windows trash folder
+      "**/System Volume Information": true, // Windows system folder
+      "**/desktop.ini": true,
+      "**/Thumbs.db": true
+    },
+    "cSpell.words": [
+      "venv",
+      "pycache"
+    ],
+    // Some other necessary configurations for your *.code-workspace
+    "java.compile.nullAnalysis.mode": "automatic"
+  }
+}

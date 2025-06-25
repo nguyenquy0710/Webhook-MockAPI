@@ -30,4 +30,9 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+# .vscode/
+
+
+*.db
+*.db-journal
+*.log
