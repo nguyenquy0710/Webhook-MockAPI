@@ -1,10 +1,19 @@
 # Custom Dictionary Words
+autobot
 bitnami
 changeme
 cpus
+Djava
 FLUSHDB
 isready
 minipc
+mvnw
+ooxml
 ovpn
 POSTGRESDB
+projectlombok
+springframework
+springsecurity
 sysctls
+Thymeleaf
+urandom

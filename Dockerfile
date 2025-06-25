@@ -1,5 +1,6 @@
 # FROM openjdk:17-jdk-slim
-FROM openjdk:17-jdk
+# FROM openjdk:17-jdk
+FROM openjdk:25-ea-17-jdk
 
 # Maintainer information
 LABEL maintainer="Nguyen Quy <quy.nh@nhquydev.net>"
