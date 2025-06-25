@@ -1,0 +1,57 @@
+<div th:fragment="systemVars">
+
+  <div class="accordion mt-4" id="systemVariablesAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingSystemVars">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSystemVars"
+          aria-expanded="false" aria-controls="collapseSystemVars">
+          Available System Variables
+        </button>
+      </h2>
+      <div id="collapseSystemVars" class="accordion-collapse collapse" aria-labelledby="headingSystemVars"
+        data-bs-parent="#systemVariablesAccordion">
+        <div class="accordion-body">
+          <p>You can also use the following system-level variables in your response body or headers:</p>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Variable</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>${timestamp}</td>
+                  <td>Current timestamp in ISO-8601 format</td>
+                </tr>
+                <tr>
+                  <td>${uuid}</td>
+                  <td>Randomly generated UUID</td>
+                </tr>
+                <tr>
+                  <td>${now}</td>
+                  <td>Current local datetime</td>
+                </tr>
+                <tr>
+                  <td>${username}</td>
+                  <td>Username of the logged-in user (if applicable)</td>
+                </tr>
+                <tr>
+                  <td>${env}</td>
+                  <td>Application environment (e.g. dev, staging, prod)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-3 mb-0"><strong>Example usage:</strong></p>
+          <pre><code>{
+  "id": "${uuid}",
+  "createdAt": "${timestamp}"
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

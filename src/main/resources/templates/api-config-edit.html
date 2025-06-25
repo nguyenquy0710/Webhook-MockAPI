@@ -1,94 +1,103 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head('Edit API Configuration')">
+
+  <head th:replace="fragments/header :: head('Edit API Configuration')">
     <title>Edit API Configuration - Mock Webhook</title>
-</head>
-<body>
-<div th:replace="fragments/header :: header"></div>
+  </head>
 
-<div class="container">
-    <div th:replace="fragments/navigation :: navigation"></div>
+  <body>
+    <div th:replace="fragments/header :: header"></div>
 
-    <h2 class="mb-4">Edit API Configuration</h2>
+    <div class="container">
+      <div th:replace="fragments/navigation :: navigation"></div>
 
-    <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${errorMessage}">
+      <h2 class="mb-4">Edit API Configuration</h2>
+
+      <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${errorMessage}">
         <span th:text="${errorMessage}">Error message</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+      </div>
 
-    <div class="card">
+      <div class="card">
         <div class="card-header">
-            <h5>Update API Configuration</h5>
+          <h5>Update API Configuration</h5>
         </div>
         <div class="card-body">
-            <form th:action="@{/api-configs/{id}(id=${apiConfig.id})}" th:object="${apiConfig}" method="post">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="path" class="form-label">Path*</label>
-                        <div class="input-group">
-                            <span class="input-group-text" th:text="${'/api/@' + username}"></span>
-                            <input type="text" class="form-control" id="path" th:field="*{path}" required>
-                        </div>
-                        <small class="text-muted">The path to your API endpoint</small>
-                        <div class="text-danger" th:if="${#fields.hasErrors('path')}" th:errors="*{path}"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="method" class="form-label">HTTP Method*</label>
-                        <select class="form-select" id="method" th:field="*{method}" required>
-                            <option value="GET">GET</option>
-                            <option value="POST">POST</option>
-                            <option value="PUT">PUT</option>
-                            <option value="DELETE">DELETE</option>
-                            <option value="PATCH">PATCH</option>
-                            <option value="OPTIONS">OPTIONS</option>
-                            <option value="HEAD">HEAD</option>
-                        </select>
-                        <div class="text-danger" th:if="${#fields.hasErrors('method')}" th:errors="*{method}"></div>
-                    </div>
+          <form th:action="@{/api-configs/{id}(id=${apiConfig.id})}" th:object="${apiConfig}" method="post">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="path" class="form-label">Path*</label>
+                <div class="input-group">
+                  <span class="input-group-text" th:text="${'/api/@' + username}"></span>
+                  <input type="text" class="form-control" id="path" th:field="*{path}" required>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="statusCode" class="form-label">Status Code*</label>
-                        <input type="number" class="form-control" id="statusCode" th:field="*{statusCode}" required min="100" max="599">
-                        <small class="text-muted">HTTP status code for the response</small>
-                        <div class="text-danger" th:if="${#fields.hasErrors('statusCode')}" th:errors="*{statusCode}"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="contentType" class="form-label">Content Type*</label>
-                        <select class="form-select" id="contentType" th:field="*{contentType}" required>
-                            <option value="application/json">application/json</option>
-                            <option value="text/plain">text/plain</option>
-                            <option value="text/html">text/html</option>
-                            <option value="application/xml">application/xml</option>
-                            <option value="application/octet-stream">application/octet-stream</option>
-                        </select>
-                        <div class="text-danger" th:if="${#fields.hasErrors('contentType')}" th:errors="*{contentType}"></div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="responseBody" class="form-label">Response Body</label>
-                    <textarea class="form-control" id="responseBody" th:field="*{responseBody}" rows="5"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
-                    <textarea class="form-control" id="responseHeaders" th:field="*{responseHeaders}" rows="3"></textarea>
-                    <small class="text-muted">Enter response headers in JSON format</small>
-                </div>
-                <div class="mb-3">
-                    <label for="delayMs" class="form-label">Response Delay (ms)</label>
-                    <input type="number" class="form-control" id="delayMs" th:field="*{delayMs}" min="0" max="60000">
-                    <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
-                    <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
-                </div>
-                <div>
-                    <a th:href="@{/api-configs}" class="btn btn-secondary me-2">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Update API</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+                <small class="text-muted">The path to your API endpoint</small>
+                <div class="text-danger" th:if="${#fields.hasErrors('path')}" th:errors="*{path}"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="method" class="form-label">HTTP Method*</label>
+                <select class="form-select" id="method" th:field="*{method}" required>
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
+                  <option value="DELETE">DELETE</option>
+                  <option value="PATCH">PATCH</option>
+                  <option value="OPTIONS">OPTIONS</option>
+                  <option value="HEAD">HEAD</option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('method')}" th:errors="*{method}"></div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="statusCode" class="form-label">Status Code*</label>
+                <input type="number" class="form-control" id="statusCode" th:field="*{statusCode}" required min="100" max="599">
+                <small class="text-muted">HTTP status code for the response</small>
+                <div class="text-danger" th:if="${#fields.hasErrors('statusCode')}" th:errors="*{statusCode}"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="contentType" class="form-label">Content Type*</label>
+                <select class="form-select" id="contentType" th:field="*{contentType}" required>
+                  <option value="application/json">application/json</option>
+                  <option value="text/plain">text/plain</option>
+                  <option value="text/html">text/html</option>
+                  <option value="application/xml">application/xml</option>
+                  <option value="application/octet-stream">application/octet-stream</option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('contentType')}" th:errors="*{contentType}"></div>
+              </div>
+            </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-</body>
+            <!-- Response Body -->
+            <div class="mb-3">
+              <label for="responseBody" class="form-label">Response Body</label>
+              <textarea class="form-control" id="responseBody" th:field="*{responseBody}" rows="5"></textarea>
+            </div>
+
+            <!-- Include the context variable guide fragment -->
+            <div th:replace="fragments/variables/request-vars :: requestVars"></div>
+
+            <div class="mb-3">
+              <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
+              <textarea class="form-control" id="responseHeaders" th:field="*{responseHeaders}" rows="3"></textarea>
+              <small class="text-muted">Enter response headers in JSON format</small>
+            </div>
+            <div class="mb-3">
+              <label for="delayMs" class="form-label">Response Delay (ms)</label>
+              <input type="number" class="form-control" id="delayMs" th:field="*{delayMs}" min="0" max="60000">
+              <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
+              <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
+            </div>
+            <div>
+              <a th:href="@{/api-configs}" class="btn btn-secondary me-2">Cancel</a>
+              <button type="submit" class="btn btn-primary">Update API</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+  </body>
+
 </html>
