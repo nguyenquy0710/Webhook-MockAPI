@@ -132,9 +132,10 @@ public class ApiMockService {
    * @param apiConfig The API configuration to process.
    * @return A DeferredResult containing the response entity.
    */
-  public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig) {
-    return processWebhook(apiConfig, null);
-  }
+  // public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig
+  // apiConfig) {
+  // return processWebhook(apiConfig, null);
+  // }
 
   /**
    * Processes a webhook request based on the provided ApiConfig and
@@ -174,9 +175,9 @@ public class ApiMockService {
    * @param apiConfig The API configuration to build the response from.
    * @return A ResponseEntity containing the response body and headers.
    */
-  private ResponseEntity<Object> buildResponse(ApiConfig apiConfig) {
-    return buildResponse(apiConfig, null);
-  }
+  // private ResponseEntity<Object> buildResponse(ApiConfig apiConfig) {
+  // return buildResponse(apiConfig, null);
+  // }
 
   /**
    * Builds a ResponseEntity based on the ApiConfig and HttpServletRequest.
@@ -264,8 +265,22 @@ public class ApiMockService {
     return dto;
   }
 
+  /**
+   * Applies a template to the request context, replacing variables in the
+   * template
+   * with values from the request.
+   *
+   * @param template   The template string containing variables to replace.
+   * @param request    The HttpServletRequest object containing request details.
+   * @param statusCode The HTTP status code to include in the context.
+   * @return The processed template string with variables replaced.
+   */
   private String applyTemplate(String template, HttpServletRequest request, Integer statusCode) {
     Map<String, Object> context = new HashMap<>();
+    if (request == null) {
+      return template; // Return original template if request is null
+    }
+
     context.put("status", statusCode != null ? statusCode : 200);
     context.put("method", request.getMethod());
     context.put("path", request.getRequestURI());
