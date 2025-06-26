@@ -187,7 +187,7 @@ public class RequestUtils {
 
         // Nếu value là null hoặc không phải String thì vẫn đảm bảo không lỗi
         String replacement = value != null ? value.toString() : "";
-        log.info("Processing template variable: {} -> {}", expr, replacement);
+        // log.info("Processing template variable: {} -> {}", expr, replacement);
         matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
 
         // matcher.appendReplacement(sb, Matcher.quoteReplacement(value != null ?
@@ -201,7 +201,7 @@ public class RequestUtils {
 
     matcher.appendTail(sb);
     String rendered = sb.toString();
-    log.info("Rendered template: {} -> {}", template, rendered);
+    // log.info("Rendered template: {} -> {}", template, rendered);
 
     // Trả về chuỗi đã render
     return rendered;

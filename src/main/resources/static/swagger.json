@@ -1,0 +1,100 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Logs API",
+    "description": "API để truy xuất và đếm log theo người dùng.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://mock-api.quyit.id.vn",
+      "description": "Mock Server"
+    }
+  ],
+  "paths": {
+    "/api/logs/@{username}": {
+      "get": {
+        "summary": "Lấy danh sách log theo người dùng",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tên người dùng (username)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "level": {
+                        "type": "string",
+                        "enum": [
+                          "INFO",
+                          "WARN",
+                          "ERROR"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logs/@{username}/count": {
+      "get": {
+        "summary": "Đếm số lượng log theo người dùng",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tên người dùng (username)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Số lượng log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
