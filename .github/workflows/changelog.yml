@@ -1,0 +1,74 @@
+name: Update Changelog on Release
+run-name: "Update Changelog on Releaser on ${{ github.event_name }} by @${{ github.actor }}"
+
+on:
+  workflow_dispatch: # ✅ Cho phép chạy thủ công
+  release:
+    types: [published]
+
+# Remove all permissions by default
+permissions: write-all # ⚠️ Nếu không cần ghi tất cả, bạn nên dùng principle of least privilege
+
+env:
+  SERVER: production
+  VERSION: "1.0.${{ github.run_number }}" # ✅ Default nếu không đọc từ file VERSION
+  REPO_NAME: # ✅ Sẽ được gán động trong steps
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Make sure to fetch full history for changelog generation
+
+      - name: Set VERSION
+        uses: ./.github/actions/set-version
+
+      - name: Write version file
+        run: echo "${{ env.VERSION }}" > .version.txt
+
+      - name: Commit and push .version.txt to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .version.txt
+          git commit -m "chore(ci): update .version.txt for build ${{ env.VERSION }}" || echo "No changes to commit"
+          # git push origin HEAD:${{ github.ref_name }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install auto-changelog
+        run: npm install -g auto-changelog # https://www.npmjs.com/package/auto-changelog
+
+      - name: Generate changelog
+        run: |
+          # auto-changelog --unreleased --output CHANGELOG.md --commit-limit false --template keepachangelog
+          auto-changelog --unreleased --latest-version --output CHANGELOG.md --commit-limit false --template keepachangelog
+
+      - name: Get default branch
+        id: default_branch
+        run: |
+          echo "::set-output name=branch::$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')"
+
+      - name: Commit updated changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update changelog for release ${{ github.event.release.tag_name }}"
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.default_branch.outputs.branch }}
