@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<body>
-<div th:fragment="navigation" class="bg-light p-3 mb-4 rounded">
-    <nav class="nav nav-pills flex-column flex-sm-row">
-        <a class="flex-sm-fill text-sm-center nav-link" th:classappend="${#httpServletRequest.getRequestURI() == '/dashboard' ? 'active' : ''}" th:href="@{/dashboard}">
-            <i class="fas fa-home me-1"></i> Dashboard
+
+  <body>
+    <div th:fragment="navigation" class="bg-light p-3 mb-4 rounded">
+      <nav class="nav nav-pills flex-column flex-sm-row">
+        <a class="flex-sm-fill text-sm-center nav-link"
+          th:classappend="${#httpServletRequest.getRequestURI() == '/dashboard' ? 'active' : ''}" th:href="@{/dashboard}">
+          <i class="fas fa-home me-1"></i> Dashboard
         </a>
-        <a class="flex-sm-fill text-sm-center nav-link" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/api-configs') ? 'active' : ''}" th:href="@{/api-configs}">
-            <i class="fas fa-cogs me-1"></i> API Configs
+        <a class="flex-sm-fill text-sm-center nav-link"
+          th:classappend="${#httpServletRequest.getRequestURI().startsWith('/api-configs') ? 'active' : ''}" th:href="@{/api-configs}">
+          <i class="fas fa-cogs me-1"></i> API Configs
         </a>
-        <a class="flex-sm-fill text-sm-center nav-link" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/view/@' + username) ? 'active' : ''}" th:href="@{|/view/@${username}|}">
-            <i class="fas fa-history me-1"></i> Request Logs
+        <a class="flex-sm-fill text-sm-center nav-link"
+          th:classappend="${#httpServletRequest.getRequestURI().startsWith('/view/@' + username) ? 'active' : ''}"
+          th:href="@{|/view/@${username}|}">
+          <i class="fas fa-history me-1"></i> Request Logs
         </a>
-    </nav>
-</div>
-</body>
+      </nav>
+    </div>
+  </body>
+
 </html>

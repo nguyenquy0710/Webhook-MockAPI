@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="head(title)">
+
+  <head th:fragment="head(title)">
     <!-- SEO Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>WebHookMock - Webhook Testing Made Simple | AutoBot.site</title>
-    <meta name="description" content="WebHookMock is a powerful webhook testing tool that allows developers to create, manage, and test webhook APIs with ease. Part of AutoBot.site tools suite.">
+    <meta name="description"
+      content="WebHookMock is a powerful webhook testing tool that allows developers to create, manage, and test webhook APIs with ease. Part of AutoBot.site tools suite.">
     <meta name="keywords" content="webhook, testing, mock, api, spring boot, java, automation, developer tools">
     <meta name="author" content="nchuyen128@gmail.com">
 
@@ -14,14 +16,16 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mock-api.autobot.site/">
     <meta property="og:title" content="WebHookMock - Webhook Testing Made Simple">
-    <meta property="og:description" content="Create custom API endpoints, monitor requests in real-time, and configure responses with this powerful webhook testing tool.">
+    <meta property="og:description"
+      content="Create custom API endpoints, monitor requests in real-time, and configure responses with this powerful webhook testing tool.">
     <meta property="og:image" content="https://autobot-161.s3.ap-southeast-1.amazonaws.com/logo-webhook.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://mock-api.autobot.site/">
     <meta property="twitter:title" content="WebHookMock - Webhook Testing Made Simple">
-    <meta property="twitter:description" content="Create custom API endpoints, monitor requests in real-time, and configure responses with this powerful webhook testing tool.">
+    <meta property="twitter:description"
+      content="Create custom API endpoints, monitor requests in real-time, and configure responses with this powerful webhook testing tool.">
     <meta property="twitter:image" content="https://autobot-161.s3.ap-southeast-1.amazonaws.com/logo-webhook.png">
 
     <!-- Favicon -->
@@ -34,36 +38,41 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link th:href="@{/css/styles.css}" rel="stylesheet">
-</head>
-<body>
-<header th:fragment="header" class="bg-dark text-white py-3 mb-4">
-    <div class="container">
+  </head>
+
+  <body>
+    <header th:fragment="header" class="bg-dark text-white py-3 mb-4">
+      <div class="container">
         <div class="d-flex flex-wrap align-items-center justify-content-between">
-            <a href="/" class="d-flex align-items-center text-white text-decoration-none">
-                <i class="fas fa-webhook fa-2x me-2"></i>
-                <span class="fs-4">Mock Webhook</span>
-            </a>
-            <div class="text-end" th:if="${#authentication != null && !#authentication.principal.equals('anonymousUser')}">
-                <div class="dropdown">
-                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user me-2"></i>
-                        <span th:text="${username}">Username</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" th:href="@{/dashboard}">Dashboard</a></li>
-                        <li><a class="dropdown-item" th:href="@{/api-configs}">API Configurations</a></li>
-                        <li><a class="dropdown-item" th:href="@{|/view/@${username}|}">Request Logs</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form th:action="@{/logout}" method="post">
-                                <button class="dropdown-item" type="submit">Logout</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
+          <a href="/" class="d-flex align-items-center text-white text-decoration-none">
+            <i class="fas fa-webhook fa-2x me-2"></i>
+            <span class="fs-4">Mock Webhook</span>
+          </a>
+          <div class="text-end" th:if="${#authentication != null && !#authentication.principal.equals('anonymousUser')}">
+            <div class="dropdown">
+              <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <i class="fas fa-user me-2"></i>
+                <span th:text="${username}">Username</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" th:href="@{/dashboard}">Dashboard</a></li>
+                <li><a class="dropdown-item" th:href="@{/api-configs}">API Configurations</a></li>
+                <li><a class="dropdown-item" th:href="@{|/view/@${username}|}">Request Logs</a></li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <form th:action="@{/logout}" method="post">
+                    <button class="dropdown-item" type="submit">Logout</button>
+                  </form>
+                </li>
+              </ul>
             </div>
+          </div>
         </div>
-    </div>
-</header>
-</body>
+      </div>
+    </header>
+  </body>
+
 </html>
