@@ -56,9 +56,11 @@
                 <span th:text="${username}">Username</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" th:href="@{/dashboard}">Dashboard</a></li>
-                <li><a class="dropdown-item" th:href="@{/api-configs}">API Configurations</a></li>
-                <li><a class="dropdown-item" th:href="@{|/view/@${username}|}">Request Logs</a></li>
+                <li><a class="dropdown-item" th:href="@{/dashboard}"><i class="fas fa-home me-1"></i> Dashboard</a></li>
+                <li><a class="dropdown-item" th:href="@{/api-configs}"><i class="fas fa-cogs me-1"></i> API Configs</a></li>
+                <li><a class="dropdown-item" th:href="@{|/view/@${username}|}"><i class="fas fa-history me-1"></i> Request Logs</a></li>
+                <li><a class="dropdown-item" th:href="@{|/swagger/@${username}|}" target="_blank"><i class="fas fa-book me-1"></i>
+                    Swagger</a></li>
                 <li>
                   <hr class="dropdown-divider">
                 </li>

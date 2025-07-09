@@ -17,12 +17,8 @@
           th:href="@{|/view/@${username}|}">
           <i class="fas fa-history me-1"></i> Request Logs
         </a>
-        <a class="flex-sm-fill text-sm-center nav-link"
-          th:classappend="${#httpServletRequest.getRequestURI().startsWith('/swagger/@' + username) ? 'active' : ''}"
-          th:href="@{|/swagger/@${username}|}">
-          <i class="fas fa-book me-1"></i> Swagger
-        </a>
       </nav>
     </div>
   </body>
+
 </html>
