@@ -1,19 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head('API Docs')">
-    <title>API Docs - Mock Webhook</title>
+<head>
+    <meta charset="UTF-8" />
+    <title>API Docs</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />
-    <link th:href="@{/css/swagger-theme.css}" rel="stylesheet" />
 </head>
 <body>
-<div th:replace="fragments/header :: header"></div>
-
-<div class="container">
-    <div th:replace="fragments/navigation :: navigation"></div>
-    <div id="swagger-ui"></div>
-</div>
-
-<div th:replace="fragments/footer :: footer"></div>
+<div id="swagger-ui"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
