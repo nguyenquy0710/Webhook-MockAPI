@@ -238,6 +238,11 @@
                                                                 <pre th:if="${log.curl != null && log.curl != ''}"
                                                                      th:text="${log.curl}">
                                                                 </pre>
+                                                        <button class="btn btn-sm btn-outline-secondary mt-2 copy-curl-btn"
+                                                                th:if="${log.curl != null && log.curl != ''}"
+                                                                th:data-curl="${log.curl}">
+                                                            <i class="fas fa-copy"></i> Copy
+                                                        </button>
                                                         <div th:if="${log.curl == null || log.curl == ''}"
                                                              class="text-muted">No curl available</div>
                                                     </div>
@@ -351,6 +356,18 @@
 
 <div th:replace="fragments/footer :: footer"></div>
 
+<!-- Copy Curl Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+    <div id="copyCurlToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check-circle me-2"></i> <span id="copyCurlToastMessage">Curl copied to clipboard!</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
 <script th:inline="javascript">
     /*<![CDATA[*/
     const username = /*[[${targetUsername}]]*/;
@@ -365,5 +382,4 @@
         window.location.href = `/view/@${username}?page=0&size=${selectedSize}`;
     });
 </script>
-</body>
-</html>
+</body></html>

@@ -125,4 +125,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error fetching log count:', error);
             });
     }, 2000);
+    // Copy curl command functionality
+    const curlButtons = document.querySelectorAll('.copy-curl-btn');
+    if (curlButtons.length > 0) {
+        const toastEl = document.getElementById('copyCurlToast');
+        const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+        const toastMsg = document.getElementById('copyCurlToastMessage');
+
+        curlButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const curl = this.getAttribute('data-curl');
+                navigator.clipboard.writeText(curl)
+                    .then(() => {
+                        toastMsg.textContent = 'Curl copied to clipboard!';
+                        toast.show();
+                    })
+                    .catch(err => console.error('Failed to copy curl:', err));
+            });
+        });
+    }
 });
