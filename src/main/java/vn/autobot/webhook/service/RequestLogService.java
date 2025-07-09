@@ -141,7 +141,7 @@ public class RequestLogService {
 
         } catch (IOException e) {
             // Log lỗi nếu cần
-            e.printStackTrace();
+            // e.printStackTrace();
             // Nếu lỗi, trả lại chuỗi gốc chưa parse
             return processedBody;
         }
