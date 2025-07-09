@@ -101,13 +101,13 @@ public class RequestLogService {
             while (headerNames.hasMoreElements()) {
                 String name = headerNames.nextElement();
                 String value = request.getHeader(name);
-                curl.append(" -H '\").append(name).append(": ").append(value).append("'\");
+                curl.append(" -H '").append(name).append(": ").append(value).append("'");
             }
         }
 
         if (body != null && !body.isEmpty()) {
             String escapedBody = body.replace("'", "'\\''");
-            curl.append(" -d '\").append(escapedBody).append("'\");
+            curl.append(" -d '").append(escapedBody).append("'");
         }
 
         String url = request.getRequestURL().toString();
