@@ -33,6 +33,7 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 - Export logs to Excel for further analysis
 - Each log entry includes a ready-to-use `curl` command
 - REST endpoints documented in `static/swagger.json`
+ - Swagger UI available at `/swagger-ui` and per-user specs at `/swagger/@{username}`
 
 ### 🔐 User Management
 
