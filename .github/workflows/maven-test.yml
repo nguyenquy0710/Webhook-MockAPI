@@ -45,3 +45,6 @@ jobs:
 
       - name: List files in target/
         run: ls -lh target
+        
+      - name: View dependency tree
+        run: ./mvnw dependency:tree
