@@ -1,5 +1,7 @@
 package vn.autobot.webhook.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -34,6 +36,7 @@ public class RequestLogService {
     private final RequestLogRepository requestLogRepository;
     private final UserService userService;
     private final WebSocketService webSocketService;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public RequestLog logRequest(User user, HttpServletRequest request, String body,
