@@ -12,8 +12,8 @@ on:
   workflow_dispatch: # Cho phép chạy thủ công
   # push:
   #   branches: [ "main" ]
-  # pull_request:
-  #   branches: [ "main" ]
+  pull_request:  # Chạy khi có pull request được tạo hoặc cập nhật
+    branches: [ "main" ]
 
 env:
   SERVER: production
