@@ -34,11 +34,12 @@ jobs:
       - name: Build with Maven (clean package)
         run: ./mvnw clean package -B
 
-      - name: Build with Maven
-        run: mvn -B package
+      # - name: Build with Maven
+      #   run: mvn -B package
 
       - name: Run tests
-        run: mvn test
+        # run: mvn test
+        run: ./mvnw test
 
       - name: List files in target/
         run: ls -lh target
