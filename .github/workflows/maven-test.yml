@@ -37,11 +37,11 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Build with Maven
-        run: mvn -B package
+      - name: Build with Maven (clean package)
+        run: ./mvnw clean package -B
 
       - name: Run tests
-        run: mvn test
+        run: ./mvnw test
 
       - name: List files in target/
         run: ls -lh target
