@@ -12,6 +12,7 @@ import vn.autobot.webhook.dto.RequestLogDto;
 import vn.autobot.webhook.model.RequestLog;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.repository.RequestLogRepository;
+import vn.autobot.webhook.utils.RequestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -82,7 +83,8 @@ public class RequestLogService {
 
         requestLog.setRequestBody(body);
         requestLog.setResponseStatus(status);
-        requestLog.setResponseBody(responseBody);
+        //requestLog.setResponseBody(responseBody);
+        requestLog.setResponseBody(buildResponseBody(request, responseBody, status));
         requestLog.setCurl(buildCurl(request, body));
 
         RequestLog savedLog = requestLogRepository.save(requestLog);
@@ -117,6 +119,21 @@ public class RequestLogService {
         curl.append(" '").append(url).append("'");
 
         return curl.toString();
+    }
+
+    private String buildResponseBody(HttpServletRequest request, String responseBody, int status) {
+        if (responseBody == null || responseBody.isEmpty()) {
+            return responseBody;
+        }
+
+        // ✅ Replace variables in JSON string
+        String processedBody = RequestUtils.applyTemplate(responseBody, request, status);
+
+        // Convert processed string back to JSON
+        responseBody = objectMapper.readValue(processedBody, Object.class);
+
+        // Here you can add logic to format or sanitize the response body if needed
+        return responseBody;
     }
 
     public Page<RequestLogDto> getRequestLogs(String username, Pageable pageable) {

@@ -20,4 +20,5 @@ public class RequestLogDto {
     private LocalDateTime timestamp;
     private Integer responseStatus;
     private String responseBody;
-    private String curl;}
+    private String curl;
+}

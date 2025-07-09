@@ -66,4 +66,5 @@ public class RequestLog {
     @PrePersist
     protected void onCreate() {
         this.timestamp = LocalDateTime.now();
-    }}
+    }
+}
