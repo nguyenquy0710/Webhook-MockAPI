@@ -84,7 +84,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-jar
-        if: github.event_name == 'release'
 
       # - name: Move JAR to root
       #   run: mv app.jar ./app.jar
