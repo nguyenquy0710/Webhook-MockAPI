@@ -132,11 +132,19 @@ public class RequestLogService {
         // ✅ Replace variables in JSON string
         String processedBody = RequestUtils.applyTemplate(responseBody, request, status);
 
-        // Convert processed string back to JSON
-        responseBody = objectMapper.readValue(processedBody, Object.class);
+        try {
+            // Parse JSON từ chuỗi đã xử lý
+            Object jsonObject = objectMapper.readValue(processedBody, Object.class);
 
-        // Here you can add logic to format or sanitize the response body if needed
-        return responseBody;
+            // Chuyển object JSON ngược lại thành chuỗi JSON đẹp (pretty hoặc compact)
+            return objectMapper.writeValueAsString(jsonObject);
+
+        } catch (IOException e) {
+            // Log lỗi nếu cần
+            e.printStackTrace();
+            // Nếu lỗi, trả lại chuỗi gốc chưa parse
+            return processedBody;
+        }
     }
 
     public Page<RequestLogDto> getRequestLogs(String username, Pageable pageable) {
