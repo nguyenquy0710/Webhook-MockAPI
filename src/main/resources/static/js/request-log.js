@@ -115,16 +115,29 @@ document.addEventListener('DOMContentLoaded', function() {
     connectWebSocket();
 
     // Re-check for new logs every 2 seconds
-    setInterval(function() {
-        fetch(`/api/logs/@${currentUser}/count`)
-            .then(response => response.json())
-            .then(data => {
-                updateRequestCount(data.count);
-            })
-            .catch(error => {
-                console.error('Error fetching log count:', error);
-            });
-    }, 2000);
+    var intervalId = undefined
+    setTimeout(function() {
+      var intervalId = setInterval(function() {
+          fetch(`/api/logs/@${currentUser}/count`)
+              .then(response => {
+                if (!response.ok) {
+                    // HTTP status code không phải 200–299
+                    console.error(`Fetch failed with status: ${response.status}`);
+                    clearInterval(intervalId);
+                    return Promise.reject(new Error('Fetch failed'));
+                }
+                return response.json();
+              })
+              //.then(response => response.json())
+              .then(data => {
+                  updateRequestCount(data.count);
+              })
+              .catch(error => {
+                  console.error('Error fetching log count:', error);
+              });
+      }, 2000);
+    }, 2000)
+    
     // Copy curl command functionality
     const curlButtons = document.querySelectorAll('.copy-curl-btn');
     if (curlButtons.length > 0) {
