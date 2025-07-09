@@ -1,0 +1,12 @@
+/* Custom styles for Swagger UI to match the application's look */
+.swagger-ui .topbar {
+    background-color: #343a40;
+}
+
+.swagger-ui .topbar .download-url-wrapper input {
+    border-radius: 0;
+}
+
+.swagger-ui .scheme-container {
+    background-color: #f8f9fa;
+}

@@ -3,6 +3,7 @@
 <head th:replace="fragments/header :: head('API Docs')">
     <title>API Docs - Mock Webhook</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />
+    <link th:href="@{/css/swagger-theme.css}" rel="stylesheet" />
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
@@ -23,7 +24,7 @@
             url: [[${swaggerUrl}]],
             dom_id: '#swagger-ui',
             presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-            layout: 'BaseLayout'
+            layout: 'StandaloneLayout'
         });
     };
     /*]]>*/
