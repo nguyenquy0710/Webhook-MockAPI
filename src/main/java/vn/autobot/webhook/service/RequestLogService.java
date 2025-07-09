@@ -83,6 +83,7 @@ public class RequestLogService {
         requestLog.setRequestBody(body);
         requestLog.setResponseStatus(status);
         requestLog.setResponseBody(responseBody);
+        requestLog.setCurl(buildCurl(request, body));
 
         RequestLog savedLog = requestLogRepository.save(requestLog);
 
@@ -90,6 +91,32 @@ public class RequestLogService {
         webSocketService.sendRequestUpdate(user.getUsername());
 
         return savedLog;
+    }
+
+    private String buildCurl(HttpServletRequest request, String body) {
+        StringBuilder curl = new StringBuilder("curl -X ").append(request.getMethod());
+
+        Enumeration<String> headerNames = request.getHeaderNames();
+        if (headerNames != null) {
+            while (headerNames.hasMoreElements()) {
+                String name = headerNames.nextElement();
+                String value = request.getHeader(name);
+                curl.append(" -H '").append(name).append(": ").append(value).append("'");
+            }
+        }
+
+        if (body != null && !body.isEmpty()) {
+            String escapedBody = body.replace("'", "'\\''");
+            curl.append(" -d '").append(escapedBody).append("'");
+        }
+
+        String url = request.getRequestURL().toString();
+        if (request.getQueryString() != null && !request.getQueryString().isEmpty()) {
+            url += "?" + request.getQueryString();
+        }
+        curl.append(" '").append(url).append("'");
+
+        return curl.toString();
     }
 
     public Page<RequestLogDto> getRequestLogs(String username, Pageable pageable) {
@@ -124,7 +151,7 @@ public class RequestLogService {
             Row headerRow = sheet.createRow(0);
             String[] columns = {"ID", "Method", "Path", "Source IP", "Query Params",
                     "Request Headers", "Request Body", "Timestamp",
-                    "Response Status", "Response Body"};
+                    "Response Status", "Response Body", "Curl"};
 
             // Create header cell style
             CellStyle headerCellStyle = workbook.createCellStyle();
@@ -153,6 +180,7 @@ public class RequestLogService {
                 row.createCell(7).setCellValue(log.getTimestamp() != null ? log.getTimestamp().format(formatter) : "");
                 row.createCell(8).setCellValue(log.getResponseStatus() != null ? log.getResponseStatus() : 0);
                 row.createCell(9).setCellValue(log.getResponseBody() != null ? log.getResponseBody() : "");
+                row.createCell(10).setCellValue(log.getCurl() != null ? log.getCurl() : "");
             }
 
             // Auto size columns
@@ -183,6 +211,6 @@ public class RequestLogService {
         dto.setTimestamp(requestLog.getTimestamp());
         dto.setResponseStatus(requestLog.getResponseStatus());
         dto.setResponseBody(requestLog.getResponseBody());
+        dto.setCurl(requestLog.getCurl());
         return dto;
-    }
-}
+    }}
