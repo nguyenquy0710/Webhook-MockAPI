@@ -58,8 +58,12 @@ public class RequestLog {
     @Type(type = "org.hibernate.type.TextType")
     private String responseBody;
 
+    @Column(name = "curl")
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
+    private String curl;
+
     @PrePersist
     protected void onCreate() {
         this.timestamp = LocalDateTime.now();
-    }
-}
+    }}
