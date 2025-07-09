@@ -23,6 +23,7 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 - Set response content types (JSON, XML, HTML, etc.)
 - Customize response headers
 - Add response delays to simulate latency
+- Dynamic response templates with request variables (e.g. `{{headers.User-Agent}}`)
 
 ### 📡 Request Monitoring
 
@@ -30,6 +31,8 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 - Detailed view of request headers, body, and parameters
 - WebSocket support for live updates
 - Export logs to Excel for further analysis
+- Each log entry includes a ready-to-use `curl` command
+- REST endpoints documented in `static/swagger.json`
 
 ### 🔐 User Management
 
@@ -124,6 +127,7 @@ Default URL: `http://localhost:8081`
 ### Configuration
 
 The application uses an H2 database by default, with the database file stored in the `./data/mockwebhook` directory. You can modify the configuration in `application.properties`.
+You can set the base domain for generated webhook URLs via `app.domain` or the `APP_DOMAIN` environment variable. The H2 console is available at `/h2-console` during development.
 
 ## Usage
 
