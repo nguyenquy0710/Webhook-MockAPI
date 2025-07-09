@@ -118,7 +118,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var intervalId = undefined
     setTimeout(function() {
       var intervalId = setInterval(function() {
-          fetch(`/api/logs/@${currentUser}/count`)
+          const targetUsername = document.querySelector('.current-time')?.getAttribute('data-username') || currentUser;
+          fetch(`/api/logs/@${targetUsername}/count`)
               .then(response => {
                 if (!response.ok) {
                     // HTTP status code không phải 200–299
