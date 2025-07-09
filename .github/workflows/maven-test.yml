@@ -13,7 +13,7 @@ on:
   # push:
   #   branches: [ "main" ]
   pull_request:  # Chạy khi có pull request được tạo hoặc cập nhật
-    branches: [ "main" ]
+  #   branches: [ "main" ]
 
 env:
   SERVER: production
