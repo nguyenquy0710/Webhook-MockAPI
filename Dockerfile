@@ -4,8 +4,8 @@
 FROM openjdk:25-ea-17-jdk
 
 # Maintainer information
-LABEL maintainer="Nguyen Quy <quy.nh@nhquydev.net>" \
-      org.opencontainers.image.authors="Nguyen Quy <quy.nh@nhquydev.net>" \
+LABEL maintainer="Nguyen Quy <quyit.job@gmail.com>" \
+      org.opencontainers.image.authors="Nguyen Quy <quyit.job@gmail.com>" \
       org.opencontainers.image.description="A powerful and user-friendly webhook testing tool that allows developers to create, manage, and test webhook APIs with ease."
 
 USER root
