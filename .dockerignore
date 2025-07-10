@@ -1,0 +1,31 @@
+# Ignore Maven / Gradle build output
+target/
+build/
+out/
+
+# IntelliJ / Eclipse / VSCode settings
+.idea/
+*.iml
+*.ipr
+*.iws
+*.class
+*.log
+*.swp
+.vscode/
+.project
+.classpath
+.settings/
+
+# Git
+.git/
+.gitignore
+
+# Docker & Env files
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
