@@ -32,7 +32,7 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 - WebSocket support for live updates
 - Export logs to Excel for further analysis
 - Each log entry includes a ready-to-use `curl` command
-- REST endpoints documented in `static/swagger.json`
+- REST endpoints documented in `static /swagger.json`
 - Swagger UI available at `/swagger-ui` and per-user specs at `/swagger/@{username}`
 
 ### 🔐 User Management
@@ -206,10 +206,6 @@ server {
 }
 ```
 
-## Author
-
-Developed by: nchuyen128@gmail.com FROM https://autobot.site
-
 ## Github Codespaces
 
 - Nếu bạn dùng **SDKMAN**
@@ -243,6 +239,15 @@ Developed by: nchuyen128@gmail.com FROM https://autobot.site
   # Rồi chạy:
   source ~/.bashrc
   ```
+
+## Author
+
+- Developed by: nchuyen128@gmail.com FROM https://autobot.site
+- Developed by: quyit.job@gmail.com FROM https://blogs.nhquydev.net
+
+## Changelog
+
+All notable changes to this project will be recorded in the [CHANGELOG.md](/CHANGELOG.md) file.
 
 ---
 
