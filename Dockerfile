@@ -15,13 +15,6 @@ ENV TZ=Asia/Ho_Chi_Minh \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
 
-# Cài đặt tzdata để hỗ trợ timezone + cleanup layer
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends tzdata && \
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Cấu hình Java runtime
 ENV JAVA_TOOL_OPTIONS="-Djava.awt.headless=true" \
     JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom"
