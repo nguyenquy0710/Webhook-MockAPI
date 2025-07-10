@@ -1,8 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # WebHook Mock API
 # -----------------------------------------
-# https://github.com/nguyenquy0710/Webhook-MockAPI
-# -----------------------------------------
 # START: docker-compose up -d --build --force-recreate
 # STOP: docker-compose down -v
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -18,11 +16,18 @@ services:
     environment:
       - TZ=Asia/Ho_Chi_Minh
       - SPRING_PROFILES_ACTIVE=default
-      - JAVA_OPTS="-Xms256m -Xmx512m"
-      - APP_DOMAIN=https://mock-api.autobot.site  # ✅ biến môi trường được Spring Boot hiểu là app.domain
+      - JAVA_OPTS=-Xms256m -Xmx512m -Djava.awt.headless=true # Tùy chỉnh bộ nhớ Java
+      - APP_DOMAIN=https://mock-api.quyit.id.vn  # ✅ biến môi trường được Spring Boot hiểu là app.domain
     env_file:
       - .env
     volumes:
-      - ./data:/data  # Lưu trữ database H2 bền vững
+      - ./data:/app/data  # Lưu trữ database H2 bền vững
     extra_hosts:
       - "host.docker.internal:host-gateway" # Để kết nối đến localhost của host từ container
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50" # Giới hạn 80% CPU
+          memory: "2G" # Giới hạn 3.2GB RAM (80% của 4GB)
+        reservations:
+          memory: "256M" # Đảm bảo container có ít nhất 256MB RAM
