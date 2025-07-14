@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('User Detail')">
+    <title>User Detail</title>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+<div class="container">
+    <div th:replace="fragments/navigation :: navigation"></div>
+
+    <h2 class="mb-4">User Detail</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <p><strong>ID:</strong> <span th:text="${userDetail.id}">1</span></p>
+            <p><strong>Username:</strong> <span th:text="${userDetail.username}">user</span></p>
+            <p><strong>Email:</strong> <span th:text="${userDetail.email}">email</span></p>
+            <p><strong>Role:</strong> <span th:text="${userDetail.role}">USER</span></p>
+        </div>
+    </div>
+
+    <a th:href="@{/admin/users}" class="btn btn-secondary mt-3">Back to list</a>
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
+

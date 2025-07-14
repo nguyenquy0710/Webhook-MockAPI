@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('User Management')">
+    <title>User Management</title>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+<div class="container">
+    <div th:replace="fragments/navigation :: navigation"></div>
+
+    <h2 class="mb-4">Users</h2>
+
+    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.deleted}">
+        User deleted successfully!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${users}">
+            <td th:text="${u.id}">1</td>
+            <td th:text="${u.username}">user</td>
+            <td th:text="${u.email}">email</td>
+            <td th:text="${u.role}">USER</td>
+            <td>
+                <a th:href="@{|/admin/users/${u.id}|}" class="btn btn-sm btn-primary">View</a>
+                <form th:action="@{|/admin/users/${u.id}/delete|}" method="post" class="d-inline">
+                    <button class="btn btn-sm btn-danger" type="submit" onclick="return confirm('Delete user?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
+
