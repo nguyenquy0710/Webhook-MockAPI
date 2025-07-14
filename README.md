@@ -251,4 +251,7 @@ All notable changes to this project will be recorded in the [CHANGELOG.md](/CHAN
 
 ---
 
-© 2025 WebHookMock. All rights reserved.
+**👉 Đóng góp hoặc liên hệ:**
+Hãy mở issue hoặc pull request nếu bạn có đề xuất nâng cấp hoặc phát hiện lỗi.
+
+<p style="text-align: center;"> © 2025 WebHookMock. All rights reserved. </p>
