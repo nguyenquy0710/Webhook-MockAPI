@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
   <head th:fragment="head(title)">
     <!-- SEO Meta Tags -->
@@ -61,6 +61,7 @@
                 <li><a class="dropdown-item" th:href="@{|/view/@${username}|}"><i class="fas fa-history me-1"></i> Request Logs</a></li>
                 <li><a class="dropdown-item" th:href="@{|/swagger/@${username}|}" target="_blank"><i class="fas fa-book me-1"></i>
                     Swagger</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item" th:href="@{/admin/users}"><i class="fas fa-users-cog me-1"></i> Admin</a></li>
                 <li>
                   <hr class="dropdown-divider">
                 </li>

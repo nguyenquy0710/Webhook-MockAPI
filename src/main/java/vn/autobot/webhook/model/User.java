@@ -29,6 +29,9 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+    @Column(nullable = false)
+    private String role;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -38,5 +41,8 @@ public class User {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        if (this.role == null) {
+            this.role = "USER";
+        }
     }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
   <body>
     <div th:fragment="navigation" class="bg-light p-3 mb-4 rounded">
@@ -16,6 +16,11 @@
           th:classappend="${#httpServletRequest.getRequestURI().startsWith('/view/@' + username) ? 'active' : ''}"
           th:href="@{|/view/@${username}|}">
           <i class="fas fa-history me-1"></i> Request Logs
+        </a>
+        <a class="flex-sm-fill text-sm-center nav-link" sec:authorize="hasRole('ADMIN')"
+          th:classappend="${#httpServletRequest.getRequestURI().startsWith('/admin') ? 'active' : ''}"
+          th:href="@{/admin/users}">
+          <i class="fas fa-users-cog me-1"></i> Admin
         </a>
       </nav>
     </div>
