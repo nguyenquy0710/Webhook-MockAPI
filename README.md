@@ -130,6 +130,22 @@ Default URL: `http://localhost:8081`
 The application uses an H2 database by default, with the database file stored in the `./data/mockwebhook` directory. You can modify the configuration in `application.properties`.
 You can set the base domain for generated webhook URLs via `app.domain` or the `APP_DOMAIN` environment variable. The H2 console is available at `/h2-console` during development.
 
+### Database Migration
+
+**Important**: If you're upgrading from a previous version, your existing database will be automatically migrated to support new features.
+
+The application now includes:
+- **Flyway** for automatic database migration
+- **Response delay functionality** - configure delays (0-60000ms) for API responses  
+- **Improved database versioning** and migration tracking
+
+For detailed migration information, see [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md).
+
+To validate your migration was successful, run:
+```bash
+./validate_migration.sh
+```
+
 ## Usage
 
 1. **Register an account**: Create a personal account to get your unique webhook URL
