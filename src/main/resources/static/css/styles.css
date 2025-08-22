@@ -8,6 +8,7 @@ body {
     padding-bottom: 160px !important; /* Space for footer */
     margin-bottom: 0;
     min-height: 100vh;
+    background-color: #f8f9fa;
 }
 
 footer {
@@ -18,18 +19,55 @@ footer {
     background-color: #f5f5f5;
 }
 
-/* Card Shadows */
+/* Enhanced Card Shadows */
 .card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
     margin-bottom: 1.5rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .card-header {
     background-color: #fff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.125);
     padding: 1rem;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+/* Enhanced Feature Icons */
+.feature-icon {
+    transition: transform 0.3s ease;
+}
+
+.feature-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Modern Navigation */
+.nav-pills .nav-link {
+    transition: all 0.3s ease;
+    margin: 0 0.25rem;
+}
+
+.nav-pills .nav-link:hover {
+    transform: translateY(-1px);
+}
+
+/* Enhanced Buttons */
+.btn {
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
 }
 
 /* Table Styling */
