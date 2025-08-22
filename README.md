@@ -146,6 +146,15 @@ To validate your migration was successful, run:
 ./validate_migration.sh
 ```
 
+### Troubleshooting Database Issues
+
+If you encounter Flyway migration validation errors, use the repair script:
+```bash
+./repair_database.sh
+```
+
+This script will attempt to repair failed migrations automatically. If issues persist, you may need to delete the `data/` directory to start with a fresh database.
+
 ## Usage
 
 1. **Register an account**: Create a personal account to get your unique webhook URL

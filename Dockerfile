@@ -16,7 +16,7 @@ ENV TZ=Asia/Ho_Chi_Minh \
     LANGUAGE=en_US.UTF-8
 
 # Cấu hình Java runtime
-ENV JAVA_TOOL_OPTIONS="-Djava.awt.headless=true" \
+ENV JAVA_TOOL_OPTIONS="-Djava.awt.headless=true --enable-native-access=ALL-UNNAMED" \
     JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom"
 
 # Chỉ định thư mục làm việc (tốt cho clarity và COPY)
