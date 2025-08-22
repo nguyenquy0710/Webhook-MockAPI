@@ -7,42 +7,56 @@
 <div th:replace="fragments/header :: header"></div>
 
 <div class="container">
-    <div class="jumbotron text-center my-5">
-        <h1 class="display-4">Welcome to Mock Webhook</h1>
-        <p class="lead">Create, test, and monitor webhook APIs with ease.</p>
-        <hr class="my-4">
-        <p>Register to get started or login if you already have an account.</p>
-        <div class="d-flex justify-content-center">
-            <a class="btn btn-primary btn-lg me-3" th:href="@{/register}" role="button">Register</a>
-            <a class="btn btn-outline-primary btn-lg" th:href="@{/login}" role="button">Login</a>
+    <!-- Modern Hero Section -->
+    <div class="px-4 py-5 my-5 text-center">
+        <div class="col-lg-6 mx-auto">
+            <h1 class="display-5 fw-bold text-body-emphasis mb-3">Welcome to Mock Webhook</h1>
+            <p class="lead mb-4">Create, test, and monitor webhook APIs with ease. Build powerful integrations and test your webhooks in a secure, isolated environment.</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a class="btn btn-primary btn-lg px-4 gap-3" th:href="@{/register}" role="button">
+                    <i class="fas fa-user-plus me-2"></i>Get Started
+                </a>
+                <a class="btn btn-outline-secondary btn-lg px-4" th:href="@{/login}" role="button">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="row mb-5">
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-rocket fa-3x mb-3 text-primary"></i>
-                    <h5 class="card-title">Create Mock APIs</h5>
-                    <p class="card-text">Create custom API endpoints with your own response data and HTTP status codes.</p>
+    <!-- Enhanced Feature Cards -->
+    <div class="container px-4 py-5">
+        <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 4rem; height: 4rem;">
+                            <i class="fas fa-rocket fa-lg"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Create Mock APIs</h5>
+                        <p class="card-text text-muted">Create custom API endpoints with your own response data and HTTP status codes. Perfect for testing and development.</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-eye fa-3x mb-3 text-success"></i>
-                    <h5 class="card-title">Monitor Requests</h5>
-                    <p class="card-text">View detailed logs of incoming requests including headers, body, and parameters.</p>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-success bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 4rem; height: 4rem;">
+                            <i class="fas fa-eye fa-lg"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Monitor Requests</h5>
+                        <p class="card-text text-muted">View detailed logs of incoming requests including headers, body, and parameters with real-time updates.</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-file-export fa-3x mb-3 text-info"></i>
-                    <h5 class="card-title">Export Logs</h5>
-                    <p class="card-text">Export request logs to Excel for further analysis and documentation.</p>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-info bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 4rem; height: 4rem;">
+                            <i class="fas fa-file-export fa-lg"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Export & Analyze</h5>
+                        <p class="card-text text-muted">Export request logs to Excel for further analysis and documentation. Keep track of your API usage.</p>
+                    </div>
                 </div>
             </div>
         </div>

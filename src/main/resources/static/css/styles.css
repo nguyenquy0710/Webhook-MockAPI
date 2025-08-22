@@ -8,6 +8,7 @@ body {
     padding-bottom: 160px !important; /* Space for footer */
     margin-bottom: 0;
     min-height: 100vh;
+    background-color: #f8f9fa;
 }
 
 footer {
@@ -18,18 +19,150 @@ footer {
     background-color: #f5f5f5;
 }
 
-/* Card Shadows */
+/* Enhanced Card Shadows */
 .card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
     margin-bottom: 1.5rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .card-header {
     background-color: #fff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.125);
     padding: 1rem;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+/* Enhanced Feature Icons */
+.feature-icon {
+    transition: transform 0.3s ease;
+}
+
+.feature-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Modern Navigation */
+.nav-pills .nav-link {
+    transition: all 0.3s ease;
+    margin: 0 0.25rem;
+}
+
+.nav-pills .nav-link:hover {
+    transform: translateY(-1px);
+}
+
+/* Enhanced Buttons */
+.btn {
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Loading States */
+.btn.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.btn.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Enhanced Form Controls */
+.form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+/* Enhanced Cards with Better Hover Effects */
+.card:hover .feature-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Modern Alerts */
+.alert {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1f2eb 0%, #a7e0d1 100%);
+    color: #0f5132;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f1aeb5 100%);
+    color: #842029;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #a6d0dd 100%);
+    color: #055160;
+}
+
+/* Enhanced Tables */
+.table th {
+    font-weight: 600;
+    border-top: none;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    transform: scale(1.01);
+}
+
+/* Progress Bars */
+.progress {
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border-radius: 0.25rem;
 }
 
 /* Table Styling */
