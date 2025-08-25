@@ -73,8 +73,14 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 # Build ra file JAR hoặc WAR trong target/
 ./mvnw package
 
+# Chạy lệnh flyway repair để sửa lại lịch sử migration
+./mvnw flyway:repair -Dflyway.url=jdbc:h2:file:./data/mockwebhook -Dflyway.user=sa -Dflyway.password=
+
 # Chạy ứng dụng Spring Boot
 ./mvnw spring-boot:run
+# hoặc
+java -jar ./app.jar
+java -jar ./target/WebHookMock-0.0.1-SNAPSHOT.jar
 
 # Chạy test unit
 ./mvnw test
@@ -135,13 +141,15 @@ You can set the base domain for generated webhook URLs via `app.domain` or the `
 **Important**: If you're upgrading from a previous version, your existing database will be automatically migrated to support new features.
 
 The application now includes:
+
 - **Flyway** for automatic database migration
-- **Response delay functionality** - configure delays (0-60000ms) for API responses  
+- **Response delay functionality** - configure delays (0-60000ms) for API responses
 - **Improved database versioning** and migration tracking
 
 For detailed migration information, see [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md).
 
 To validate your migration was successful, run:
+
 ```bash
 ./validate_migration.sh
 ```
@@ -149,6 +157,7 @@ To validate your migration was successful, run:
 ### Troubleshooting Database Issues
 
 If you encounter Flyway migration validation errors, use the repair script:
+
 ```bash
 ./repair_database.sh
 ```

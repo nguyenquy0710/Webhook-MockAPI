@@ -1,6 +1,6 @@
 -- Add missing columns to users table
-ALTER TABLE users ADD COLUMN role VARCHAR(50);
-ALTER TABLE users ADD COLUMN enabled BOOLEAN DEFAULT TRUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS enabled BOOLEAN DEFAULT TRUE;
 
 -- Ensure NULL delay_ms are set to 0 (requires column to exist)
 UPDATE api_configs 
