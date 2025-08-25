@@ -20,14 +20,16 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping("/users")
-    public String listUsers(Model model) {
+    public String listUsers(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("username", userDetails.getUsername());
         return "admin/users";
     }
 
     @GetMapping("/users/{id}")
-    public String viewUser(@PathVariable Long id, Model model) {
+    public String viewUser(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("userDetail", userService.getUserById(id));
+        model.addAttribute("username", userDetails.getUsername());
         return "admin/user-detail";
     }
 
@@ -65,8 +67,9 @@ public class AdminController {
     }
 
     @GetMapping("/users/create")
-    public String showCreateUserForm(Model model) {
+    public String showCreateUserForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("createUserRequest", new CreateUserRequestDto());
+        model.addAttribute("username", userDetails.getUsername());
         return "admin/user-create";
     }
 
