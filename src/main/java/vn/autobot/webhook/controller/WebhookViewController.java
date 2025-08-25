@@ -43,6 +43,7 @@ public class WebhookViewController {
 
     @GetMapping("/api-configs")
     public String apiConfigs(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
         model.addAttribute("newApiConfig", new ApiConfigDto());
         model.addAttribute("username", userDetails.getUsername());
         model.addAttribute("domain", appConfig.getDomain());
