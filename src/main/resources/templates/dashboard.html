@@ -11,39 +11,48 @@
 
     <h2 class="mb-4">Welcome, <span th:text="${username}">Username</span>!</h2>
 
-    <div class="row mb-4">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-primary">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Your Webhook URL</h5>
-                    <p class="card-text">
-                        <code th:text="${domain + '/api/@' + username}">https://domain/api/@username</code>
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 3rem; height: 3rem;">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h5 class="card-title fw-bold text-primary">Your Webhook URL</h5>
+                    <p class="card-text small mb-3">
+                        <code class="bg-light px-2 py-1 rounded" th:text="${domain + '/api/@' + username}">https://domain/api/@username</code>
                     </p>
-                    <button class="btn btn-sm btn-primary copy-btn" th:data-clipboard-text="${domain + '/api/@' + username}">
-                        <i class="fas fa-copy me-1"></i> Copy
+                    <button class="btn btn-outline-primary copy-btn" th:data-clipboard-text="${domain + '/api/@' + username}">
+                        <i class="fas fa-copy me-1"></i> Copy URL
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-success">
-                <div class="card-body text-center">
-                    <h5 class="card-title">API Configurations</h5>
-                    <p class="card-text">Manage your webhook API configurations</p>
-                    <a th:href="@{/api-configs}" class="btn btn-success">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-success bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 3rem; height: 3rem;">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h5 class="card-title fw-bold text-success">API Configurations</h5>
+                    <p class="card-text text-muted mb-3">Manage your webhook API configurations and responses</p>
+                    <a th:href="@{/api-configs}" class="btn btn-outline-success">
                         <i class="fas fa-cogs me-1"></i> Manage APIs
                     </a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-info">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Request Logs</h5>
-                    <p class="card-text">View incoming webhook request logs</p>
-                    <a th:href="@{|/view/${'@' + username}|}" class="btn btn-info">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-info bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 3rem; height: 3rem;">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h5 class="card-title fw-bold text-info">Request Logs</h5>
+                    <p class="card-text text-muted mb-3">View incoming webhook request logs and analytics</p>
+                    <a th:href="@{|/view/${'@' + username}|}" class="btn btn-outline-info">
                         <i class="fas fa-history me-1"></i> View Logs
                     </a>
                 </div>
@@ -51,29 +60,68 @@
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5>Quick Start Guide</h5>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 d-flex align-items-center">
+                <i class="fas fa-rocket me-2 text-primary"></i>
+                Quick Start Guide
+            </h5>
         </div>
         <div class="card-body">
-            <ol>
-                <li>
-                    <strong>Create API Configs:</strong>
-                    Go to API Configurations to create endpoints with customized responses
-                </li>
-                <li>
-                    <strong>Test Your Webhook:</strong>
-                    Send requests to your webhook URL: <code th:text="${ domain + '/api/@' + username + '/your-path'}">https://domain/api/@username/your-path</code>
-                </li>
-                <li>
-                    <strong>View Request Logs:</strong>
-                    Check the Request Logs page to see detailed information about incoming requests
-                </li>
-                <li>
-                    <strong>Share Your Webhook:</strong>
-                    Give others your webhook URL to let them send requests to your mock API
-                </li>
-            </ol>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">
+                                <small class="fw-bold">1</small>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="fw-bold">Create API Configs</h6>
+                            <p class="text-muted mb-0">Go to API Configurations to create endpoints with customized responses</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">
+                                <small class="fw-bold">2</small>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="fw-bold">Test Your Webhook</h6>
+                            <p class="text-muted mb-0">Send requests to: <code class="small" th:text="${ domain + '/api/@' + username + '/your-path'}">URL</code></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">
+                                <small class="fw-bold">3</small>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="fw-bold">View Request Logs</h6>
+                            <p class="text-muted mb-0">Check the Request Logs page to see detailed information about incoming requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">
+                                <small class="fw-bold">4</small>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="fw-bold">Share Your Webhook</h6>
+                            <p class="text-muted mb-0">Give others your webhook URL to let them send requests to your mock API</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

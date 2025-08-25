@@ -73,8 +73,14 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 # Build ra file JAR hoặc WAR trong target/
 ./mvnw package
 
+# Chạy lệnh flyway repair để sửa lại lịch sử migration
+./mvnw flyway:repair -Dflyway.url=jdbc:h2:file:./data/mockwebhook -Dflyway.user=sa -Dflyway.password=
+
 # Chạy ứng dụng Spring Boot
 ./mvnw spring-boot:run
+# hoặc
+java -jar ./app.jar
+java -jar ./target/WebHookMock-0.0.1-SNAPSHOT.jar
 
 # Chạy test unit
 ./mvnw test
@@ -129,6 +135,34 @@ Default URL: `http://localhost:8081`
 
 The application uses an H2 database by default, with the database file stored in the `./data/mockwebhook` directory. You can modify the configuration in `application.properties`.
 You can set the base domain for generated webhook URLs via `app.domain` or the `APP_DOMAIN` environment variable. The H2 console is available at `/h2-console` during development.
+
+### Database Migration
+
+**Important**: If you're upgrading from a previous version, your existing database will be automatically migrated to support new features.
+
+The application now includes:
+
+- **Flyway** for automatic database migration
+- **Response delay functionality** - configure delays (0-60000ms) for API responses
+- **Improved database versioning** and migration tracking
+
+For detailed migration information, see [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md).
+
+To validate your migration was successful, run:
+
+```bash
+./validate_migration.sh
+```
+
+### Troubleshooting Database Issues
+
+If you encounter Flyway migration validation errors, use the repair script:
+
+```bash
+./repair_database.sh
+```
+
+This script will attempt to repair failed migrations automatically. If issues persist, you may need to delete the `data/` directory to start with a fresh database.
 
 ## Usage
 

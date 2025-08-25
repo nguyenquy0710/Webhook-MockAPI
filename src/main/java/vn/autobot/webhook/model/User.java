@@ -29,8 +29,11 @@ public class User {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String role;
+    @Column(nullable = true)
+    private String role = "USER";
+
+    @Column(nullable = true)
+    private Boolean enabled = true;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -43,6 +46,9 @@ public class User {
         this.createdAt = LocalDateTime.now();
         if (this.role == null) {
             this.role = "USER";
+        }
+        if (this.enabled == null) {
+            this.enabled = true;
         }
     }
 }

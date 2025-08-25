@@ -36,3 +36,11 @@ build/
 *.db
 *.db-journal
 *.log
+
+# Application JAR file
+app.jar
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# Database files
+data/
