@@ -129,7 +129,8 @@
         </div>
         <div class="card-body">
           <div class="table-responsive">
-            <table class="table table-striped">
+            <table id="apiConfigsTable" class="table table-striped" 
+                   th:attr="data-username=${username},data-domain=${domain}">
               <thead>
                 <tr>
                   <th>Path</th>
@@ -141,39 +142,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr th:if="${apiConfigs.empty}">
-                  <td colspan="6" class="text-center">No API configurations found. Create one above.</td>
-                </tr>
-                <tr th:each="config : ${apiConfigs}">
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <code th:text="${'/api/@' + username + config.path}"></code>
-                      <button class="btn btn-sm btn-outline-secondary ms-2 copy-endpoint-btn" th:attr="data-endpoint=${domain + '/api/@' + username + config.path},
-                                                data-method=${config.method}" title="Copy full endpoint URL">
-                        <i class="fas fa-copy"></i>
-                      </button>
-                    </div>
-                  </td>
-                  <td><span class="badge bg-primary" th:text="${config.method}">GET</span></td>
-                  <td>
-                    <span
-                      th:class="${'badge ' + (config.statusCode >= 200 && config.statusCode < 300 ? 'bg-success' : (config.statusCode >= 400 ? 'bg-danger' : 'bg-warning'))}"
-                      th:text="${config.statusCode}">200</span>
-                  </td>
-                  <td><span class="badge bg-secondary" th:text="${config.contentType}">application/json</span></td>
-                  <td th:text="${config.delayMs + ' ms'}">0 ms</td>
-                  <td>
-                    <div class="btn-group btn-group-sm">
-                      <a th:href="@{/api-configs/{id}(id=${config.id})}" class="btn btn-outline-primary">
-                        <i class="fas fa-edit"></i> Edit
-                      </a>
-                      <button type="button" class="btn btn-outline-danger"
-                        th:attr="onclick='confirmDelete(' + ${config.id} + ', \'' + ${config.path} + '\', \'' + ${config.method} + '\')'">
-                        <i class="fas fa-trash"></i> Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <!-- DataTables will populate this via AJAX -->
               </tbody>
             </table>
           </div>

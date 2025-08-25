@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -71,7 +73,7 @@ public class ApiMockService {
    */
   public List<ApiConfigDto> getApiConfigs(String username) {
     User user = userService.findByUsername(username);
-    List<ApiConfig> apiConfigs = apiConfigRepository.findByUser(user);
+    List<ApiConfig> apiConfigs = apiConfigRepository.findByUserOrderByCreatedAtDesc(user);
 
     return apiConfigs.stream()
         .map(this::convertToDto)
@@ -239,6 +241,12 @@ public class ApiMockService {
     }
 
     return responseBuilder.body(responseBody);
+  }
+
+  public Page<ApiConfigDto> getApiConfigsPageable(String username, Pageable pageable) {
+    User user = userService.findByUsername(username);
+    Page<ApiConfig> apiConfigs = apiConfigRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+    return apiConfigs.map(this::convertToDto);
   }
 
   /**
