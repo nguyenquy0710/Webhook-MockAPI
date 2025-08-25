@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Set the current user and time to match the provided ones
     const currentUser = 'hades12x1'; // Using the provided username
     let currentTime = '2025-03-04 05:45:37'; // Using the updated provided time
@@ -71,7 +71,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    formatJsonInDetails();
+    // formatJsonInDetails();
+
+    // Attach event listeners to view details buttons to format JSON when modal is shown
+    document.querySelectorAll('.view-details-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            setTimeout(() => {
+                formatJsonInDetails();
+            }, 100); // delay nhẹ sau khi modal mở
+        });
+    });
 
     // WebSocket connection for real-time updates
     let stompClient = null;
@@ -83,21 +92,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const targetUsername = document.querySelector('.current-time')?.getAttribute('data-username') || currentUser;
 
-        stompClient.connect({}, function(frame) {
+        stompClient.connect({}, function (frame) {
             console.log('Connected to WebSocket: ' + frame);
 
-            stompClient.subscribe('/topic/requests/' + targetUsername, function(message) {
+            stompClient.subscribe('/topic/requests/' + targetUsername, function (message) {
                 const data = JSON.parse(message.body);
                 if (data.type === 'REQUEST_UPDATE') {
                     updateRequestCount(data.count);
+
+                    // Check if any modal is open
+                    const anyModalOpen = document.querySelector('.modal.show');
                     // Reload the page to show the latest logs if we're on the first page
                     const currentPage = parseInt(document.querySelector('.page-item.active')?.textContent) || 1;
-                    if (currentPage === 1) {
+                    if (!anyModalOpen && currentPage === 1) {
                         location.reload();
                     }
                 }
             });
-        }, function(error) {
+        }, function (error) {
             console.error('Error connecting to WebSocket:', error);
             // Try to reconnect after a delay
             setTimeout(connectWebSocket, 5000);
@@ -116,29 +128,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Re-check for new logs every 2 seconds
     var intervalId = undefined
-    setTimeout(function() {
-      var intervalId = setInterval(function() {
-          const targetUsername = document.querySelector('.current-time')?.getAttribute('data-username') || currentUser;
-          fetch(`/api/logs/@${targetUsername}/count`)
-              .then(response => {
-                if (!response.ok) {
-                    // HTTP status code không phải 200–299
-                    console.error(`Fetch failed with status: ${response.status}`);
-                    clearInterval(intervalId);
-                    return Promise.reject(new Error('Fetch failed'));
-                }
-                return response.json();
-              })
-              //.then(response => response.json())
-              .then(data => {
-                  updateRequestCount(data.count);
-              })
-              .catch(error => {
-                  console.error('Error fetching log count:', error);
-              });
-      }, 2000);
+    setTimeout(function () {
+        var intervalId = setInterval(function () {
+            const targetUsername = document.querySelector('.current-time')?.getAttribute('data-username') || currentUser;
+            fetch(`/api/logs/@${targetUsername}/count`)
+                .then(response => {
+                    if (!response.ok) {
+                        // HTTP status code không phải 200–299
+                        console.error(`Fetch failed with status: ${response.status}`);
+                        clearInterval(intervalId);
+                        return Promise.reject(new Error('Fetch failed'));
+                    }
+                    return response.json();
+                })
+                //.then(response => response.json())
+                .then(data => {
+                    updateRequestCount(data.count);
+                })
+                .catch(error => {
+                    console.error('Error fetching log count:', error);
+                });
+        }, 2000);
     }, 2000)
-    
+
     // Copy curl command functionality
     const curlButtons = document.querySelectorAll('.copy-curl-btn');
     if (curlButtons.length > 0) {
@@ -147,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const toastMsg = document.getElementById('copyCurlToastMessage');
 
         curlButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const curl = this.getAttribute('data-curl');
                 navigator.clipboard.writeText(curl)
                     .then(() => {
