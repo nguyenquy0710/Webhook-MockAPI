@@ -277,80 +277,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Improved Pagination with page size selector -->
-                    <div class="pagination-container" th:if="${logs.totalPages > 0}">
-                        <!-- Page size selector -->
-                        <div class="pagination-options">
-                            <span>Rows per page:</span>
-                            <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
-                                <option th:selected="${pageSize == 5}" value="5">5</option>
-                                <option th:selected="${pageSize == 10}" value="10">10</option>
-                                <option th:selected="${pageSize == 25}" value="25">25</option>
-                                <option th:selected="${pageSize == 50}" value="50">50</option>
-                                <option th:selected="${pageSize == 100}" value="100">100</option>
-                            </select>
-                            <span th:text="${'Showing ' + (logs.numberOfElements) + ' of ' + totalLogs + ' items'}">Showing X of Y
-                                items</span>
-                        </div>
-
-                        <!-- Page navigation -->
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination mb-0">
-                                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                    <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize})}">&laquo;</a>
-                                </li>
-                                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                                    <a class="page-link"
-                                        th:href="@{|/view/@${targetUsername}|(page=${currentPage - 1}, size=${pageSize})}">&lt;</a>
-                                </li>
-
-                                <!-- Show limited page numbers with ellipsis for many pages -->
-                                <th:block
-                                    th:with="
-                            totalPages=${logs.totalPages},
-                            maxPagesToShow=5,
-                            halfMax=${maxPagesToShow / 2},
-                            startPage=${currentPage - halfMax < 0 ? 0 : currentPage - halfMax},
-                            endPage=${startPage + maxPagesToShow - 1 > totalPages - 1 ? totalPages - 1 : startPage + maxPagesToShow - 1},
-                            startPage=${endPage - maxPagesToShow + 1 < 0 ? 0 : (endPage - maxPagesToShow + 1 > startPage ? startPage : endPage - maxPagesToShow + 1)}">
-
-                                    <!-- Show first page with ellipsis if needed -->
-                                    <li class="page-item" th:if="${startPage > 0}">
-                                        <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize})}">1</a>
-                                    </li>
-                                    <li class="page-item disabled" th:if="${startPage > 1}">
-                                        <span class="page-link">...</span>
-                                    </li>
-
-                                    <!-- Show page numbers -->
-                                    <li class="page-item" th:each="i: ${#numbers.sequence(startPage, endPage)}"
-                                        th:classappend="${i == currentPage ? 'active' : ''}">
-                                        <a class="page-link" th:text="${i + 1}"
-                                            th:href="@{|/view/@${targetUsername}|(page=${i}, size=${pageSize})}">1</a>
-                                    </li>
-
-                                    <!-- Show last page with ellipsis if needed -->
-                                    <li class="page-item disabled" th:if="${endPage < totalPages - 2}">
-                                        <span class="page-link">...</span>
-                                    </li>
-                                    <li class="page-item" th:if="${endPage < totalPages - 1}">
-                                        <a class="page-link" th:text="${totalPages}"
-                                            th:href="@{|/view/@${targetUsername}|(page=${totalPages - 1}, size=${pageSize})}">#</a>
-                                    </li>
-                                </th:block>
-
-                                <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
-                                    <a class="page-link"
-                                        th:href="@{|/view/@${targetUsername}|(page=${currentPage + 1}, size=${pageSize})}">&gt;</a>
-                                </li>
-                                <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
-                                    <a class="page-link"
-                                        th:href="@{|/view/@${targetUsername}|(page=${logs.totalPages - 1}, size=${pageSize})}">&raquo;</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
                 </div>
             </div>
         </div>
@@ -398,13 +324,7 @@
             /*]]>*/
         </script>
         <script th:src="@{/js/request-log.js}"></script>
-        <script>
-            // Page size selector functionality
-            document.getElementById('pageSizeSelect').addEventListener('change', function () {
-                const selectedSize = this.value;
-                window.location.href = `/view/@${username}?page=0&size=${selectedSize}`;
-            });
-        </script>
+        <script th:src="@{/js/datatables-init.js}"></script>
     </body>
 
 </html>
