@@ -73,7 +73,7 @@ public class ApiMockService {
    */
   public List<ApiConfigDto> getApiConfigs(String username) {
     User user = userService.findByUsername(username);
-    List<ApiConfig> apiConfigs = apiConfigRepository.findByUserOrderByCreatedAtDesc(user);
+    List<ApiConfig> apiConfigs = apiConfigRepository.findByUser(user);
 
     return apiConfigs.stream()
         .map(this::convertToDto)
