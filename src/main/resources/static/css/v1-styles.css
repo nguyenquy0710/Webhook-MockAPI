@@ -1,0 +1,358 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+/* Global Styles */
+body {
+  padding-bottom: 160px !important; /* Space for footer */
+  margin-bottom: 0;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+footer {
+  /* position: absolute; */
+  bottom: 0;
+  width: 100%;
+  min-height: 160px;
+  background-color: #f5f5f5;
+}
+
+/* Enhanced Card Shadows */
+.card {
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  background-color: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 1rem;
+  border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+/* Enhanced Feature Icons */
+.feature-icon {
+  transition: transform 0.3s ease;
+}
+
+.feature-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Modern Navigation */
+.nav-pills .nav-link {
+  transition: all 0.3s ease;
+  margin: 0 0.25rem;
+}
+
+.nav-pills .nav-link:hover {
+  transform: translateY(-1px);
+}
+
+/* Enhanced Buttons */
+.btn {
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Loading States */
+.btn.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.btn.loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Enhanced Form Controls */
+.form-control:focus,
+.form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  transform: translateY(-1px);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+/* Enhanced Cards with Better Hover Effects */
+.card:hover .feature-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Modern Alerts */
+.alert {
+  border: none;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d1f2eb 0%, #a7e0d1 100%);
+  color: #0f5132;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f1aeb5 100%);
+  color: #842029;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #d1ecf1 0%, #a6d0dd 100%);
+  color: #055160;
+}
+
+/* Enhanced Tables */
+.table th {
+  font-weight: 600;
+  border-top: none;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/*
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+  transform: scale(1.01);
+}
+*/
+
+/* Progress Bars */
+.progress {
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  background: linear-gradient(45deg, #007bff, #0056b3);
+  border-radius: 0.25rem;
+}
+
+/* Table Styling */
+.table th {
+  font-weight: 600;
+  border-top: none;
+}
+
+/* Code blocks */
+pre {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+code {
+  color: #d63384;
+  font-size: 0.875em;
+}
+
+/* Log details styling */
+.log-details {
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+}
+
+/* Form elements */
+.form-control:focus,
+.form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+/* Nav tabs */
+.nav-tabs .nav-link {
+  color: #6c757d;
+  border: none;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: #0d6efd;
+  background-color: transparent;
+  border-bottom: 2px solid #0d6efd;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: transparent;
+  border-bottom: 2px solid #e9ecef;
+}
+
+/* Real-time indicator */
+.current-time {
+  background-color: #f8f9fa;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #dee2e6;
+}
+
+.real-time-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: #28a745;
+  border-radius: 50%;
+  margin-right: 5px;
+  animation: pulse 2s infinite;
+}
+
+/* Pagination styles */
+.pagination-options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+@media (max-width: 576px) {
+  /* Increase body padding on mobile to prevent footer overlap */
+  body {
+    padding-bottom: 240px !important;
+  }
+
+  /* Fix for button visibility on mobile */
+  .d-flex.align-items-center.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Make button full width on mobile */
+  .btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  /* Ensure "Have an account? Login!" link is visible */
+  .small {
+    display: block;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Ensure card fits on small screens */
+  .card {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    margin-bottom: 3rem; /* Add extra margin below the card on mobile */
+  }
+
+  /* Add more bottom margin to ensure visibility */
+  .container {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 991px) {
+  /* Increase body padding on tablets to prevent footer overlap */
+  body {
+    padding-bottom: 200px !important;
+  }
+
+  /* Add extra bottom margin to card on tablets */
+  .card {
+    margin-bottom: 2.5rem;
+  }
+
+  /* Add more bottom margin to ensure visibility */
+  .container {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Ensure button has enough space */
+  .d-flex.align-items-center.justify-content-between {
+    margin-bottom: 1rem;
+  }
+
+  /* Make the button more prominent */
+  .btn-primary {
+    padding: 0.5rem 1.5rem;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}

@@ -1,10 +1,10 @@
 // DataTables initialization for admin users table
-$(document).ready(function() {
+$(document).ready(function () {
     // Initialize users table if it exists
     if ($('#usersTable').length) {
         $('#usersTable').DataTable({
             "pageLength": 25,
-            "order": [[ 0, "asc" ]],
+            "order": [[0, "asc"]],
             "columnDefs": [
                 { "orderable": false, "targets": 6 } // Disable sorting on Actions column
             ],
@@ -18,12 +18,12 @@ $(document).ready(function() {
             }
         });
     }
-    
+
     // Initialize request logs table if it exists
     if ($('#requestLogsTable').length) {
         $('#requestLogsTable').DataTable({
             "pageLength": 25,
-            "order": [[ 0, "desc" ]], // Sort by time (newest first)
+            "order": [[0, "desc"]], // Sort by time (newest first)
             "columnDefs": [
                 { "orderable": false, "targets": 5 } // Disable sorting on Details column
             ],

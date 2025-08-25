@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Format JSON in textareas for better display
     const formatJsonTextareas = () => {
         const jsonTextareas = ['responseBody', 'responseHeaders'];
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener for content type change
     const contentTypeSelect = document.getElementById('contentType');
     if (contentTypeSelect) {
-        contentTypeSelect.addEventListener('change', function() {
+        contentTypeSelect.addEventListener('change', function () {
             const responseBody = document.getElementById('responseBody');
             if (responseBody && this.value === 'application/json') {
                 try {
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add validation for JSON format
     const form = document.querySelector('form');
     if (form) {
-        form.addEventListener('submit', function(event) {
+        form.addEventListener('submit', function (event) {
             const contentType = document.getElementById('contentType').value;
             const responseBody = document.getElementById('responseBody').value.trim();
             const responseHeaders = document.getElementById('responseHeaders').value.trim();
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const toastMessage = document.getElementById('copyToastMessage');
 
         copyButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const endpoint = this.getAttribute('data-endpoint');
                 const method = this.getAttribute('data-method');
 
