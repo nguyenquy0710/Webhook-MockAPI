@@ -1,16 +1,29 @@
 package vn.autobot.webhook.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import vn.autobot.webhook.config.AppConfig;
+import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.CreateUserRequestDto;
 import vn.autobot.webhook.model.User;
+import vn.autobot.webhook.service.ApiMockService;
+import vn.autobot.webhook.service.RequestLogService;
 import vn.autobot.webhook.service.UserService;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @Controller
 @RequestMapping("/admin")
@@ -20,14 +33,16 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping("/users")
-    public String listUsers(Model model) {
+    public String listUsers(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("username", userDetails.getUsername());
         return "admin/users";
     }
 
     @GetMapping("/users/{id}")
-    public String viewUser(@PathVariable Long id, Model model) {
+    public String viewUser(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("userDetail", userService.getUserById(id));
+        model.addAttribute("username", userDetails.getUsername());
         return "admin/user-detail";
     }
 
@@ -65,8 +80,9 @@ public class AdminController {
     }
 
     @GetMapping("/users/create")
-    public String showCreateUserForm(Model model) {
+    public String showCreateUserForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("createUserRequest", new CreateUserRequestDto());
+        model.addAttribute("username", userDetails.getUsername());
         return "admin/user-create";
     }
 
