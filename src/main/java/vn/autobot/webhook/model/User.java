@@ -29,10 +29,10 @@ public class User {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String role;
+    @Column(nullable = true)
+    private String role = "USER";
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Boolean enabled = true;
 
     @Column(name = "created_at")
