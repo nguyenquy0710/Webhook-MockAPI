@@ -62,6 +62,13 @@ public class DatabaseMigrationConfig {
                 log.warn("Attempting to repair failed migrations...");
                 flyway.repair();
                 log.info("Migration repair completed successfully");
+                
+                log.info("Starting migration after repair...");
+                flyway.migrate();
+                log.info("Migration after repair completed successfully");
+            } else {
+                // Nếu không lỗi, chạy migrate luôn đảm bảo DB up-to-date
+                flyway.migrate();
             }
         } catch (FlywayException e) {
             log.error("Error during migration repair: {}", e.getMessage());

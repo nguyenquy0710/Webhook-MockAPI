@@ -27,6 +27,10 @@ WORKDIR /app
 COPY app.jar ./app.jar
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+COPY repair_database.sh ./repair_database.sh
+RUN chmod +x ./repair_database.sh
+COPY validate_migration.sh ./validate_migration.sh
+RUN chmod +x ./validate_migration.sh
 
 # Expose cổng mặc định của ứng dụng
 EXPOSE 8081
