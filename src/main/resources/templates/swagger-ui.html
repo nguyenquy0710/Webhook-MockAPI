@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" />
-    <title>API Docs</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />
-</head>
-<body>
-<div id="swagger-ui"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    window.onload = function() {
-        SwaggerUIBundle({
-            url: [[${swaggerUrl}]],
-            dom_id: '#swagger-ui',
-            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-            layout: 'StandaloneLayout'
-        });
-    };
-    /*]]>*/
-</script>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <title>API Docs</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />
+    </head>
+
+    <body>
+        <div id="swagger-ui"></div>
+
+        <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            window.onload = function () {
+                SwaggerUIBundle({
+                    url: [[${ swaggerUrl }]],
+                    dom_id: '#swagger-ui',
+                    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+                    layout: 'StandaloneLayout'
+                });
+            };
+            /*]]>*/
+        </script>
+    </body>
+
 </html>

@@ -108,7 +108,8 @@
               </div>
               <div class="mb-3">
                 <label for="delayMs" class="form-label">Response Delay (ms)</label>
-                <input type="number" class="form-control" id="delayMs" th:field="*{delayMs}" min="0" max="60000" value="100" placeholder="100">
+                <input type="number" class="form-control" id="delayMs" th:field="*{delayMs}" min="0" max="60000" value="100"
+                  placeholder="100">
                 <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
                 <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
               </div>

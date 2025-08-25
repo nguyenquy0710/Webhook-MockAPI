@@ -1,79 +1,79 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head('User Detail')">
-    <title>User Detail</title>
-</head>
-<body>
-<div th:replace="fragments/header :: header"></div>
-<div class="container">
-    <div th:replace="fragments/navigation :: navigation"></div>
 
-    <h2 class="mb-4">User Detail</h2>
+    <head th:replace="fragments/header :: head('User Detail')">
+        <title>User Detail</title>
+    </head>
 
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>ID:</strong> <span th:text="${userDetail.id}">1</span></p>
-                    <p><strong>Username:</strong> <span th:text="${userDetail.username}">user</span></p>
-                    <p><strong>Email:</strong> <span th:text="${userDetail.email}">email</span></p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Role:</strong> 
-                        <span class="badge" th:classappend="${userDetail.role == 'ADMIN' ? 'bg-danger' : 'bg-secondary'}" 
-                              th:text="${userDetail.role}">USER</span>
-                    </p>
-                    <p><strong>Status:</strong> 
-                        <span class="badge" th:classappend="${userDetail.enabled ? 'bg-success' : 'bg-warning'}" 
-                              th:text="${userDetail.enabled ? 'Enabled' : 'Disabled'}">Enabled</span>
-                    </p>
-                    <p><strong>Created:</strong> 
-                        <span th:text="${#temporals.format(userDetail.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2023-01-01 00:00:00</span>
-                    </p>
+    <body>
+        <div th:replace="fragments/header :: header"></div>
+        <div class="container">
+            <div th:replace="fragments/navigation :: navigation"></div>
+
+            <h2 class="mb-4">User Detail</h2>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>ID:</strong> <span th:text="${userDetail.id}">1</span></p>
+                            <p><strong>Username:</strong> <span th:text="${userDetail.username}">user</span></p>
+                            <p><strong>Email:</strong> <span th:text="${userDetail.email}">email</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Role:</strong>
+                                <span class="badge" th:classappend="${userDetail.role == 'ADMIN' ? 'bg-danger' : 'bg-secondary'}"
+                                    th:text="${userDetail.role}">USER</span>
+                            </p>
+                            <p><strong>Status:</strong>
+                                <span class="badge" th:classappend="${userDetail.enabled ? 'bg-success' : 'bg-warning'}"
+                                    th:text="${userDetail.enabled ? 'Enabled' : 'Disabled'}">Enabled</span>
+                            </p>
+                            <p><strong>Created:</strong>
+                                <span th:text="${#temporals.format(userDetail.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2023-01-01 00:00:00</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- API Configurations Count -->
+                    <div class="mt-3">
+                        <p><strong>API Configurations:</strong>
+                            <span class="badge bg-info" th:text="${#lists.size(userDetail.apiConfigs)}">0</span>
+                        </p>
+                    </div>
                 </div>
             </div>
-            
-            <!-- API Configurations Count -->
+
             <div class="mt-3">
-                <p><strong>API Configurations:</strong> 
-                    <span class="badge bg-info" th:text="${#lists.size(userDetail.apiConfigs)}">0</span>
-                </p>
+                <a th:href="@{/admin/users}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to list
+                </a>
+
+                <!-- Quick Actions -->
+                <div class="btn-group ms-2" role="group">
+                    <!-- Toggle Role -->
+                    <form th:action="@{|/admin/users/${userDetail.id}/toggle-role|}" method="post" class="d-inline">
+                        <button class="btn btn-outline-info" type="submit"
+                            th:title="${userDetail.role == 'ADMIN' ? 'Demote to User' : 'Promote to Admin'}"
+                            onclick="return confirm(this.title + '?')">
+                            <i class="fas" th:classappend="${userDetail.role == 'ADMIN' ? 'fa-user-minus' : 'fa-user-shield'}"></i>
+                            <span th:text="${userDetail.role == 'ADMIN' ? 'Demote' : 'Promote'}"></span>
+                        </button>
+                    </form>
+
+                    <!-- Toggle Status -->
+                    <form th:action="@{|/admin/users/${userDetail.id}/toggle-status|}" method="post" class="d-inline">
+                        <button class="btn" th:classappend="${userDetail.enabled ? 'btn-outline-warning' : 'btn-outline-success'}"
+                            type="submit" th:title="${userDetail.enabled ? 'Disable User' : 'Enable User'}"
+                            onclick="return confirm(this.title + '?')">
+                            <i class="fas" th:classappend="${userDetail.enabled ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                            <span th:text="${userDetail.enabled ? 'Disable' : 'Enable'}"></span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+        <div th:replace="fragments/footer :: footer"></div>
+    </body>
 
-    <div class="mt-3">
-        <a th:href="@{/admin/users}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Back to list
-        </a>
-        
-        <!-- Quick Actions -->
-        <div class="btn-group ms-2" role="group">
-            <!-- Toggle Role -->
-            <form th:action="@{|/admin/users/${userDetail.id}/toggle-role|}" method="post" class="d-inline">
-                <button class="btn btn-outline-info" type="submit" 
-                        th:title="${userDetail.role == 'ADMIN' ? 'Demote to User' : 'Promote to Admin'}"
-                        onclick="return confirm(this.title + '?')">
-                    <i class="fas" th:classappend="${userDetail.role == 'ADMIN' ? 'fa-user-minus' : 'fa-user-shield'}"></i>
-                    <span th:text="${userDetail.role == 'ADMIN' ? 'Demote' : 'Promote'}"></span>
-                </button>
-            </form>
-            
-            <!-- Toggle Status -->
-            <form th:action="@{|/admin/users/${userDetail.id}/toggle-status|}" method="post" class="d-inline">
-                <button class="btn" 
-                        th:classappend="${userDetail.enabled ? 'btn-outline-warning' : 'btn-outline-success'}"
-                        type="submit" 
-                        th:title="${userDetail.enabled ? 'Disable User' : 'Enable User'}"
-                        onclick="return confirm(this.title + '?')">
-                    <i class="fas" th:classappend="${userDetail.enabled ? 'fa-user-slash' : 'fa-user-check'}"></i>
-                    <span th:text="${userDetail.enabled ? 'Disable' : 'Enable'}"></span>
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-<div th:replace="fragments/footer :: footer"></div>
-</body>
 </html>
-

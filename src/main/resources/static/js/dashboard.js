@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Copy base URL functionality
     const copyBaseUrlBtn = document.querySelector('.copy-base-url-btn');
     if (copyBaseUrlBtn) {
-        copyBaseUrlBtn.addEventListener('click', function() {
+        copyBaseUrlBtn.addEventListener('click', function () {
             const baseUrlInput = this.previousElementSibling;
             baseUrlInput.select();
             document.execCommand('copy');

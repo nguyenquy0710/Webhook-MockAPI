@@ -1,63 +1,74 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head('Register')">
-    <title>Register - Mock Webhook</title>
-</head>
-<body>
-<div th:replace="fragments/header :: header"></div>
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow border-0 rounded-4 mt-5">
-                <div class="card-header bg-white border-0 text-center py-4">
-                    <h3 class="text-dark fw-light mb-0">Create Account</h3>
-                    <p class="text-muted mt-2 mb-0">Join the Mock Webhook platform</p>
-                </div>
-                <div class="card-body px-4 pb-4">
-                    <div class="alert alert-danger d-flex align-items-center" th:if="${errorMessage}">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <div th:text="${errorMessage}">Error message</div>
+    <head th:replace="fragments/header :: head('Register')">
+        <title>Register - Mock Webhook</title>
+    </head>
+
+    <body>
+        <div th:replace="fragments/header :: header"></div>
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card shadow border-0 rounded-4 mt-5">
+                        <div class="card-header bg-white border-0 text-center py-4">
+                            <h3 class="text-dark fw-light mb-0">Create Account</h3>
+                            <p class="text-muted mt-2 mb-0">Join the Mock Webhook platform</p>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <div class="alert alert-danger d-flex align-items-center" th:if="${errorMessage}">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <div th:text="${errorMessage}">Error message</div>
+                            </div>
+                            <form th:action="@{/register}" th:object="${registerRequest}" method="post">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control form-control-lg" id="username" type="text" th:field="*{username}"
+                                        placeholder="Username" required />
+                                    <label for="username"><i class="fas fa-user me-2"></i>Username</label>
+                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">
+                                    </div>
+                                    <small class="form-text text-muted mt-1">Your webhook API URL will be:
+                                        <code>https://domain/api/@username</code></small>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input class="form-control form-control-lg" id="email" type="email" th:field="*{email}"
+                                        placeholder="name@example.com" required />
+                                    <label for="email"><i class="fas fa-envelope me-2"></i>Email address</label>
+                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input class="form-control form-control-lg" id="password" type="password" th:field="*{password}"
+                                        placeholder="Password" required />
+                                    <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
+                                    </div>
+                                </div>
+                                <div class="form-floating mb-4">
+                                    <input class="form-control form-control-lg" id="confirmPassword" type="password"
+                                        th:field="*{confirmPassword}" placeholder="Confirm Password" required />
+                                    <label for="confirmPassword"><i class="fas fa-lock me-2"></i>Confirm Password</label>
+                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('confirmPassword')}"
+                                        th:errors="*{confirmPassword}"></div>
+                                </div>
+                                <div class="d-grid mb-3">
+                                    <button class="btn btn-primary btn-lg" type="submit">
+                                        <i class="fas fa-user-plus me-2"></i>Create Account
+                                    </button>
+                                </div>
+                                <div class="text-center">
+                                    <p class="mb-0">Already have an account?
+                                        <a th:href="@{/login}" class="text-decoration-none fw-bold">Sign In</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <form th:action="@{/register}" th:object="${registerRequest}" method="post">
-                        <div class="form-floating mb-3">
-                            <input class="form-control form-control-lg" id="username" type="text" th:field="*{username}" placeholder="Username" required />
-                            <label for="username"><i class="fas fa-user me-2"></i>Username</label>
-                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
-                            <small class="form-text text-muted mt-1">Your webhook API URL will be: <code>https://domain/api/@username</code></small>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input class="form-control form-control-lg" id="email" type="email" th:field="*{email}" placeholder="name@example.com" required />
-                            <label for="email"><i class="fas fa-envelope me-2"></i>Email address</label>
-                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input class="form-control form-control-lg" id="password" type="password" th:field="*{password}" placeholder="Password" required />
-                            <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
-                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
-                        </div>
-                        <div class="form-floating mb-4">
-                            <input class="form-control form-control-lg" id="confirmPassword" type="password" th:field="*{confirmPassword}" placeholder="Confirm Password" required />
-                            <label for="confirmPassword"><i class="fas fa-lock me-2"></i>Confirm Password</label>
-                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
-                        </div>
-                        <div class="d-grid mb-3">
-                            <button class="btn btn-primary btn-lg" type="submit">
-                                <i class="fas fa-user-plus me-2"></i>Create Account
-                            </button>
-                        </div>
-                        <div class="text-center">
-                            <p class="mb-0">Already have an account? 
-                                <a th:href="@{/login}" class="text-decoration-none fw-bold">Sign In</a>
-                            </p>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div th:replace="fragments/footer :: footer"></div>
-</body>
+        <div th:replace="fragments/footer :: footer"></div>
+    </body>
+
 </html>
