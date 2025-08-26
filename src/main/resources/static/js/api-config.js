@@ -71,36 +71,41 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Copy endpoint URL functionality
-    const copyButtons = document.querySelectorAll('.copy-endpoint-btn');
-    if (copyButtons.length > 0) {
-        // Create toast instance
-        const toastEl = document.getElementById('copyToast');
-        const toast = new bootstrap.Toast(toastEl, {
-            delay: 2000
-        });
+    // Initialize copy buttons functionality
+    initializeCopyButtons();
 
-        const toastMessage = document.getElementById('copyToastMessage');
-
-        copyButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const endpoint = this.getAttribute('data-endpoint');
-                const method = this.getAttribute('data-method');
-
-                // Copy to clipboard
-                navigator.clipboard.writeText(endpoint)
-                    .then(() => {
-                        // Update toast message
-                        toastMessage.textContent = `${method} ${endpoint} copied to clipboard!`;
-
-                        // Show toast
-                        toast.show();
-                    })
-                    .catch(err => {
-                        console.error('Failed to copy endpoint: ', err);
-                    });
+    // Function to initialize copy buttons (extracted for reuse)
+    function initializeCopyButtons() {
+        const copyButtons = document.querySelectorAll('.copy-endpoint-btn');
+        if (copyButtons.length > 0) {
+            // Create toast instance
+            const toastEl = document.getElementById('copyToast');
+            const toast = new bootstrap.Toast(toastEl, {
+                delay: 2000
             });
-        });
+
+            const toastMessage = document.getElementById('copyToastMessage');
+
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const endpoint = this.getAttribute('data-endpoint');
+                    const method = this.getAttribute('data-method');
+
+                    // Copy to clipboard
+                    navigator.clipboard.writeText(endpoint)
+                        .then(() => {
+                            // Update toast message
+                            toastMessage.textContent = `${method} ${endpoint} copied to clipboard!`;
+
+                            // Show toast
+                            toast.show();
+                        })
+                        .catch(err => {
+                            console.error('Failed to copy endpoint: ', err);
+                        });
+                });
+            });
+        }
     }
 });
 
