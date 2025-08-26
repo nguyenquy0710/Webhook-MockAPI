@@ -135,8 +135,9 @@ $(document).ready(function () {
             $('#logCurl').text(log.curl || 'No curl');
 
             // Mở modal
-            const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
-            modal.show();
+            $('#logDetailsModal').modal('show');
+            // const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+            // modal.show();
         });
     }
 });
