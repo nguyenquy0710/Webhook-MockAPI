@@ -1,5 +1,7 @@
 package vn.autobot.webhook.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import vn.autobot.webhook.model.ApiConfig;
@@ -11,9 +13,13 @@ import java.util.Optional;
 @Repository
 public interface ApiConfigRepository extends JpaRepository<ApiConfig, Long> {
 
-    List<ApiConfig> findByUser(User user);
+  List<ApiConfig> findByUser(User user);
 
-    Optional<ApiConfig> findByUserAndPathAndMethod(User user, String path, String method);
+  List<ApiConfig> findByUserOrderByCreatedAtDesc(User user);
 
-    boolean existsByUserAndPathAndMethod(User user, String path, String method);
+  Page<ApiConfig> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+
+  Optional<ApiConfig> findByUserAndPathAndMethod(User user, String path, String method);
+
+  boolean existsByUserAndPathAndMethod(User user, String path, String method);
 }
