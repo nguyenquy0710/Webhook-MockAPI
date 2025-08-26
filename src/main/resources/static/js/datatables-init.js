@@ -32,9 +32,12 @@ $(document).ready(function () {
     // Initialize request logs table if it exists
     if ($('#requestLogsTable').length) {
         MockAPI.DataTable['requestLogsTable'] = $('#requestLogsTable').DataTable({
+            "processing": true,
+            "serverSide": true,
             "ajax": {
                 "url": "/api/logs/@quynh",
-                "dataSrc": "content"  // Dữ liệu nằm trong trường "content"
+                "type": "GET", // Thường server-side cần POST để truyền nhiều tham số
+                "dataSrc": "data"  // Dữ liệu nằm trong trường "data"
             },
             "columns": [
                 {
@@ -77,12 +80,12 @@ $(document).ready(function () {
                     orderable: false,
                     render: function (data, type, row) {
                         return `
-            <button class="btn btn-sm btn-outline-primary view-details view-details-btn"
-                data-bs-toggle="modal" data-id="${data}"
-                data-bs-target="#detailsModal${data}">
-                <i class="fas fa-eye me-1"></i> View
-            </button>
-        `;
+                            <button class="btn btn-sm btn-outline-primary view-details view-details-btn"
+                                data-bs-toggle="modal" data-id="${data}"
+                                data-bs-target="#detailsModal${data}">
+                                <i class="fas fa-eye me-1"></i> View
+                            </button>
+                        `;
                     }
                 }
             ],

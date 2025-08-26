@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -55,8 +57,15 @@ public class ApiConfigService {
     return dto;
   }
 
-  public Page<ApiConfigDto> getApiConfigsPageable(String username, Pageable pageable) {
+  public Page<ApiConfigDto> getApiConfigsPageable(String username, int page, int size, String search) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     User user = userService.findByUsername(username);
+
+    if (search != null && !search.isEmpty()) {
+        return apiConfigRepository.findByUserOrderByCreatedAtDesc(user, pageable)
+                .map(this::convertToDto);
+    }
+
     Page<ApiConfig> apiConfigs = apiConfigRepository.findByUserOrderByCreatedAtDesc(user, pageable);
     return apiConfigs.map(this::convertToDto);
   }

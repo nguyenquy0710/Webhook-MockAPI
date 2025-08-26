@@ -9,6 +9,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.service.ApiMockService;
+import vn.autobot.webhook.service.ApiConfigService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/configs")
@@ -19,14 +23,32 @@ public class ApiConfigController {
     private final ApiConfigService apiConfigService;
 
     @GetMapping("/@{username}")
-    public ResponseEntity<Page<ApiConfigDto>> getApiConfigs(@PathVariable String username,
-                                                           @AuthenticationPrincipal UserDetails userDetails,
-                                                           Pageable pageable) {
+    public ResponseEntity<Map<String, Object>> getApiConfigs(
+        @PathVariable String username,
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestParam int draw,
+        @RequestParam int start,
+        @RequestParam int length,
+        @RequestParam(name = "search[value]", required = false) String searchValue,
+        Pageable pageable) {
+
         if (!username.equals(userDetails.getUsername())) {
             return ResponseEntity.status(403).build();
         }
 
-        Page<ApiConfigDto> configs = apiConfigService.getApiConfigsPageable(username, pageable);
-        return ResponseEntity.ok(configs);
+        // Tính toán trang hiện tại từ start & length
+        int page = start / length;
+
+        // Gọi service để lấy dữ liệu theo trang
+        Page<ApiConfigDto> configs = apiConfigService.getApiConfigsPageable(username, page, length, searchValue);
+
+        // Chuẩn bị dữ liệu phản hồi theo định dạng của DataTables
+        Map<String, Object> response = new HashMap<>();
+        response.put("draw", draw);
+        response.put("recordsTotal", configs.getTotalElements());
+        response.put("recordsFiltered", configs.getTotalElements()); // Nếu có lọc thì ghi số lượng sau lọc
+        response.put("data", configs.getContent());
+
+        return ResponseEntity.ok(response);
     }
 }
