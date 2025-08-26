@@ -64,6 +64,13 @@ WebHookMock is a Spring Boot application designed to simplify webhook developmen
 3. Run the application using Maven:
 
 ```bash
+# Cấu hình môi trường Java 17
+export JAVA_HOME=/home/codespace/java/17.0.15-ms
+export PATH=$JAVA_HOME/bin:$PATH
+
+java -version
+javac -version
+
 # Xóa thư mục target (build cũ)
 ./mvnw clean
 
