@@ -1,20 +1,38 @@
-$('.copy-btn').on('click', function () {
-  const preText = $(this).siblings('pre').text();
+function initializeCopyButtons() {
+  const copyButtons = document.querySelectorAll('.copy-btn');
 
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(preText).then(() => {
-      alert('Copied to clipboard!');
-    }).catch(err => {
-      alert('Copy failed!');
-      console.error(err);
+  if (copyButtons.length === 0) return;
+
+  // Optional: Bootstrap Toast setup
+  const toastEl = document.getElementById('copyToast');
+  const toastMessage = document.getElementById('copyToastMessage');
+  const toast = toastEl ? new bootstrap.Toast(toastEl, { delay: 2000 }) : null;
+
+  copyButtons.forEach(button => {
+    button.addEventListener('click', function () {
+      const pre = this.closest('.copy-wrapper')?.querySelector('pre');
+      const textToCopy = pre?.innerText || '';
+
+      if (!textToCopy) return;
+
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => {
+          if (toast && toastMessage) {
+            toastMessage.textContent = 'Copied to clipboard!';
+            toast.show();
+          } else {
+            console.log('Copied to clipboard!');
+            alert('Copied to clipboard!');
+          }
+        })
+        .catch(err => {
+          console.error('Copy failed: ', err);
+        });
     });
-  } else {
-    // fallback
-    const tempInput = $('<textarea>');
-    $('body').append(tempInput);
-    tempInput.val(preText).select();
-    document.execCommand('copy');
-    tempInput.remove();
-    alert('Copied to clipboard!');
-  }
+  });
+}
+
+// Run when DOM is ready
+document.addEventListener('DOMContentLoaded', function () {
+  initializeCopyButtons();
 });
