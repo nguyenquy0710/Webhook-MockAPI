@@ -1,0 +1,22 @@
+.copy-wrapper {
+  position: relative;
+  /* display: inline-block; */
+}
+
+.copy-btn {
+  display: none;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #007bff;
+  border: none;
+  color: white;
+  border-radius: 3px;
+}
+
+.copy-wrapper:hover .copy-btn {
+  display: block;
+}

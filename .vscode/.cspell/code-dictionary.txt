@@ -1,4 +1,5 @@
 # Custom Dictionary Words
+appender
 autobot
 bitnami
 changeme
@@ -7,7 +8,10 @@ Djava
 FLUSHDB
 isready
 javac
+jdbc
+logback
 minipc
+mockwebhook
 mvnw
 ooxml
 ovpn
