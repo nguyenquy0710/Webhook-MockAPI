@@ -86,7 +86,7 @@ $(document).ready(function () {
                     }
                 }
             ],
-            "pageLength": 25,
+            "pageLength": 10,
             "order": [[0, "desc"]], // Sort by time (newest first)
             "columnDefs": [
                 { "orderable": false, "targets": 5 } // Disable sorting on Details column
@@ -111,10 +111,27 @@ $(document).ready(function () {
             $('#logPath').text(log.path);
             $('#logStatus').text(log.responseStatus);
             $('#logSourceIp').text(log.sourceIp);
-            $('#logHeaders').text(log.requestHeaders || 'No headers');
+
+            try {
+                $('#logHeaders').text(JSON.stringify(JSON.parse(log.requestHeaders), null, 4) || 'No headers'); // Định dạng JSON đẹp hơn
+            } catch (error) {
+                $('#logHeaders').text(log.requestHeaders || 'No headers');
+            }
+
             $('#logParams').text(log.queryParams || 'No query parameters');
-            $('#logBody').text(log.requestBody || 'No request body');
-            $('#logResponse').text(log.responseBody || 'No response body');
+
+            try {
+                $('#logBody').text(JSON.stringify(JSON.parse(log.requestBody), null, 4) || 'No request body'); // Định dạng JSON đẹp hơn
+            } catch (error) {
+                $('#logBody').text(log.requestBody || 'No request body');
+            }
+
+            try {
+                $('#logResponse').text(JSON.stringify(JSON.parse(log.responseBody), null, 4) || 'No response body'); // Định dạng JSON đẹp hơn
+            } catch (error) {
+                $('#logResponse').text(log.responseBody || 'No response body');
+            }
+
             $('#logCurl').text(log.curl || 'No curl');
 
             // Mở modal

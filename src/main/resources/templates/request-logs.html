@@ -9,6 +9,18 @@
                 overflow-y: auto;
             }
 
+            #logCurl {
+                /* xuống dòng tự động */
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                /* tuỳ chọn */
+                max-height: 300px;
+                overflow-y: auto;
+                /* font đẹp cho code */
+                font-family: monospace;
+            }
+
             pre {
                 margin-bottom: 0;
             }
@@ -338,19 +350,34 @@
                                                 </table>
                                             </div>
                                             <div class="tab-pane fade" id="headersTab">
-                                                <pre id="logHeaders" class="log-details"></pre>
+                                                <div class="copy-wrapper">
+                                                    <pre id="logHeaders" class="log-details"></pre>
+                                                    <button class="copy-btn">Copy</button>
+                                                </div>
                                             </div>
                                             <div class="tab-pane fade" id="paramsTab">
-                                                <pre id="logParams" class="log-details"></pre>
+                                                <div class="copy-wrapper">
+                                                    <pre id="logParams" class="log-details"></pre>
+                                                    <button class="copy-btn">Copy</button>
+                                                </div>
                                             </div>
                                             <div class="tab-pane fade" id="bodyTab">
-                                                <pre id="logBody" class="log-details"></pre>
+                                                <div class="copy-wrapper">
+                                                    <pre id="logBody" class="log-details"></pre>
+                                                    <button class="copy-btn">Copy</button>
+                                                </div>
                                             </div>
                                             <div class="tab-pane fade" id="responseTab">
-                                                <pre id="logResponse" class="log-details"></pre>
+                                                <div class="copy-wrapper">
+                                                    <pre id="logResponse" class="log-details"></pre>
+                                                    <button class="copy-btn">Copy</button>
+                                                </div>
                                             </div>
                                             <div class="tab-pane fade" id="curlTab">
-                                                <pre id="logCurl" class="log-details"></pre>
+                                                <div class="copy-wrapper">
+                                                    <pre id="logCurl" class="log-details"></pre>
+                                                    <button class="copy-btn">Copy</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
