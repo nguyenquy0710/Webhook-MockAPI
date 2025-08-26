@@ -21,7 +21,6 @@ public class ApiConfigController {
 
     private final ApiMockService apiMockService;
     private final ApiConfigService apiConfigService;
-    private final RequestLogService requestLogService;
 
     @GetMapping("/@{username}")
     public ResponseEntity<Map<String, Object>> getApiConfigs(
