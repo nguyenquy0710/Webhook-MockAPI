@@ -1,6 +1,6 @@
 .copy-wrapper {
   position: relative;
-  display: inline-block; /* hoặc block tùy ngữ cảnh */
+  /* display: inline-block; */
 }
 
 .copy-btn {
