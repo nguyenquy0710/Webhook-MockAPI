@@ -11,5 +11,12 @@
   "editor.quickSuggestionsDelay": 10,
   // Enable word based suggestions
   "editor.wordBasedSuggestions": "matchingDocuments",
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-17",
+      "path": "E:/sys/services/Java/jdk-17.0.12",
+      "default": true
+    }
+  ],
 }

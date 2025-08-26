@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Logs API",
+    "title": "Webhook MockAPI",
     "description": "API để truy xuất và đếm log theo người dùng.",
     "version": "1.0.0"
   },
