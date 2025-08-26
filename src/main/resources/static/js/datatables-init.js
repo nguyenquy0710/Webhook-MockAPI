@@ -1,8 +1,18 @@
+if (!window.MockAPI) {
+    // Ensure MockAPI namespace exists
+    window.MockAPI = {};
+}
+
 // DataTables initialization for admin users table
 $(document).ready(function () {
+    if (!window.MockAPI.DataTable) {
+        // Ensure MockAPI namespace exists
+        window.MockAPI.DataTable = {};
+    }
+
     // Initialize users table if it exists
     if ($('#usersTable').length) {
-        $('#usersTable').DataTable({
+        MockAPI.DataTable['usersTable'] = $('#usersTable').DataTable({
             "pageLength": 25,
             "order": [[0, "asc"]],
             "columnDefs": [
@@ -21,7 +31,61 @@ $(document).ready(function () {
 
     // Initialize request logs table if it exists
     if ($('#requestLogsTable').length) {
-        $('#requestLogsTable').DataTable({
+        MockAPI.DataTable['requestLogsTable'] = $('#requestLogsTable').DataTable({
+            "ajax": {
+                "url": "/api/logs/@quynh",
+                "dataSrc": "content"  // Dữ liệu nằm trong trường "content"
+            },
+            "columns": [
+                {
+                    data: 'timestamp',
+                    render: function (data) {
+                        return new Date(data).toISOString().replace('T', ' ').split('.')[0] + ' UTC';
+                    }
+                },
+                {
+                    data: 'method',
+                    render: function (data) {
+                        let badgeClass = 'bg-secondary';
+                        switch (data) {
+                            case 'GET': badgeClass = 'bg-success'; break;
+                            case 'POST': badgeClass = 'bg-primary'; break;
+                            case 'PUT': badgeClass = 'bg-info'; break;
+                            case 'DELETE': badgeClass = 'bg-danger'; break;
+                        }
+                        return `<span class="badge ${badgeClass}">${data}</span>`;
+                    }
+                },
+                { data: 'path' },
+                {
+                    data: 'responseStatus',
+                    render: function (data, type, row) {
+                        let badgeClass = 'bg-warning'; // default
+
+                        if (data >= 200 && data < 300) {
+                            badgeClass = 'bg-success';
+                        } else if (data >= 400) {
+                            badgeClass = 'bg-danger';
+                        }
+
+                        return `<span class="badge ${badgeClass}">${data}</span>`;
+                    }
+                },
+                { data: 'sourceIp' },
+                {
+                    data: 'id',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return `
+            <button class="btn btn-sm btn-outline-primary view-details view-details-btn"
+                data-bs-toggle="modal" data-id="${data}"
+                data-bs-target="#detailsModal${data}">
+                <i class="fas fa-eye me-1"></i> View
+            </button>
+        `;
+                    }
+                }
+            ],
             "pageLength": 25,
             "order": [[0, "desc"]], // Sort by time (newest first)
             "columnDefs": [
@@ -35,6 +99,27 @@ $(document).ready(function () {
                 "infoFiltered": "(filtered from _MAX_ total logs)",
                 "zeroRecords": "No matching logs found"
             }
+        });
+
+        // Bắt sự kiện View
+        $('#requestLogsTable tbody').on('click', '.view-details', function () {
+            const log = $('#requestLogsTable').DataTable().row($(this).closest('tr')).data();
+
+            // Đổ dữ liệu vào modal
+            $('#logTime').text(new Date(log.timestamp).toISOString().replace('T', ' ').split('.')[0] + ' UTC');
+            $('#logMethod').text(log.method);
+            $('#logPath').text(log.path);
+            $('#logStatus').text(log.responseStatus);
+            $('#logSourceIp').text(log.sourceIp);
+            $('#logHeaders').text(log.requestHeaders || 'No headers');
+            $('#logParams').text(log.queryParams || 'No query parameters');
+            $('#logBody').text(log.requestBody || 'No request body');
+            $('#logResponse').text(log.responseBody || 'No response body');
+            $('#logCurl').text(log.curl || 'No curl');
+
+            // Mở modal
+            const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+            modal.show();
         });
     }
 });

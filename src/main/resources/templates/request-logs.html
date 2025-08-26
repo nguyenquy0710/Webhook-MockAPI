@@ -72,6 +72,7 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
+                        <!--/*
                         <table class="table table-striped" id="requestLogsTable">
                             <thead>
                                 <tr>
@@ -119,7 +120,6 @@
                                             <i class="fas fa-eye me-1"></i> View
                                         </button>
 
-                                        <!-- Details Modal for each log -->
                                         <div class="modal fade" th:id="'detailsModal' + ${log.id}" tabindex="-1"
                                             th:attr="aria-labelledby='detailsModalLabel' + ${log.id}" aria-hidden="true">
                                             <div class="modal-dialog modal-lg">
@@ -176,7 +176,6 @@
                                                             </li>
                                                         </ul>
                                                         <div class="tab-content mt-3" th:id="'logTabContent' + ${log.id}">
-                                                            <!-- Overview Tab -->
                                                             <div class="tab-pane fade show active" th:id="'overview' + ${log.id}"
                                                                 role="tabpanel">
                                                                 <table class="table table-bordered">
@@ -204,7 +203,6 @@
                                                                     </tr>
                                                                 </table>
                                                             </div>
-                                                            <!-- Headers Tab -->
                                                             <div class="tab-pane fade" th:id="'headers' + ${log.id}" role="tabpanel">
                                                                 <div class="log-details">
                                                                     <pre th:if="${log.requestHeaders != null && log.requestHeaders != ''}"
@@ -215,7 +213,6 @@
                                                                         class="text-muted">No headers available</div>
                                                                 </div>
                                                             </div>
-                                                            <!-- Query Params Tab -->
                                                             <div class="tab-pane fade" th:id="'params' + ${log.id}" role="tabpanel">
                                                                 <div class="log-details">
                                                                     <pre th:if="${log.queryParams != null && log.queryParams != ''}"
@@ -226,7 +223,6 @@
                                                                         class="text-muted">No query parameters available</div>
                                                                 </div>
                                                             </div>
-                                                            <!-- Request Body Tab -->
                                                             <div class="tab-pane fade" th:id="'body' + ${log.id}" role="tabpanel">
                                                                 <div class="log-details">
                                                                     <pre th:if="${log.requestBody != null && log.requestBody != ''}"
@@ -237,7 +233,6 @@
                                                                         class="text-muted">No request body available</div>
                                                                 </div>
                                                             </div>
-                                                            <!-- Response Tab -->
                                                             <div class="tab-pane fade" th:id="'response' + ${log.id}" role="tabpanel">
                                                                 <div class="log-details">
                                                                     <pre th:if="${log.responseBody != null && log.responseBody != ''}"
@@ -248,7 +243,6 @@
                                                                         class="text-muted">No response body available</div>
                                                                 </div>
                                                             </div>
-                                                            <!-- Curl Tab -->
                                                             <div class="tab-pane fade" th:id="'curl' + ${log.id}" role="tabpanel">
                                                                 <div class="log-details">
                                                                     <pre th:if="${log.curl != null && log.curl != ''}"
@@ -276,6 +270,94 @@
                                 </tr>
                             </tbody>
                         </table>
+                        */-->
+
+                        <table id="requestLogsTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time (UTC)</th>
+                                    <th>Method</th>
+                                    <th>Path</th>
+                                    <th>Status</th>
+                                    <th>Source IP</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                        </table>
+
+                        <!-- Modal dùng chung cho tất cả log -->
+                        <div class="modal fade" id="logDetailsModal" tabindex="-1" aria-labelledby="logDetailsModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="logDetailsModalLabel">Log Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="nav nav-tabs" id="logTabs" role="tablist">
+                                            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab"
+                                                    data-bs-target="#overviewTab" type="button">Overview</button></li>
+                                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#headersTab"
+                                                    type="button">Headers</button></li>
+                                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#paramsTab"
+                                                    type="button">Query
+                                                    Params</button></li>
+                                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#bodyTab"
+                                                    type="button">Request
+                                                    Body</button></li>
+                                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#responseTab"
+                                                    type="button">Response</button></li>
+                                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#curlTab"
+                                                    type="button">Curl</button>
+                                            </li>
+                                        </ul>
+                                        <div class="tab-content mt-3">
+                                            <div class="tab-pane fade show active" id="overviewTab">
+                                                <table class="table table-bordered">
+                                                    <tr>
+                                                        <th>Time (UTC)</th>
+                                                        <td id="logTime"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Method</th>
+                                                        <td id="logMethod"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Path</th>
+                                                        <td id="logPath"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Status</th>
+                                                        <td id="logStatus"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Source IP</th>
+                                                        <td id="logSourceIp"></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="tab-pane fade" id="headersTab">
+                                                <pre id="logHeaders" class="log-details"></pre>
+                                            </div>
+                                            <div class="tab-pane fade" id="paramsTab">
+                                                <pre id="logParams" class="log-details"></pre>
+                                            </div>
+                                            <div class="tab-pane fade" id="bodyTab">
+                                                <pre id="logBody" class="log-details"></pre>
+                                            </div>
+                                            <div class="tab-pane fade" id="responseTab">
+                                                <pre id="logResponse" class="log-details"></pre>
+                                            </div>
+                                            <div class="tab-pane fade" id="curlTab">
+                                                <pre id="logCurl" class="log-details"></pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
