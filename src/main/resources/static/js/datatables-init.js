@@ -35,7 +35,7 @@ $(document).ready(function () {
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": "/api/logs/@quynh",
+                "url": "/api/configs/@quynh",
                 "type": "GET", // Thường server-side cần POST để truyền nhiều tham số
                 "dataSrc": "data"  // Dữ liệu nằm trong trường "data"
             },
