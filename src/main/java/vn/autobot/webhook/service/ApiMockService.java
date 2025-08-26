@@ -37,6 +37,25 @@ public class ApiMockService {
   private final UserService userService;
   private final ObjectMapper objectMapper;
 
+  /**
+   * Converts ApiConfig to ApiConfigDto.
+   *
+   * @param apiConfig The API configuration to convert.
+   * @return The converted API configuration DTO.
+   */
+  private ApiConfigDto convertToDto(ApiConfig apiConfig) {
+    ApiConfigDto dto = new ApiConfigDto();
+    dto.setId(apiConfig.getId());
+    dto.setPath(apiConfig.getPath());
+    dto.setMethod(apiConfig.getMethod());
+    dto.setContentType(apiConfig.getContentType());
+    dto.setStatusCode(apiConfig.getStatusCode());
+    dto.setResponseBody(apiConfig.getResponseBody());
+    dto.setResponseHeaders(apiConfig.getResponseHeaders());
+    dto.setDelayMs(apiConfig.getDelayMs());
+    return dto;
+  }
+
   @Transactional
   public ApiConfig saveApiConfig(String username, ApiConfigDto apiConfigDto) {
     User user = userService.findByUsername(username);
@@ -247,25 +266,6 @@ public class ApiMockService {
     User user = userService.findByUsername(username);
     Page<ApiConfig> apiConfigs = apiConfigRepository.findByUserOrderByCreatedAtDesc(user, pageable);
     return apiConfigs.map(this::convertToDto);
-  }
-
-  /**
-   * Converts ApiConfig to ApiConfigDto.
-   *
-   * @param apiConfig The API configuration to convert.
-   * @return The converted API configuration DTO.
-   */
-  private ApiConfigDto convertToDto(ApiConfig apiConfig) {
-    ApiConfigDto dto = new ApiConfigDto();
-    dto.setId(apiConfig.getId());
-    dto.setPath(apiConfig.getPath());
-    dto.setMethod(apiConfig.getMethod());
-    dto.setContentType(apiConfig.getContentType());
-    dto.setStatusCode(apiConfig.getStatusCode());
-    dto.setResponseBody(apiConfig.getResponseBody());
-    dto.setResponseHeaders(apiConfig.getResponseHeaders());
-    dto.setDelayMs(apiConfig.getDelayMs());
-    return dto;
   }
 
 }

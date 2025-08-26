@@ -16,6 +16,7 @@ import vn.autobot.webhook.service.ApiMockService;
 public class ApiConfigController {
 
     private final ApiMockService apiMockService;
+    private final ApiConfigService apiConfigService;
 
     @GetMapping("/@{username}")
     public ResponseEntity<Page<ApiConfigDto>> getApiConfigs(@PathVariable String username,
@@ -25,7 +26,7 @@ public class ApiConfigController {
             return ResponseEntity.status(403).build();
         }
 
-        Page<ApiConfigDto> configs = apiMockService.getApiConfigsPageable(username, pageable);
+        Page<ApiConfigDto> configs = apiConfigService.getApiConfigsPageable(username, pageable);
         return ResponseEntity.ok(configs);
     }
 }
