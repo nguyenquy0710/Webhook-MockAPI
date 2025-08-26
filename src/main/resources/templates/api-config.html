@@ -168,7 +168,7 @@
                         <i class="fas fa-edit"></i> Edit
                       </a>
                       <button type="button" class="btn btn-outline-danger"
-                        th:attr="onclick='confirmDelete(' + ${config.id} + ', \'' + ${config.path} + '\', \'' + ${config.method} + '\')'">
+                        th:attr="data-id=${config.id}, data-path=${config.path}, data-method=${config.method}" onclick="handleDelete(this)">
                         <i class="fas fa-trash"></i> Delete
                       </button>
                     </div>
@@ -220,6 +220,16 @@
     <div th:replace="fragments/footer :: footer"></div>
 
     <script th:src="@{/js/api-config.js}"></script>
+    <script>
+      function handleDelete(button) {
+        const id = button.dataset.id;
+        const path = button.dataset.path;
+        const method = button.dataset.method;
+
+        // Gọi confirmDelete với các giá trị này
+        confirmDelete(id, path, method);
+      }
+    </script>
   </body>
 
 </html>
