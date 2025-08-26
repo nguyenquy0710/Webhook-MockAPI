@@ -3,6 +3,7 @@ appender
 autobot
 bitnami
 changeme
+classappend
 cpus
 Djava
 FLUSHDB
@@ -10,6 +11,7 @@ isready
 javac
 jdbc
 logback
+logid
 minipc
 mockwebhook
 mvnw
@@ -22,3 +24,4 @@ springsecurity
 sysctls
 Thymeleaf
 urandom
+xuống

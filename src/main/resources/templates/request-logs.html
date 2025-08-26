@@ -191,10 +191,13 @@
                                                 <!-- Headers Tab -->
                                                 <div class="tab-pane fade" th:id="'headers' + ${log.id}" role="tabpanel">
                                                     <div class="log-details">
+                                                        <div class="copy-wrapper">
                                                                 <pre th:if="${log.requestHeaders != null && log.requestHeaders != ''}"
                                                                      th:text="${log.requestHeaders}">
                                                                     {"Content-Type": "application/json"}
                                                                 </pre>
+                                                          <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+                                                        </div>
                                                         <div th:if="${log.requestHeaders == null || log.requestHeaders == ''}"
                                                              class="text-muted">No headers available</div>
                                                     </div>
@@ -202,10 +205,13 @@
                                                 <!-- Query Params Tab -->
                                                 <div class="tab-pane fade" th:id="'params' + ${log.id}" role="tabpanel">
                                                     <div class="log-details">
+                                                      <div class="copy-wrapper">
                                                                 <pre th:if="${log.queryParams != null && log.queryParams != ''}"
                                                                      th:text="${log.queryParams}">
                                                                     param1=value1&param2=value2
                                                                 </pre>
+                                                        <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+                                                      </div>
                                                         <div th:if="${log.queryParams == null || log.queryParams == ''}"
                                                              class="text-muted">No query parameters available</div>
                                                     </div>
@@ -213,10 +219,13 @@
                                                 <!-- Request Body Tab -->
                                                 <div class="tab-pane fade" th:id="'body' + ${log.id}" role="tabpanel">
                                                     <div class="log-details">
-                                                                <pre th:if="${log.requestBody != null && log.requestBody != ''}"
-                                                                     th:text="${log.requestBody}">
-                                                                    {"key": "value"}
-                                                                </pre>
+                                                        <div class="copy-wrapper">
+                                                            <pre th:if="${log.requestBody != null && log.requestBody != ''}"
+                                                                 th:text="${log.requestBody}">
+                                                                {"key": "value"}
+                                                            </pre>
+                                                            <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+                                                        </div>
                                                         <div th:if="${log.requestBody == null || log.requestBody == ''}"
                                                              class="text-muted">No request body available</div>
                                                     </div>
@@ -224,10 +233,13 @@
                                                 <!-- Response Tab -->
                                                 <div class="tab-pane fade" th:id="'response' + ${log.id}" role="tabpanel">
                                                     <div class="log-details">
-                                                                <pre th:if="${log.responseBody != null && log.responseBody != ''}"
-                                                                     th:text="${log.responseBody}">
-                                                                    {"response": "data"}
-                                                                </pre>
+                                                        <div class="copy-wrapper">
+                                                            <pre th:if="${log.responseBody != null && log.responseBody != ''}"
+                                                                 th:text="${log.responseBody}">
+                                                                {"response": "data"}
+                                                            </pre>
+                                                            <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+                                                        </div>
                                                         <div th:if="${log.responseBody == null || log.responseBody == ''}"
                                                              class="text-muted">No response body available</div>
                                                     </div>
@@ -235,14 +247,20 @@
                                                 <!-- Curl Tab -->
                                                 <div class="tab-pane fade" th:id="'curl' + ${log.id}" role="tabpanel">
                                                     <div class="log-details">
+                                                      <div class="copy-wrapper">
                                                                 <pre th:if="${log.curl != null && log.curl != ''}"
                                                                      th:text="${log.curl}">
                                                                 </pre>
+                                                        <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+                                                      </div>
+                                                        <!--/*
                                                         <button class="btn btn-sm btn-outline-secondary mt-2 copy-curl-btn"
                                                                 th:if="${log.curl != null && log.curl != ''}"
                                                                 th:data-curl="${log.curl}">
                                                             <i class="fas fa-copy"></i> Copy
                                                         </button>
+                                                        */-->
+                                                        
                                                         <div th:if="${log.curl == null || log.curl == ''}"
                                                              class="text-muted">No curl available</div>
                                                     </div>
