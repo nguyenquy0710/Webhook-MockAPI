@@ -1,46 +1,69 @@
-HELP.md
+# ========================
+# Build Output - Maven
+# ========================
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# ========================
+# Build Output - Gradle
+# ========================
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ========================
+# Java JARs
+# ========================
+app.jar
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# ========================
+# Database / Log Files
+# ========================
+*.db
+*.db-journal
+*.log
+data/
+logs/
+
+# ========================
+# Spring Tool Suite (STS)
+# ========================
 .apt_generated
 .classpath
 .factorypath
 .project
 .settings
+.settings/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+# ========================
+# IntelliJ IDEA
+# ========================
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# ========================
+# NetBeans
+# ========================
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# ========================
+# Visual Studio Code
+# ========================
 # .vscode/
 
-
-*.db
-*.db-journal
-*.log
-
-# Application JAR file
-app.jar
-*.jar
-!.mvn/wrapper/maven-wrapper.jar
-
-# Database files
-data/
+# ========================
+# Documentation
+# ========================
+HELP.md

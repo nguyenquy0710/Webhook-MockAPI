@@ -6,6 +6,7 @@ cpus
 Djava
 FLUSHDB
 isready
+javac
 minipc
 mvnw
 ooxml
