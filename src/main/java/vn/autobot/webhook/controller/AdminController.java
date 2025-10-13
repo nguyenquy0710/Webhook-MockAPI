@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.autobot.webhook.config.AppConfig;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.CreateUserRequestDto;
+import vn.autobot.webhook.dto.RequestLogDto;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.service.ApiMockService;
 import vn.autobot.webhook.service.RequestLogService;
@@ -31,6 +32,8 @@ import java.io.IOException;
 public class AdminController {
 
     private final UserService userService;
+    private final RequestLogService requestLogService;
+    private final AppConfig appConfig;
 
     @GetMapping("/users")
     public String listUsers(@AuthenticationPrincipal UserDetails userDetails, Model model) {
@@ -101,6 +104,36 @@ public class AdminController {
             model.addAttribute("errorMessage", "Error creating user: " + e.getMessage());
             return "admin/user-create";
         }
+    }
+
+    @GetMapping("/user/@{username}/logs")
+    public String viewUserRequestLogs(@PathVariable String username,
+                                     @RequestParam(required = false, defaultValue = "10") int size,
+                                     @RequestParam(required = false, defaultValue = "0") int page,
+                                     @AuthenticationPrincipal UserDetails userDetails,
+                                     Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<RequestLogDto> logs = requestLogService.getRequestLogs(username, pageable);
+        long totalLogs = requestLogService.countRequestLogs(username);
+
+        model.addAttribute("logs", logs);
+        model.addAttribute("targetUsername", username);
+        model.addAttribute("username", userDetails.getUsername());
+        model.addAttribute("totalLogs", totalLogs);
+        model.addAttribute("currentPage", pageable.getPageNumber());
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", logs.getTotalPages());
+        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("isAdminView", true);
+
+        return "request-logs";
+    }
+
+    @GetMapping("/user/@{username}/export")
+    public void exportUserLogs(@PathVariable String username,
+                              @AuthenticationPrincipal UserDetails userDetails,
+                              HttpServletResponse response) throws IOException {
+        requestLogService.exportToExcel(username, response);
     }
 }
 
