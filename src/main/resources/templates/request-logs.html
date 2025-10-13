@@ -55,7 +55,12 @@
             </h5>
             <!-- Export button section -->
             <div>
-                <a th:href="@{|/view/@${targetUsername}/export|}" class="btn btn-outline-success me-2">
+                <a th:if="${isAdminView != null && isAdminView}" 
+                   th:href="@{|/admin/user/@${targetUsername}/export|}" class="btn btn-outline-success me-2">
+                    <i class="fas fa-file-excel me-1"></i> Export Excel
+                </a>
+                <a th:if="${isAdminView == null || !isAdminView}" 
+                   th:href="@{|/view/@${targetUsername}/export|}" class="btn btn-outline-success me-2">
                     <i class="fas fa-file-excel me-1"></i> Export Excel
                 </a>
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
@@ -298,10 +303,16 @@
                 <nav aria-label="Page navigation">
                     <ul class="pagination mb-0">
                         <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                            <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize})}">&laquo;</a>
+                            <a class="page-link" th:if="${isAdminView != null && isAdminView}" 
+                               th:href="@{|/admin/user/@${targetUsername}/logs|(page=0, size=${pageSize})}">&laquo;</a>
+                            <a class="page-link" th:if="${isAdminView == null || !isAdminView}" 
+                               th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize})}">&laquo;</a>
                         </li>
                         <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                            <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=${currentPage - 1}, size=${pageSize})}">&lt;</a>
+                            <a class="page-link" th:if="${isAdminView != null && isAdminView}" 
+                               th:href="@{|/admin/user/@${targetUsername}/logs|(page=${currentPage - 1}, size=${pageSize})}">&lt;</a>
+                            <a class="page-link" th:if="${isAdminView == null || !isAdminView}" 
+                               th:href="@{|/view/@${targetUsername}|(page=${currentPage - 1}, size=${pageSize})}">&lt;</a>
                         </li>
 
                         <!-- Show limited page numbers with ellipsis for many pages -->
@@ -315,7 +326,10 @@
 
                             <!-- Show first page with ellipsis if needed -->
                             <li class="page-item" th:if="${startPage > 0}">
-                                <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize})}">1</a>
+                                <a class="page-link" th:if="${isAdminView != null && isAdminView}" 
+                                   th:href="@{|/admin/user/@${targetUsername}/logs|(page=0, size=${pageSize})}">1</a>
+                                <a class="page-link" th:if="${isAdminView == null || !isAdminView}" 
+                                   th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize})}">1</a>
                             </li>
                             <li class="page-item disabled" th:if="${startPage > 1}">
                                 <span class="page-link">...</span>
@@ -324,7 +338,9 @@
                             <!-- Show page numbers -->
                             <li class="page-item" th:each="i: ${#numbers.sequence(startPage, endPage)}"
                                 th:classappend="${i == currentPage ? 'active' : ''}">
-                                <a class="page-link" th:text="${i + 1}"
+                                <a class="page-link" th:if="${isAdminView != null && isAdminView}" th:text="${i + 1}"
+                                   th:href="@{|/admin/user/@${targetUsername}/logs|(page=${i}, size=${pageSize})}">1</a>
+                                <a class="page-link" th:if="${isAdminView == null || !isAdminView}" th:text="${i + 1}"
                                    th:href="@{|/view/@${targetUsername}|(page=${i}, size=${pageSize})}">1</a>
                             </li>
 
@@ -333,16 +349,24 @@
                                 <span class="page-link">...</span>
                             </li>
                             <li class="page-item" th:if="${endPage < totalPages - 1}">
-                                <a class="page-link" th:text="${totalPages}"
+                                <a class="page-link" th:if="${isAdminView != null && isAdminView}" th:text="${totalPages}"
+                                   th:href="@{|/admin/user/@${targetUsername}/logs|(page=${totalPages - 1}, size=${pageSize})}">#</a>
+                                <a class="page-link" th:if="${isAdminView == null || !isAdminView}" th:text="${totalPages}"
                                    th:href="@{|/view/@${targetUsername}|(page=${totalPages - 1}, size=${pageSize})}">#</a>
                             </li>
                         </th:block>
 
                         <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
-                            <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=${currentPage + 1}, size=${pageSize})}">&gt;</a>
+                            <a class="page-link" th:if="${isAdminView != null && isAdminView}" 
+                               th:href="@{|/admin/user/@${targetUsername}/logs|(page=${currentPage + 1}, size=${pageSize})}">&gt;</a>
+                            <a class="page-link" th:if="${isAdminView == null || !isAdminView}" 
+                               th:href="@{|/view/@${targetUsername}|(page=${currentPage + 1}, size=${pageSize})}">&gt;</a>
                         </li>
                         <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
-                            <a class="page-link" th:href="@{|/view/@${targetUsername}|(page=${logs.totalPages - 1}, size=${pageSize})}">&raquo;</a>
+                            <a class="page-link" th:if="${isAdminView != null && isAdminView}" 
+                               th:href="@{|/admin/user/@${targetUsername}/logs|(page=${logs.totalPages - 1}, size=${pageSize})}">&raquo;</a>
+                            <a class="page-link" th:if="${isAdminView == null || !isAdminView}" 
+                               th:href="@{|/view/@${targetUsername}|(page=${logs.totalPages - 1}, size=${pageSize})}">&raquo;</a>
                         </li>
                     </ul>
                 </nav>
@@ -390,6 +414,7 @@
     /*<![CDATA[*/
     const username = /*[[${targetUsername}]]*/;
     const currentUser = /*[[${username}]]*/;
+    const isAdminView = /*[[${isAdminView}]]*/ || false;
     /*]]>*/
 </script>
 <script th:src="@{/js/request-log.js}"></script>
@@ -397,7 +422,8 @@
     // Page size selector functionality
     document.getElementById('pageSizeSelect').addEventListener('change', function() {
         const selectedSize = this.value;
-        window.location.href = `/view/@${username}?page=0&size=${selectedSize}`;
+        const baseUrl = isAdminView ? `/admin/user/@${username}/logs` : `/view/@${username}`;
+        window.location.href = `${baseUrl}?page=0&size=${selectedSize}`;
     });
 </script>
 </body></html>

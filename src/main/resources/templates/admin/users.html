@@ -67,6 +67,11 @@
                             <i class="fas fa-eye"></i>
                         </a>
                         
+                        <!-- View Logs Button -->
+                        <a th:href="@{|/admin/user/@${u.username}/logs|}" class="btn btn-sm btn-outline-info" title="View Request Logs">
+                            <i class="fas fa-history"></i>
+                        </a>
+                        
                         <!-- Toggle Role Button -->
                         <form th:action="@{|/admin/users/${u.id}/toggle-role|}" method="post" class="d-inline">
                             <button class="btn btn-sm btn-outline-info" type="submit" 
