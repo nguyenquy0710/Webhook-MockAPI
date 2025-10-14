@@ -35,6 +35,13 @@ public class AdminController {
     private final RequestLogService requestLogService;
     private final AppConfig appConfig;
 
+    @GetMapping("")
+    public String adminHome(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        model.addAttribute("username", userDetails.getUsername());
+        model.addAttribute("requestLogRetentionDays", appConfig.getRequestLogRetentionDays());
+        return "admin/dashboard";
+    }
+
     @GetMapping("/users")
     public String listUsers(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("users", userService.getAllUsers());
@@ -134,6 +141,36 @@ public class AdminController {
                               @AuthenticationPrincipal UserDetails userDetails,
                               HttpServletResponse response) throws IOException {
         requestLogService.exportToExcel(username, response);
+    }
+
+    @PostMapping("/settings/log-retention")
+    public String updateLogRetentionSetting(@RequestParam int retentionDays,
+                                           RedirectAttributes redirectAttributes) {
+        try {
+            if (retentionDays < 1) {
+                throw new IllegalArgumentException("Retention days must be at least 1");
+            }
+            appConfig.setRequestLogRetentionDays(retentionDays);
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Log retention period updated to " + retentionDays + " days successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error updating log retention: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/cleanup-old-logs")
+    public String cleanupOldLogs(RedirectAttributes redirectAttributes) {
+        try {
+            int deletedCount = requestLogService.cleanOldRequestLogs(appConfig.getRequestLogRetentionDays());
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Successfully deleted " + deletedCount + " old request logs!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error cleaning up logs: " + e.getMessage());
+        }
+        return "redirect:/admin";
     }
 }
 

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+    <head th:replace="fragments/header :: head('Admin Dashboard')">
+        <title>Admin Dashboard</title>
+    </head>
+
+    <body>
+        <div th:replace="fragments/header :: header"></div>
+        <div class="container">
+            <div th:replace="fragments/navigation :: navigation"></div>
+
+            <h2 class="mb-4">Admin Dashboard</h2>
+
+            <!-- Success Message -->
+            <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${successMessage}">
+                <span th:text="${successMessage}">Success message</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Error Message -->
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${errorMessage}">
+                <span th:text="${errorMessage}">Error message</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="row">
+                <!-- Request Log Retention Settings -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>Request Log Retention Settings
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">
+                                Configure how long request logs should be retained before automatic deletion.
+                            </p>
+                            
+                            <form th:action="@{/admin/settings/log-retention}" method="post">
+                                <div class="mb-3">
+                                    <label for="retentionDays" class="form-label">
+                                        Retention Period (days)
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="retentionDays" 
+                                           name="retentionDays" 
+                                           th:value="${requestLogRetentionDays}"
+                                           min="1" 
+                                           required>
+                                    <small class="form-text text-muted">
+                                        Logs older than this period will be automatically deleted daily at 2:00 AM.
+                                    </small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Update Setting
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Cleanup -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-broom me-2"></i>Manual Log Cleanup
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">
+                                Manually trigger cleanup of old request logs based on current retention settings.
+                            </p>
+                            <div class="alert alert-info">
+                                <strong>Current Setting:</strong> Logs older than 
+                                <strong th:text="${requestLogRetentionDays}">30</strong> days will be deleted.
+                            </div>
+                            <form th:action="@{/admin/cleanup-old-logs}" method="post" 
+                                  onsubmit="return confirm('Are you sure you want to delete old logs? This action cannot be undone.');">
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-trash-alt me-1"></i> Clean Up Old Logs Now
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-link me-2"></i>Quick Links
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <a th:href="@{/admin/users}" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-users me-2"></i> User Management
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:replace="fragments/footer :: footer"></div>
+    </body>
+
+</html>

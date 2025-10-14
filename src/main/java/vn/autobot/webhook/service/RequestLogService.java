@@ -167,6 +167,14 @@ public class RequestLogService {
     webSocketService.sendRequestUpdate(username);
   }
 
+  @Transactional
+  public int cleanOldRequestLogs(int retentionDays) {
+    LocalDateTime cutoffDate = LocalDateTime.now().minusDays(retentionDays);
+    int deletedCount = requestLogRepository.deleteByTimestampBefore(cutoffDate);
+    log.info("Cleaned {} request logs older than {} days (before {})", deletedCount, retentionDays, cutoffDate);
+    return deletedCount;
+  }
+
   public void exportToExcel(String username, HttpServletResponse response) throws IOException {
     User user = userService.findByUsername(username);
     List<RequestLog> logs = requestLogRepository.findByUserOrderByTimestampDesc(user);
