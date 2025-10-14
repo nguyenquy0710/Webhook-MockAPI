@@ -10,5 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class AppConfig {
-    private String domain = "https://domain";
+  private String domain = "https://domain";
+  private int requestLogRetentionDays = 30; // Default: 30 days
 }
