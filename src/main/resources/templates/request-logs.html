@@ -472,15 +472,16 @@
       </div>
     </div>
 
-    <script th:inline="javascript">
+    <script type="text/javascript" th:inline="javascript">
       /*<![CDATA[*/
       const username = /*[[${targetUsername}]]*/;
       const currentUser = /*[[${username}]]*/;
       const isAdminView = /*[[${isAdminView}]]*/ || false;
       /*]]>*/
     </script>
-    <script th:src="@{/js/request-log.js}"></script>
-    <script>
+
+    <script type="text/javascript" th:src="@{/js/request-log.js}"></script>
+    <script type="text/javascript">
       // Page size selector functionality
       document.getElementById('pageSizeSelect').addEventListener('change', function () {
         const selectedSize = this.value;
