@@ -136,6 +136,22 @@
           </div>
         </div>
         <div class="card-body">
+          <!-- Search Section -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="input-group">
+                <input type="text" class="form-control" id="pathSearchInput" placeholder="Search by path..." 
+                       th:value="${pathFilter}">
+                <button class="btn btn-primary" type="button" id="searchButton">
+                  <i class="fas fa-search me-1"></i> Search
+                </button>
+                <button class="btn btn-outline-secondary" type="button" id="clearButton" th:if="${pathFilter != null && pathFilter != ''}">
+                  <i class="fas fa-times me-1"></i> Clear
+                </button>
+              </div>
+            </div>
+          </div>
+          
           <div class="table-responsive">
             <table class="table table-striped table-hover" id="requestLogsTable">
               <thead>
@@ -364,15 +380,15 @@
               <ul class="pagination mb-0">
                 <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
                   <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=0, size=${pageSize})}">&laquo;</a>
+                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=0, size=${pageSize}, path=${pathFilter})}">&laquo;</a>
                   <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                    th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize})}">&laquo;</a>
+                    th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize}, path=${pathFilter})}">&laquo;</a>
                 </li>
                 <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
                   <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${currentPage - 1}, size=${pageSize})}">&lt;</a>
+                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${currentPage - 1}, size=${pageSize}, path=${pathFilter})}">&lt;</a>
                   <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                    th:href="@{|/view/@${targetUsername}|(page=${currentPage - 1}, size=${pageSize})}">&lt;</a>
+                    th:href="@{|/view/@${targetUsername}|(page=${currentPage - 1}, size=${pageSize}, path=${pathFilter})}">&lt;</a>
                 </li>
 
                 <!-- Show limited page numbers with ellipsis for many pages -->
@@ -388,9 +404,9 @@
                   <!-- Show first page with ellipsis if needed -->
                   <li class="page-item" th:if="${startPage > 0}">
                     <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=0, size=${pageSize})}">1</a>
+                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=0, size=${pageSize}, path=${pathFilter})}">1</a>
                     <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                      th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize})}">1</a>
+                      th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize}, path=${pathFilter})}">1</a>
                   </li>
                   <li class="page-item disabled" th:if="${startPage > 1}">
                     <span class="page-link">...</span>
@@ -400,9 +416,9 @@
                   <li class="page-item" th:each="i: ${#numbers.sequence(startPage, endPage)}"
                     th:classappend="${i == currentPage ? 'active' : ''}">
                     <a class="page-link" th:if="${isAdminView != null && isAdminView}" th:text="${i + 1}"
-                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=${i}, size=${pageSize})}">1</a>
+                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=${i}, size=${pageSize}, path=${pathFilter})}">1</a>
                     <a class="page-link" th:if="${isAdminView == null || !isAdminView}" th:text="${i + 1}"
-                      th:href="@{|/view/@${targetUsername}|(page=${i}, size=${pageSize})}">1</a>
+                      th:href="@{|/view/@${targetUsername}|(page=${i}, size=${pageSize}, path=${pathFilter})}">1</a>
                   </li>
 
                   <!-- Show last page with ellipsis if needed -->
@@ -411,23 +427,23 @@
                   </li>
                   <li class="page-item" th:if="${endPage < totalPages - 1}">
                     <a class="page-link" th:if="${isAdminView != null && isAdminView}" th:text="${totalPages}"
-                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=${totalPages - 1}, size=${pageSize})}">#</a>
+                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=${totalPages - 1}, size=${pageSize}, path=${pathFilter})}">#</a>
                     <a class="page-link" th:if="${isAdminView == null || !isAdminView}" th:text="${totalPages}"
-                      th:href="@{|/view/@${targetUsername}|(page=${totalPages - 1}, size=${pageSize})}">#</a>
+                      th:href="@{|/view/@${targetUsername}|(page=${totalPages - 1}, size=${pageSize}, path=${pathFilter})}">#</a>
                   </li>
                 </th:block>
 
                 <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
                   <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${currentPage + 1}, size=${pageSize})}">&gt;</a>
+                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${currentPage + 1}, size=${pageSize}, path=${pathFilter})}">&gt;</a>
                   <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                    th:href="@{|/view/@${targetUsername}|(page=${currentPage + 1}, size=${pageSize})}">&gt;</a>
+                    th:href="@{|/view/@${targetUsername}|(page=${currentPage + 1}, size=${pageSize}, path=${pathFilter})}">&gt;</a>
                 </li>
                 <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
                   <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${logs.totalPages - 1}, size=${pageSize})}">&raquo;</a>
+                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${logs.totalPages - 1}, size=${pageSize}, path=${pathFilter})}">&raquo;</a>
                   <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                    th:href="@{|/view/@${targetUsername}|(page=${logs.totalPages - 1}, size=${pageSize})}">&raquo;</a>
+                    th:href="@{|/view/@${targetUsername}|(page=${logs.totalPages - 1}, size=${pageSize}, path=${pathFilter})}">&raquo;</a>
                 </li>
               </ul>
             </nav>
@@ -485,8 +501,33 @@
       // Page size selector functionality
       document.getElementById('pageSizeSelect').addEventListener('change', function () {
         const selectedSize = this.value;
+        const pathFilter = document.getElementById('pathSearchInput')?.value || '';
         const baseUrl = isAdminView ? `/admin/user/@${username}/logs` : `/view/@${username}`;
-        window.location.href = `${baseUrl}?page=0&size=${selectedSize}`;
+        const pathParam = pathFilter ? `&path=${encodeURIComponent(pathFilter)}` : '';
+        window.location.href = `${baseUrl}?page=0&size=${selectedSize}${pathParam}`;
+      });
+
+      // Search button functionality
+      document.getElementById('searchButton')?.addEventListener('click', function () {
+        const pathFilter = document.getElementById('pathSearchInput').value;
+        const pageSize = document.getElementById('pageSizeSelect').value;
+        const baseUrl = isAdminView ? `/admin/user/@${username}/logs` : `/view/@${username}`;
+        const pathParam = pathFilter ? `&path=${encodeURIComponent(pathFilter)}` : '';
+        window.location.href = `${baseUrl}?page=0&size=${pageSize}${pathParam}`;
+      });
+
+      // Clear button functionality
+      document.getElementById('clearButton')?.addEventListener('click', function () {
+        const pageSize = document.getElementById('pageSizeSelect').value;
+        const baseUrl = isAdminView ? `/admin/user/@${username}/logs` : `/view/@${username}`;
+        window.location.href = `${baseUrl}?page=0&size=${pageSize}`;
+      });
+
+      // Allow Enter key to trigger search
+      document.getElementById('pathSearchInput')?.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          document.getElementById('searchButton').click();
+        }
       });
     </script>
   </body>
