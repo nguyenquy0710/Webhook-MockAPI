@@ -36,19 +36,56 @@ public class ApiConfigController {
       return ResponseEntity.status(403).build();
     }
 
-    // Tính toán trang hiện tại từ start & length
     int page = start / length;
 
-    // Gọi service để lấy dữ liệu theo trang
     Page<ApiConfigDto> configs = apiConfigService.getApiConfigsPageable(username, page, length, searchValue);
 
-    // Chuẩn bị dữ liệu phản hồi theo định dạng của DataTables
     Map<String, Object> response = new HashMap<>();
     response.put("draw", draw);
     response.put("recordsTotal", configs.getTotalElements());
-    response.put("recordsFiltered", configs.getTotalElements()); // Nếu có lọc thì ghi số lượng sau lọc
+    response.put("recordsFiltered", configs.getTotalElements());
     response.put("data", configs.getContent());
 
     return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/backup/@{username}")
+  public ResponseEntity<String> backupApiConfigs(
+      @PathVariable String username,
+      @AuthenticationPrincipal UserDetails userDetails) {
+
+    if (!username.equals(userDetails.getUsername())) {
+      return ResponseEntity.status(403).build();
+    }
+
+    String backupData = apiConfigService.backupApiConfigs(username);
+    return ResponseEntity.ok()
+        .header("Content-Disposition", "attachment; filename=\"api-configs-backup.json\"")
+        .header("Content-Type", "application/json")
+        .body(backupData);
+  }
+
+  @PostMapping("/restore/@{username}")
+  public ResponseEntity<Map<String, Object>> restoreApiConfigs(
+      @PathVariable String username,
+      @AuthenticationPrincipal UserDetails userDetails,
+      @RequestBody String backupData) {
+
+    if (!username.equals(userDetails.getUsername())) {
+      return ResponseEntity.status(403).build();
+    }
+
+    try {
+      apiConfigService.restoreApiConfigs(username, backupData);
+      Map<String, Object> response = new HashMap<>();
+      response.put("success", true);
+      response.put("message", "API configurations restored successfully");
+      return ResponseEntity.ok(response);
+    } catch (RuntimeException e) {
+      Map<String, Object> response = new HashMap<>();
+      response.put("success", false);
+      response.put("error", e.getMessage());
+      return ResponseEntity.badRequest().body(response);
+    }
   }
 }
