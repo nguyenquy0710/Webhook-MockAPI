@@ -110,11 +110,12 @@ public class AdminController {
     public String viewUserRequestLogs(@PathVariable String username,
                                      @RequestParam(required = false, defaultValue = "10") int size,
                                      @RequestParam(required = false, defaultValue = "0") int page,
+                                     @RequestParam(required = false) String path,
                                      @AuthenticationPrincipal UserDetails userDetails,
                                      Model model) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<RequestLogDto> logs = requestLogService.getRequestLogs(username, pageable);
-        long totalLogs = requestLogService.countRequestLogs(username);
+        Page<RequestLogDto> logs = requestLogService.getRequestLogs(username, path, pageable);
+        long totalLogs = requestLogService.countRequestLogs(username, path);
 
         model.addAttribute("logs", logs);
         model.addAttribute("targetUsername", username);
@@ -125,6 +126,7 @@ public class AdminController {
         model.addAttribute("totalPages", logs.getTotalPages());
         model.addAttribute("domain", appConfig.getDomain());
         model.addAttribute("isAdminView", true);
+        model.addAttribute("pathFilter", path != null ? path : "");
 
         return "request-logs";
     }

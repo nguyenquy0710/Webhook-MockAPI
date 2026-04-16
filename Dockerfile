@@ -1,30 +1,34 @@
-# Sử dụng phiên bản nhẹ nhất có thể (17-jdk-slim ổn định hơn và nhẹ hơn openjdk:25-ea)
-# FROM openjdk:17-jdk-slim
-# FROM openjdk:17-jdk
+# Stage 1: Build
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+# Stage 2: Runtime
 FROM openjdk:25-ea-17-jdk
 
-# Maintainer information
 LABEL maintainer="Nguyen Quy <quyit.job@gmail.com>" \
-      org.opencontainers.image.authors="Nguyen Quy <quyit.job@gmail.com>" \
-      org.opencontainers.image.description="A powerful and user-friendly webhook testing tool that allows developers to create, manage, and test webhook APIs with ease."
+  org.opencontainers.image.authors="Nguyen Quy <quyit.job@gmail.com>" \
+  org.opencontainers.image.description="A powerful and user-friendly webhook testing tool that allows developers to create, manage, and test webhook APIs with ease."
 
 USER root
 
-# Thiết lập timezone và locale
 ENV TZ=Asia/Ho_Chi_Minh \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8
+  LANG=en_US.UTF-8 \
+  LANGUAGE=en_US.UTF-8
 
-# Cấu hình Java runtime
 ENV JAVA_TOOL_OPTIONS="-Djava.awt.headless=true" \
-    JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom"
+  JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom"
 
-# Chỉ định thư mục làm việc (tốt cho clarity và COPY)
 WORKDIR /app
 
-# Copy file JAR vào image
-# COPY app.jar /app.jar
-COPY app.jar ./app.jar
+# Copy the built JAR file from the build stage
+COPY --from=build /app/target/WebHookMock-0.0.1-SNAPSHOT.jar ./app.jar
+# Copy the entrypoint script and make it executable
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 COPY repair_database.sh ./repair_database.sh
@@ -32,9 +36,6 @@ RUN chmod +x ./repair_database.sh
 COPY validate_migration.sh ./validate_migration.sh
 RUN chmod +x ./validate_migration.sh
 
-# Expose cổng mặc định của ứng dụng
 EXPOSE 8081
 
-# Lệnh chạy ứng dụng
-# ENTRYPOINT ["java", "-jar", "/app.jar"]
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar ./app.jar"]
