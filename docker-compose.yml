@@ -24,6 +24,7 @@ services:
       - APP_DOMAIN=https://mock-api.quyit.id.vn  # ✅ biến môi trường được Spring Boot hiểu là app.domain
     volumes:
       - ./data:/app/data  # Lưu trữ database H2 bền vững
+      - ./logs:/app/logs  # Lưu trữ logs bền vững
     extra_hosts:
       - "host.docker.internal:host-gateway" # Để kết nối đến localhost của host từ container
     deploy:

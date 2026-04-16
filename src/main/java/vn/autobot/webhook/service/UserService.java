@@ -119,4 +119,18 @@ public class UserService {
         user.setEnabled(!user.getEnabled());
         return userRepository.save(user);
     }
+
+    @Transactional
+    public User changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = getUserById(userId);
+        
+        // Verify current password
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+        
+        // Update password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        return userRepository.save(user);
+    }
 }
