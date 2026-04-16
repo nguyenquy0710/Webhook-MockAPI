@@ -8,6 +8,10 @@
 services:
   mockapi:
     image: ghcr.io/nguyenquy0710/mockapi:latest
+    # image: nqdev/mockapi:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: mockapi
     restart: unless-stopped
     # network_mode: host
@@ -25,7 +29,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50" # Giới hạn 80% CPU
-          memory: "2G" # Giới hạn 3.2GB RAM (80% của 4GB)
+          cpus: "0.50" # Giới hạn 50% CPU
+          memory: "2G" # Giới hạn 2GB RAM
         reservations:
           memory: "256M" # Đảm bảo container có ít nhất 256MB RAM
