@@ -19,7 +19,11 @@ public interface RequestLogRepository extends JpaRepository<RequestLog, Long> {
 
   Page<RequestLog> findByUserOrderByTimestampDesc(User user, Pageable pageable);
 
+  Page<RequestLog> findByUserAndPathContainingIgnoreCaseOrderByTimestampDesc(User user, String path, Pageable pageable);
+
   long countByUser(User user);
+
+  long countByUserAndPathContainingIgnoreCase(User user, String path);
 
   void deleteByUser(User user);
 }

@@ -153,9 +153,32 @@ public class RequestLogService {
     return logs.map(this::convertToDto);
   }
 
+  public Page<RequestLogDto> getRequestLogs(String username, String pathFilter, Pageable pageable) {
+    User user = userService.findByUsername(username);
+    Page<RequestLog> logs;
+    
+    if (pathFilter != null && !pathFilter.trim().isEmpty()) {
+      logs = requestLogRepository.findByUserAndPathContainingIgnoreCaseOrderByTimestampDesc(user, pathFilter, pageable);
+    } else {
+      logs = requestLogRepository.findByUserOrderByTimestampDesc(user, pageable);
+    }
+
+    return logs.map(this::convertToDto);
+  }
+
   public long countRequestLogs(String username) {
     User user = userService.findByUsername(username);
     return requestLogRepository.countByUser(user);
+  }
+
+  public long countRequestLogs(String username, String pathFilter) {
+    User user = userService.findByUsername(username);
+    
+    if (pathFilter != null && !pathFilter.trim().isEmpty()) {
+      return requestLogRepository.countByUserAndPathContainingIgnoreCase(user, pathFilter);
+    } else {
+      return requestLogRepository.countByUser(user);
+    }
   }
 
   @Transactional
