@@ -31,6 +31,7 @@ public class ApiMockService {
   private final ApiConfigRepository apiConfigRepository;
   private final UserService userService;
   private final ObjectMapper objectMapper;
+  private final FailureSimulationService failureSimulation;
 
   @Transactional
   public ApiConfig saveApiConfig(String username, ApiConfigDto apiConfigDto) {
@@ -58,6 +59,10 @@ public class ApiMockService {
     apiConfig.setDelayMs(apiConfigDto.getDelayMs());
     apiConfig.setDescription(blankToNull(apiConfigDto.getDescription()));
     apiConfig.setNote(blankToNull(apiConfigDto.getNote()));
+    apiConfig.setFailureEnabled(Boolean.TRUE.equals(apiConfigDto.getFailureEnabled()));
+    apiConfig.setFailureCount(apiConfigDto.getFailureCount() != null ? apiConfigDto.getFailureCount() : 3);
+    apiConfig.setFailureStatusCodes(apiConfigDto.getFailureStatusCodes() != null && !apiConfigDto.getFailureStatusCodes().trim().isEmpty() ? apiConfigDto.getFailureStatusCodes().replaceAll("\\s", "") : "503");
+    apiConfig.setRetryAfterSeconds(apiConfigDto.getRetryAfterSeconds() != null ? apiConfigDto.getRetryAfterSeconds() : 1);
 
     return apiConfigRepository.save(apiConfig);
   }
@@ -148,12 +153,14 @@ public class ApiMockService {
     DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>();
 
     Integer delay = apiConfig.getDelayMs() != null ? apiConfig.getDelayMs() : 0;
+    // Decided once per call, before the delay, so concurrent calls of one caller are counted in arrival order
+    Optional<FailureSimulationService.Failure> failure = failureSimulation.next(apiConfig, request);
 
     if (delay > 0) {
       new Thread(() -> {
         try {
           Thread.sleep(delay);
-          deferredResult.setResult(buildResponse(apiConfig, request));
+          deferredResult.setResult(respond(apiConfig, request, failure));
         } catch (InterruptedException e) {
           log.error("Delay interrupted", e);
           deferredResult.setErrorResult(
@@ -162,10 +169,31 @@ public class ApiMockService {
         }
       }).start();
     } else {
-      deferredResult.setResult(buildResponse(apiConfig, request));
+      deferredResult.setResult(respond(apiConfig, request, failure));
     }
 
     return deferredResult;
+  }
+
+  private ResponseEntity<Object> respond(ApiConfig apiConfig, HttpServletRequest request,
+      Optional<FailureSimulationService.Failure> failure) {
+    return failure.isPresent() ? buildFailureResponse(failure.get()) : buildResponse(apiConfig, request);
+  }
+
+  /** Simulated error: JSON body, X-Mock-Failure-Attempt header and, for 429/503, Retry-After. */
+  private ResponseEntity<Object> buildFailureResponse(FailureSimulationService.Failure failure) {
+    ResponseEntity.BodyBuilder builder = ResponseEntity.status(failure.status)
+        .header("Content-Type", "application/json")
+        .header("X-Mock-Failure-Attempt", failure.attempt + "/" + failure.total);
+    if (failure.retryAfterSeconds > 0 && (failure.status == 429 || failure.status == 503)) {
+      builder.header("Retry-After", String.valueOf(failure.retryAfterSeconds));
+    }
+    Map<String, Object> body = new HashMap<>();
+    body.put("error", "Simulated failure");
+    body.put("status", failure.status);
+    body.put("attempt", failure.attempt);
+    body.put("of", failure.total);
+    return builder.body(body);
   }
 
   /**
@@ -258,6 +286,10 @@ public class ApiMockService {
     dto.setDelayMs(apiConfig.getDelayMs());
     dto.setDescription(apiConfig.getDescription());
     dto.setNote(apiConfig.getNote());
+    dto.setFailureEnabled(Boolean.TRUE.equals(apiConfig.getFailureEnabled()));
+    dto.setFailureCount(apiConfig.getFailureCount());
+    dto.setFailureStatusCodes(apiConfig.getFailureStatusCodes());
+    dto.setRetryAfterSeconds(apiConfig.getRetryAfterSeconds());
     return dto;
   }
 

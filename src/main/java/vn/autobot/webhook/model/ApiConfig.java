@@ -54,6 +54,19 @@ public class ApiConfig {
     @Column(name = "note", length = 2000)
     private String note;  // Free-form note for testers
 
+    // Failure simulation: fail the first N calls of each caller with these status codes, then respond normally
+    @Column(name = "failure_enabled")
+    private Boolean failureEnabled = false;
+
+    @Column(name = "failure_count")
+    private Integer failureCount = 3;
+
+    @Column(name = "failure_status_codes", length = 100)
+    private String failureStatusCodes = "503";  // comma-separated, 400-599
+
+    @Column(name = "retry_after_seconds")
+    private Integer retryAfterSeconds = 1;  // sent as Retry-After on 429/503 failures; 0 omits it
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

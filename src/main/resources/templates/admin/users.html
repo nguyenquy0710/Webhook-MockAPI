@@ -10,6 +10,10 @@
     <div class="container">
       <div th:replace="fragments/navigation :: navigation"></div>
 
+<div class="row g-4">
+<aside th:replace="fragments/admin-sidebar :: sidebar('users')"></aside>
+<main class="col-lg-9" style="min-width:0">
+
       <!-- Layout: users are identified by avatar + name + email in one cell; search and role/status filters on top;
            rarely used actions (role, status, delete) sit in a "..." menu and always ask for confirmation. -->
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
@@ -136,7 +140,9 @@
           <p class="mb-0">No users found.</p>
         </div>
       </div>
-    </div>
+    </main>
+</div>
+</div>
 
     <!-- Shared confirmation modal for role/status/delete actions -->
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmTitle" aria-hidden="true">

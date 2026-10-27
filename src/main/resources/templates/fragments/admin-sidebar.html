@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+  <body>
+    <!-- Admin section menu: sits left of the page content; `active` is the current feature tab; only main admin features belong here (not create/edit forms). Stacks above the content on small screens. -->
+    <aside th:fragment="sidebar(active)" class="col-lg-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+          <h6 class="mb-0 text-uppercase text-muted small fw-semibold"><i class="fas fa-users-cog me-2"></i>Administration</h6>
+        </div>
+        <div class="list-group list-group-flush">
+          <a th:href="@{/admin/users}" class="list-group-item list-group-item-action"
+            th:classappend="${active == 'users' ? 'active' : ''}" th:attr="aria-current=${active == 'users' ? 'page' : null}">
+            <i class="fas fa-users me-2"></i> Users
+          </a>
+          <a th:href="@{/admin/settings}" class="list-group-item list-group-item-action"
+            th:classappend="${active == 'settings' ? 'active' : ''}" th:attr="aria-current=${active == 'settings' ? 'page' : null}">
+            <i class="fas fa-sliders-h me-2"></i> Settings
+          </a>
+        </div>
+      </div>
+    </aside>
+  </body>
+
+</html>

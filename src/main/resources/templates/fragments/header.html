@@ -115,7 +115,7 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between">
           <a href="/" class="d-flex align-items-center text-white text-decoration-none">
             <i class="fas fa-webhook fa-2x me-3 text-primary"></i>
-            <span class="fs-3 fw-bold">Mock Webhook</span>
+            <span class="fs-3 fw-bold" th:text="${siteName ?: 'Mock Webhook'}">Mock Webhook</span>
           </a>
           <div class="text-end" th:if="${#authentication != null && !#authentication.principal.equals('anonymousUser')}">
             <div class="dropdown">

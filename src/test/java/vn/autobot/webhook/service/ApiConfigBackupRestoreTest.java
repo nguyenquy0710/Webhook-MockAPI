@@ -73,5 +73,29 @@ class ApiConfigBackupRestoreTest {
     assertEquals("/old", saved.getValue().getPath());
     assertNull(saved.getValue().getDescription());
     assertNull(saved.getValue().getNote());
+    // an old backup restores with failure simulation off and the default settings
+    assertEquals(false, saved.getValue().getFailureEnabled());
+    assertEquals(3, saved.getValue().getFailureCount());
+    assertEquals("503", saved.getValue().getFailureStatusCodes());
+    assertEquals(1, saved.getValue().getRetryAfterSeconds());
+  }
+
+  @Test
+  void backupThenRestoreKeepsFailureSimulation() {
+    ApiConfig flaky = config(null, null);
+    flaky.setFailureEnabled(true);
+    flaky.setFailureCount(5);
+    flaky.setFailureStatusCodes("429,503");
+    flaky.setRetryAfterSeconds(7);
+    when(repository.findByUserOrderByCreatedAtDesc(user)).thenReturn(List.of(flaky));
+
+    service.restoreApiConfigs("demo", service.backupApiConfigs("demo"));
+
+    ArgumentCaptor<ApiConfig> saved = ArgumentCaptor.forClass(ApiConfig.class);
+    verify(repository).save(saved.capture());
+    assertEquals(true, saved.getValue().getFailureEnabled());
+    assertEquals(5, saved.getValue().getFailureCount());
+    assertEquals("429,503", saved.getValue().getFailureStatusCodes());
+    assertEquals(7, saved.getValue().getRetryAfterSeconds());
   }
 }

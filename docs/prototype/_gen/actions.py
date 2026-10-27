@@ -69,6 +69,12 @@ ACTIONS = {
         "delete user": {"type": "confirm", "title": "Delete user?", "body": "This action cannot be undone.",
                         "confirm": "Delete", "toast": "User deleted successfully!"},
     },
+    "admin-settings": {
+        "save settings": {"type": "toast", "message": "General settings saved.", "delay": 600},
+        "run maintenance": {"type": "confirm", "title": "Run database maintenance?",
+                            "body": "This also schedules a full compaction of the database file for the next restart. Writes are blocked while it runs and free disk space about the size of the database is required.",
+                            "confirm": "Run", "toast": "Database maintenance finished."},
+    },
     "admin-user-detail": {
         "promote": {"type": "confirm", "title": "Promote to Admin?", "confirm": "Promote", "toast": "User role updated"},
         "disable": {"type": "confirm", "title": "Disable User?", "confirm": "Disable", "toast": "User disabled"},

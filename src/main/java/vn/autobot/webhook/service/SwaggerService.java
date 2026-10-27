@@ -3,7 +3,6 @@ package vn.autobot.webhook.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import vn.autobot.webhook.config.AppConfig;
 import vn.autobot.webhook.dto.ApiConfigDto;
 
 import java.io.IOException;
@@ -18,7 +17,7 @@ public class SwaggerService {
 
     private final ApiMockService apiMockService;
     private final ObjectMapper objectMapper;
-    private final AppConfig appConfig;
+    private final SettingsService settingsService;
 
     public Path getSwaggerPath(String username) {
         return Paths.get("data", "swagger", username, "swagger.json");
@@ -36,7 +35,7 @@ public class SwaggerService {
         spec.put("info", info);
 
         Map<String, Object> server = new LinkedHashMap<>();
-        server.put("url", appConfig.getDomain());
+        server.put("url", settingsService.getDomain());
         server.put("description", "Mock Server");
         spec.put("servers", Collections.singletonList(server));
 

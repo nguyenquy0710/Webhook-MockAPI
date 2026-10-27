@@ -10,6 +10,10 @@
         <div class="container">
             <div th:replace="fragments/navigation :: navigation"></div>
 
+<div class="row g-4">
+<aside th:replace="fragments/admin-sidebar :: sidebar('users')"></aside>
+<main class="col-lg-9" style="min-width:0">
+
             <!-- Layout: profile header (avatar, name, role, status) with the actions on the right, details as a label/value grid. -->
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-2">
@@ -91,7 +95,9 @@
             <div class="mt-4">
                 <a th:href="@{/admin/users}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Back to list</a>
             </div>
-        </div>
+        </main>
+</div>
+</div>
         <div th:replace="fragments/footer :: footer"></div>
     </body>
 

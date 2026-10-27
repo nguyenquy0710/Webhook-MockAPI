@@ -1,0 +1,86 @@
+<!--title: Settings-->
+<!--layout: app-->
+<!--active: admin-->
+<!--
+  Nguồn gốc: templates/admin/settings.html (màn mới). Ý đồ: mỗi nhóm cấu hình một card. General gom tùy chọn chung của sản phẩm;
+  Database maintenance nêu rõ việc chạy sẽ làm gì, hiện kết quả lần chạy gần nhất và hỏi xác nhận vì lần đầu có thể khóa ghi.
+  Prototype giả lập: Save Settings chỉ báo thành công, Run Maintenance cập nhật dòng kết quả.
+-->
+<div class="row g-4">
+<!-- Admin section menu on the left; stacks above the content on small screens -->
+<aside class="col-lg-3"><div class="card shadow-sm border-0">
+<div class="card-header bg-white py-3"><h6 class="mb-0 text-uppercase text-muted small fw-semibold"><i class="fas fa-users-cog me-2"></i>Administration</h6></div>
+<div class="list-group list-group-flush"><a href="admin-users.dc.html" class="list-group-item list-group-item-action"><i class="fas fa-users me-2"></i> Users</a><a href="admin-settings.dc.html" class="list-group-item list-group-item-action active" aria-current="page"><i class="fas fa-sliders-h me-2"></i> Settings</a></div>
+</div></aside>
+<main class="col-lg-9" style="min-width:0">
+  <h2 class="mb-4">Settings</h2>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-cog me-2 text-primary"></i>General</h5></div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label for="siteName" class="form-label fw-semibold">Site name</label>
+        <input type="text" class="form-control" id="siteName" value="Mock Webhook" maxlength="60">
+        <div class="invalid-feedback" id="siteNameErr">Site name is required</div>
+        <div class="form-text">Shown in the header and footer.</div>
+      </div>
+      <div class="mb-3">
+        <label for="publicBaseUrl" class="form-label fw-semibold">Public base URL</label>
+        <input type="text" class="form-control font-monospace" id="publicBaseUrl" value="https://mock-api.quyit.id.vn" placeholder="https://mock-api.example.com" maxlength="200">
+        <div class="invalid-feedback" id="urlErr">Public base URL must start with http:// or https://</div>
+        <div class="form-text">Used to build webhook URLs and the Swagger server address. Leave empty to use the configured default.</div>
+      </div>
+      <div class="mb-3">
+        <label for="requestLogRetentionDays" class="form-label fw-semibold">Request log retention (days)</label>
+        <input type="number" class="form-control" id="requestLogRetentionDays" value="0" min="0" max="3650">
+        <div class="invalid-feedback">Retention must be between 0 and 3650 days</div>
+        <div class="form-text">Older request logs are deleted by the daily database maintenance. 0 keeps all logs.</div>
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="allowRegistration" checked>
+        <label class="form-check-label" for="allowRegistration">Allow new user registration</label>
+      </div>
+    </div>
+    <div class="card-footer bg-white text-end"><button type="button" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Settings</button></div>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-database me-2 text-info"></i>Database maintenance</h5>
+      <span class="badge bg-warning text-dark" id="compactBadge">Not compacted yet</span>
+    </div>
+    <div class="card-body">
+      <p class="text-muted">Reclaims space left behind by deleted history and logs, trims the transaction log and refreshes query statistics. It also runs automatically once a day.</p>
+      <div class="alert alert-warning py-2 small" id="compactWarn"><i class="fas fa-exclamation-triangle me-1"></i>The first run on an older database schedules a full compaction of the file for the next restart. Writes are blocked while it runs and free disk space about the size of the database is required.</div>
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Database size</dt><dd class="col-sm-8" id="dbSize">12.4 MB</dd>
+        <dt class="col-sm-4">Last run</dt><dd class="col-sm-8" id="lastRun"><span class="text-muted">Never</span></dd>
+        <dt class="col-sm-4" id="resultLabel" hidden>Result</dt><dd class="col-sm-8 text-break" id="lastResult" hidden></dd>
+      </dl>
+    </div>
+    <div class="card-footer bg-white text-end"><button type="button" class="btn btn-outline-primary"><i class="fas fa-broom me-1"></i> Run Maintenance</button></div>
+  </div>
+</main>
+</div>
+<script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    // Same rules as the server: site name required, URL empty or http(s)://
+    $('siteName').addEventListener('input', function () { this.classList.toggle('is-invalid', !this.value.trim()); });
+    $('publicBaseUrl').addEventListener('input', function () { this.classList.toggle('is-invalid', !!this.value && !/^https?:\/\/\S+$/.test(this.value)); });
+    $('requestLogRetentionDays').addEventListener('input', function () { var v = Number(this.value); this.classList.toggle('is-invalid', this.value === '' || v < 0 || v > 3650); });
+    // Run Maintenance: the confirm dialog ends with a toast; update the status card when that toast appears
+    function showResult() {
+      var d = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      $('lastRun').innerHTML = '<span class="badge bg-success me-1">success</span> ' + d + ' UTC';
+      $('lastResult').textContent = 'Checkpoint, Analyze; file compaction scheduled for the next restart (298 ms, 12700 KB -> 12700 KB)';
+      $('lastResult').hidden = false; $('resultLabel').hidden = false;
+      $('compactBadge').className = 'badge bg-info'; $('compactBadge').textContent = 'Compaction on next restart';
+    }
+    new MutationObserver(function (muts) {
+      muts.forEach(function (m) {
+        m.addedNodes.forEach(function (n) { if (n.textContent === 'Database maintenance finished.') showResult(); });
+      });
+    }).observe(document.body, { childList: true, subtree: true });
+  })();
+</script>

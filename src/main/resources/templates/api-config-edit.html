@@ -143,6 +143,50 @@
             </div>
 
             <div class="card shadow-sm border-0 mb-4">
+              <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Failure simulation</h5>
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" role="switch" id="failureEnabled" th:field="*{failureEnabled}" aria-label="Enable failure simulation">
+                </div>
+              </div>
+              <!-- Lets a client test its retry logic: each caller gets N errors, then the normal response; the round then starts over. -->
+              <div class="card-body" id="failureFields">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="failureCount" class="form-label">Fail the first</label>
+                    <div class="input-group">
+                      <input type="number" class="form-control" id="failureCount" th:field="*{failureCount}" min="1" max="10">
+                      <span class="input-group-text">calls</span>
+                    </div>
+                    <div class="text-danger" th:if="${#fields.hasErrors('failureCount')}" th:errors="*{failureCount}"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="retryAfterSeconds" class="form-label">Retry-After</label>
+                    <div class="input-group">
+                      <input type="number" class="form-control" id="retryAfterSeconds" th:field="*{retryAfterSeconds}" min="0" max="60">
+                      <span class="input-group-text">s</span>
+                    </div>
+                    <div class="text-danger" th:if="${#fields.hasErrors('retryAfterSeconds')}" th:errors="*{retryAfterSeconds}"></div>
+                  </div>
+                  <div class="col-12">
+                    <label for="failureStatusCodes" class="form-label">Failure status codes</label>
+                    <input type="text" class="form-control font-monospace" id="failureStatusCodes" th:field="*{failureStatusCodes}" maxlength="100" placeholder="503,500">
+                    <div class="d-flex flex-wrap gap-1 mt-2" id="failureChips">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-fcode="408">408</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-fcode="429">429</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-fcode="500">500</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-fcode="502">502</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-fcode="503">503</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-fcode="504">504</button>
+                    </div>
+                    <div class="form-text">Codes are used in turn. Each caller is identified by Idempotency-Key, X-Request-Id or IP, and starts over after the normal response or 10 minutes idle. Retry-After is sent on 429 and 503; 0 omits it.</div>
+                    <div class="text-danger" th:if="${#fields.hasErrors('failureStatusCodes')}" th:errors="*{failureStatusCodes}"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
               <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-sticky-note me-2 text-info"></i>Note</h5></div>
               <div class="card-body">
                 <label for="note" class="visually-hidden">Note</label>
@@ -171,6 +215,9 @@
                   </li>
                   <li class="list-group-item d-flex justify-content-between align-items-center">
                     <span class="text-muted">Delay</span><span id="sDelay" th:text="${(apiConfig.delayMs != null ? apiConfig.delayMs : 0) + ' ms'}">0 ms</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Failures</span><span id="sFail" th:text="${apiConfig.failureEnabled ? 'First ' + apiConfig.failureCount + ' calls' : 'Off'}">Off</span>
                   </li>
                 </ul>
                 <div class="card-body d-grid gap-2">
@@ -227,7 +274,7 @@
         var apiRoot = '/api/@' + user;
         var methodCls = { GET: 'bg-success', POST: 'bg-primary', PUT: 'bg-info', DELETE: 'bg-danger' };
         var form = $('editForm');
-        var snapshot = function () { return JSON.stringify([].map.call(form.elements, function (e) { return e.value; })); };
+        var snapshot = function () { return JSON.stringify([].map.call(form.elements, function (e) { return e.type === 'checkbox' ? e.checked : e.value; })); };
         var initial = snapshot();
         var submitting = false;
 
@@ -242,6 +289,10 @@
           $('sStatus').className = 'badge ' + (code >= 200 && code < 300 ? 'bg-success' : (code >= 400 ? 'bg-danger' : 'bg-warning'));
           $('sType').textContent = $('contentType').value;
           $('sDelay').textContent = ($('delayMs').value || 0) + ' ms';
+          $('sFail').textContent = $('failureEnabled').checked ? 'First ' + ($('failureCount').value || 0) + ' calls' : 'Off';
+          $('failureFields').hidden = !$('failureEnabled').checked;
+          var codes = $('failureStatusCodes').value.split(',').map(function (c) { return c.trim(); });
+          document.querySelectorAll('#failureChips [data-fcode]').forEach(function (c) { c.classList.toggle('active', codes.indexOf(c.getAttribute('data-fcode')) !== -1); });
           $('noteCount').textContent = $('note').value.length;
           document.querySelectorAll('.status-chip').forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-code') === String(code)); });
           $('dirtyBadge').hidden = snapshot() === initial;
@@ -252,6 +303,16 @@
         $('statusChips').addEventListener('click', function (e) {
           var c = e.target.closest('[data-code]'); if (!c) return;
           $('statusCode').value = c.getAttribute('data-code'); sync();
+        });
+
+        // Chips add or remove a code in the comma-separated list
+        $('failureChips').addEventListener('click', function (e) {
+          var c = e.target.closest('[data-fcode]'); if (!c) return;
+          var code = c.getAttribute('data-fcode');
+          var codes = $('failureStatusCodes').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+          var i = codes.indexOf(code);
+          if (i === -1) codes.push(code); else codes.splice(i, 1);
+          $('failureStatusCodes').value = codes.join(','); sync();
         });
 
         // {{variable}} placeholders are ignored when checking JSON validity
