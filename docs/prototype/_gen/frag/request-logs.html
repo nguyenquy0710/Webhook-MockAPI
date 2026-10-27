@@ -1,0 +1,193 @@
+<!--title: Request Logs-->
+<!--layout: app-->
+<!--active: logs-->
+<!-- Nguồn: templates/request-logs.html + static/js/request-log.js. Phân trang, tìm theo path, chi tiết log và Clear All chạy phía client trên dữ liệu mẫu -->
+<style>
+  .log-details { max-height: 250px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; position: relative; }
+  .log-details pre { margin-bottom: 0; font-family: Consolas, "Courier New", monospace; font-size: .9rem; color: #212529; }
+  .pagination-options { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pagination-container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 20px; gap: 10px; }
+  @media (max-width: 600px) { .pagination-container { flex-direction: column; align-items: stretch; } .pagination-options { justify-content: center; } }
+</style>
+<div id="flash"></div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Request Logs for @<span>demo</span></h2>
+  <div class="current-time"><strong>Current Time (UTC):</strong> <span id="current-time-display"></span></div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Request History <span class="badge bg-primary request-count" id="totalBadge">0</span></h5>
+    <div>
+      <button type="button" class="btn btn-outline-success me-2"><i class="fas fa-file-excel me-1"></i> Export Excel</button>
+      <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fas fa-trash me-1"></i> Clear All</button>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <div class="input-group">
+          <input type="text" class="form-control" id="pathSearchInput" placeholder="Search by path...">
+          <button class="btn btn-primary" type="button" id="searchButton" data-proto="skip"><i class="fas fa-search me-1"></i> Search</button>
+          <button class="btn btn-outline-secondary" type="button" id="clearButton" data-proto="skip" hidden><i class="fas fa-times me-1"></i> Clear</button>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover" id="requestLogsTable">
+        <thead><tr><th>Time (UTC)</th><th>Method</th><th>Path</th><th>Status</th><th>Source IP</th><th>Details</th></tr></thead>
+        <tbody id="logRows"></tbody>
+      </table>
+    </div>
+    <div class="pagination-container" id="pager">
+      <div class="pagination-options">
+        <span>Rows per page:</span>
+        <select id="pageSizeSelect" class="form-select form-select-sm" style="width:auto;">
+          <option value="5">5</option><option value="10" selected>10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+        </select>
+        <span id="pageInfo">Showing 0 of 0 items</span>
+      </div>
+      <nav aria-label="Page navigation"><ul class="pagination mb-0" id="pageNav"></ul></nav>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="detailsModalLabel">Request Details - <span id="dTitle">GET /path</span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body">
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-overview" type="button" role="tab">Overview</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-headers" type="button" role="tab">Headers</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-params" type="button" role="tab">Query Params</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-body" type="button" role="tab">Request Body</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-response" type="button" role="tab">Response</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-curl" type="button" role="tab">Curl</button></li>
+      </ul>
+      <div class="tab-content mt-3">
+        <div class="tab-pane fade show active" id="t-overview" role="tabpanel">
+          <table class="table table-bordered">
+            <tr><th style="width:150px;">Time (UTC)</th><td id="o-time"></td></tr>
+            <tr><th>Method</th><td id="o-method"></td></tr>
+            <tr><th>Path</th><td id="o-path"></td></tr>
+            <tr><th>Source IP</th><td id="o-ip"></td></tr>
+            <tr><th>Response Status</th><td id="o-status"></td></tr>
+          </table>
+        </div>
+        <div class="tab-pane fade" id="t-headers" role="tabpanel"><div class="log-details" data-field="headers" data-empty="No headers available"></div></div>
+        <div class="tab-pane fade" id="t-params" role="tabpanel"><div class="log-details" data-field="params" data-empty="No query parameters available"></div></div>
+        <div class="tab-pane fade" id="t-body" role="tabpanel"><div class="log-details" data-field="body" data-empty="No request body available"></div></div>
+        <div class="tab-pane fade" id="t-response" role="tabpanel"><div class="log-details" data-field="response" data-empty="No response body available"></div></div>
+        <div class="tab-pane fade" id="t-curl" role="tabpanel"><div class="log-details" data-field="curl" data-empty="No curl available"></div></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+  </div></div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body">Are you sure you want to delete all request logs? This action cannot be undone.</div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      <button type="button" class="btn btn-danger" id="deleteAll" data-proto="skip">Delete All</button>
+    </div>
+  </div></div>
+</div>
+
+<script>
+(function () {
+  // Dữ liệu mẫu hư cấu; tạo sinh để đủ vài trang
+  var paths = ['/hello', '/users/123', '/orders', '/orders/42', '/payments/callback', '/health'];
+  var methods = ['GET', 'GET', 'POST', 'PUT', 'POST', 'DELETE'];
+  var statuses = [200, 200, 201, 200, 500, 204];
+  var logs = [];
+  for (var i = 0; i < 27; i++) {
+    var k = i % 6, min = 59 - i, t = '2026-10-27 09:' + (min < 10 ? '0' : '') + min + ':' + (10 + (i * 7) % 50);
+    var path = paths[k], body = methods[k] === 'POST' || methods[k] === 'PUT' ? '{"orderId": ' + (1000 + i) + ', "amount": ' + (20 + i) + '}' : '';
+    logs.push({ id: i + 1, time: t, method: methods[k], path: path, status: statuses[k], ip: '203.0.113.' + (10 + i % 9),
+      headers: '{"Host": "mock.example.test", "Content-Type": "application/json", "User-Agent": "curl/8.4.0"}',
+      params: i % 3 === 0 ? 'utm_source=newsletter&page=' + (i % 5 + 1) : '', body: body,
+      response: statuses[k] === 204 ? '' : '{"status_code": "' + statuses[k] + '", "message": "Hello World!"}',
+      curl: "curl -X " + methods[k] + " 'https://mock.example.test/api/@demo" + path + "'" + (body ? " -H 'Content-Type: application/json' -d '" + body + "'" : '') });
+  }
+  var state = { page: 0, size: 10, filter: '' };
+  var $ = function (id) { return document.getElementById(id); };
+  var cls = { GET: 'bg-success', POST: 'bg-primary', PUT: 'bg-info', DELETE: 'bg-danger' };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function filtered() { var f = state.filter.toLowerCase(); return logs.filter(function (l) { return !f || l.path.toLowerCase().indexOf(f) !== -1; }); }
+
+  function render() {
+    var list = filtered(), total = list.length, pages = Math.ceil(total / state.size);
+    if (state.page >= pages) state.page = Math.max(0, pages - 1);
+    var slice = list.slice(state.page * state.size, (state.page + 1) * state.size);
+    $('totalBadge').textContent = total;
+    $('clearButton').hidden = !state.filter;
+    $('logRows').innerHTML = slice.length ? slice.map(function (l) {
+      var sc = l.status >= 200 && l.status < 300 ? 'bg-success' : (l.status >= 400 ? 'bg-danger' : 'bg-warning');
+      return '<tr><td>' + l.time + '</td><td><span class="badge ' + (cls[l.method] || 'bg-secondary') + '">' + l.method + '</span></td><td>' + esc(l.path) +
+        '</td><td><span class="badge ' + sc + '">' + l.status + '</span></td><td>' + l.ip +
+        '</td><td><button class="btn btn-sm btn-outline-primary" data-proto="skip" data-log="' + l.id + '"><i class="fas fa-eye me-1"></i> View</button></td></tr>';
+    }).join('') : '<tr><td colspan="6" class="text-center py-5"><div class="text-muted"><i class="fas fa-inbox fa-3x mb-3"></i><p>No request logs found.</p>' +
+      '<p>Send requests to <code>https://mock.example.test/api/@demo</code> to see them here.</p></div></td></tr>';
+    $('pager').hidden = pages === 0;
+    $('pageInfo').textContent = 'Showing ' + slice.length + ' of ' + total + ' items';
+    var nav = '', item = function (label, p, disabled, active) {
+      return '<li class="page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '') + '"><a class="page-link" href="#" data-page="' + p + '">' + label + '</a></li>';
+    };
+    nav += item('&laquo;', 0, state.page === 0) + item('&lt;', state.page - 1, state.page === 0);
+    var start = Math.max(0, Math.min(state.page - 2, pages - 5)), end = Math.min(pages - 1, start + 4);
+    if (start > 0) nav += item('1', 0) + (start > 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : '');
+    for (var p = start; p <= end; p++) nav += item(p + 1, p, false, p === state.page);
+    if (end < pages - 1) nav += (end < pages - 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : '') + item(pages, pages - 1);
+    nav += item('&gt;', state.page + 1, state.page >= pages - 1) + item('&raquo;', pages - 1, state.page >= pages - 1);
+    $('pageNav').innerHTML = nav;
+  }
+
+  function search() { state.filter = $('pathSearchInput').value.trim(); state.page = 0; render(); }
+  $('searchButton').addEventListener('click', search);
+  $('pathSearchInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') search(); });
+  $('clearButton').addEventListener('click', function () { $('pathSearchInput').value = ''; search(); });
+  $('pageSizeSelect').addEventListener('change', function () { state.size = +this.value; state.page = 0; render(); });
+  $('pageNav').addEventListener('click', function (e) {
+    var a = e.target.closest('[data-page]'); if (!a) return;
+    e.preventDefault();
+    if (!a.parentNode.classList.contains('disabled')) { state.page = +a.getAttribute('data-page'); render(); }
+  });
+
+  // Chi tiết log: một modal dùng chung, điền lại nội dung mỗi lần mở
+  function fillPane(pane, text) {
+    pane.innerHTML = text ? '<div class="copy-wrapper"><pre>' + esc(text) + '</pre><button class="copy-btn" data-proto="skip"><i class="fas fa-copy"></i> Copy</button></div>'
+      : '<div class="text-muted">' + pane.getAttribute('data-empty') + '</div>';
+  }
+  $('logRows').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-log]'); if (!b) return;
+    var l = logs.filter(function (x) { return x.id === +b.getAttribute('data-log'); })[0];
+    $('dTitle').textContent = l.method + ' ' + l.path;
+    $('o-time').textContent = l.time; $('o-method').textContent = l.method; $('o-path').textContent = l.path;
+    $('o-ip').textContent = l.ip; $('o-status').textContent = l.status;
+    document.querySelectorAll('#detailsModal [data-field]').forEach(function (p) { fillPane(p, l[p.getAttribute('data-field')]); });
+    bootstrap.Tab.getOrCreateInstance(document.querySelector('#detailsModal .nav-link')).show();
+    bootstrap.Modal.getOrCreateInstance($('detailsModal')).show();
+  });
+  $('detailsModal').addEventListener('click', function (e) {
+    var c = e.target.closest('.copy-btn'); if (!c) return;
+    var text = c.parentNode.querySelector('pre').textContent;
+    if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function () {});
+    var old = c.innerHTML; c.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    setTimeout(function () { c.innerHTML = old; }, 1500);
+  });
+
+  $('deleteAll').addEventListener('click', function () {
+    logs = []; render(); protoHideModal('deleteModal');
+    $('flash').innerHTML = '<div class="alert alert-success alert-dismissible fade show" role="alert">All request logs have been deleted successfully.' +
+      '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+  });
+
+  // Đồng hồ UTC như request-log.js
+  function tick() { $('current-time-display').textContent = new Date().toISOString().replace('T', ' ').slice(0, 19); }
+  tick(); setInterval(tick, 1000);
+  render();
+})();
+</script>

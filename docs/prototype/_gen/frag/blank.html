@@ -1,0 +1,46 @@
+<!--title: UI Standards-->
+<!--
+  Màn quy chuẩn (slug "blank") của bộ prototype. Theme: bootstrap 5.3.3 (https://getbootstrap.com/), giá trị lấy từ biến CSS mặc định
+  của Bootstrap 5.3 và static/css/styles.css của UI gốc. Đây là tài liệu thiết kế cho dev, không thuộc sản phẩm của client.
+  Đổi token thì cập nhật cả màn này lẫn docs/specs/ui-ux.md.
+-->
+<style>
+  .qc h2 { margin: 32px 0 12px; font-size: 1.25rem; }
+  .qc .sw { display: inline-block; width: 28px; height: 28px; border-radius: .5rem; border: 1px solid #dee2e6; vertical-align: middle; }
+</style>
+<div class="qc py-4">
+  <h1>UI Standards</h1>
+  <h2>Colors</h2>
+  <table class="table align-middle">
+    <tr><th>Swatch</th><th>Hex</th><th>Token</th><th>Used for</th></tr>
+    <tr><td><span class="sw" style="background:#0d6efd"></span></td><td>#0D6EFD</td><td>--bs-primary</td><td>Primary buttons, links, active nav pill</td></tr>
+    <tr><td><span class="sw" style="background:#198754"></span></td><td>#198754</td><td>--bs-success</td><td>Success badges and alerts, 2xx status</td></tr>
+    <tr><td><span class="sw" style="background:#dc3545"></span></td><td>#DC3545</td><td>--bs-danger</td><td>Errors, delete, 4xx/5xx status</td></tr>
+    <tr><td><span class="sw" style="background:#ffc107"></span></td><td>#FFC107</td><td>--bs-warning</td><td>Warnings, 3xx status, disabled account</td></tr>
+    <tr><td><span class="sw" style="background:#0dcaf0"></span></td><td>#0DCAF0</td><td>--bs-info</td><td>Info badges, PUT method, log actions</td></tr>
+    <tr><td><span class="sw" style="background:#6c757d"></span></td><td>#6C757D</td><td>--bs-secondary</td><td>Secondary buttons and badges</td></tr>
+    <tr><td><span class="sw" style="background:#212529"></span></td><td>#212529</td><td>--bs-dark</td><td>Header background, table head</td></tr>
+    <tr><td><span class="sw" style="background:#f8f9fa"></span></td><td>#F8F9FA</td><td>--bs-light</td><td>Page background, code blocks</td></tr>
+  </table>
+  <h2>Typography</h2>
+  <p>System UI font stack (Bootstrap default), 16px base. Headings fw-bold or fw-light as in the screens; code and log text use monospace at 0.875rem.</p>
+  <h2>Spacing, radius, shadow</h2>
+  <p>Bootstrap spacing scale (mb-3 / p-4). Card radius 0.375rem, auth cards rounded-4, pills rounded-pill. Cards use shadow-sm; header uses shadow.</p>
+  <h2>Controls</h2>
+  <div class="d-flex flex-wrap gap-2 mb-2">
+    <button class="btn btn-primary" data-proto="skip">Primary</button>
+    <button class="btn btn-outline-primary" data-proto="skip">Outline</button>
+    <button class="btn btn-secondary" data-proto="skip">Secondary</button>
+    <button class="btn btn-danger" data-proto="skip">Danger</button>
+    <button class="btn btn-sm btn-outline-secondary" data-proto="skip">Small</button>
+  </div>
+  <p>Inputs use form-control (38px), form-floating on auth screens (form-control-lg). Table row actions use icon buttons with tooltips.</p>
+  <h2>Conventions</h2>
+  <ul>
+    <li>Language: English. Dates yyyy-MM-dd HH:mm:ss (UTC for logs). Status codes as badges.</li>
+    <li>Icons: Font Awesome 6.5.1. Destructive actions always ask for confirmation.</li>
+    <li>States: empty table shows a muted inbox icon with a hint; success and error use dismissible alerts or toasts.</li>
+    <li>Accessibility: labels on all fields, aria-label on icon-only buttons, tooltips via title.</li>
+    <li>Sample data: user demo, domain mock.example.test; no real data.</li>
+  </ul>
+</div>
