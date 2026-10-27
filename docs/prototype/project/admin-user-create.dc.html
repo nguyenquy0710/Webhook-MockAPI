@@ -61,62 +61,120 @@
         <a class="nav-link rounded-pill active" href="admin-users.dc.html"><i class="fas fa-users-cog me-2"></i> Admin</a>
       </nav>
     </div>
-<!-- Nguồn: templates/admin/user-create.html -->
+<!--
+  Nguồn gốc: templates/admin/user-create.html (thiết kế lại). Ý đồ: chia nhóm Account / Security / Permissions, cột phải dính hiện tóm tắt
+  tài khoản sắp tạo cùng nút Create User và Cancel; mật khẩu có hiện/ẩn và báo khớp ngay.
+-->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item"><a href="admin-users.dc.html" class="text-decoration-none">Users</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Create</li>
+  </ol>
+</nav>
 <h2 class="mb-4">Create New User</h2>
-<div class="row justify-content-center"><div class="col-md-8"><div class="card"><div class="card-body">
-  <form id="userForm">
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="username" class="form-label">Username *</label>
-        <input type="text" class="form-control" id="username" required>
-        <small class="text-muted">3-50 characters, letters, numbers, and underscores only</small>
+
+<form id="userForm" novalidate>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-user me-2 text-primary"></i>Account</h5></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="username" class="form-label">Username *</label>
+              <input type="text" class="form-control" id="username" autocomplete="off" required>
+              <small class="text-muted">3-50 characters, letters, numbers, and underscores only</small>
+            </div>
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email *</label>
+              <input type="email" class="form-control" id="email" autocomplete="off" required>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="col-md-6">
-        <label for="email" class="form-label">Email *</label>
-        <input type="email" class="form-control" id="email" required>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-lock me-2 text-success"></i>Security</h5></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="password" class="form-label">Password *</label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="password" required minlength="6" autocomplete="new-password">
+                <button class="btn btn-outline-secondary" type="button" data-proto="skip" data-toggle-password="password" aria-label="Show password"><i class="fas fa-eye"></i></button>
+              </div>
+              <small class="text-muted">At least 6 characters</small>
+            </div>
+            <div class="col-md-6">
+              <label for="confirmPassword" class="form-label">Confirm Password *</label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="confirmPassword" required autocomplete="new-password">
+                <button class="btn btn-outline-secondary" type="button" data-proto="skip" data-toggle-password="confirmPassword" aria-label="Show password"><i class="fas fa-eye"></i></button>
+              </div>
+              <div class="invalid-feedback">Passwords do not match</div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="password" class="form-label">Password *</label>
-        <input type="password" class="form-control" id="password" required minlength="6">
-        <small class="text-muted">At least 6 characters</small>
-      </div>
-      <div class="col-md-6">
-        <label for="confirmPassword" class="form-label">Confirm Password *</label>
-        <input type="password" class="form-control" id="confirmPassword" required>
-      </div>
-    </div>
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="role" class="form-label">Role *</label>
-        <select class="form-select" id="role" required><option value="USER">User</option><option value="ADMIN">Admin</option></select>
-      </div>
-      <div class="col-md-6">
-        <label for="enabled" class="form-label">Status</label>
-        <div class="form-check form-switch mt-2">
-          <input class="form-check-input" type="checkbox" id="enabled" checked>
-          <label class="form-check-label" for="enabled">Account Enabled</label>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-user-shield me-2 text-info"></i>Permissions</h5></div>
+        <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-6">
+              <label for="role" class="form-label">Role *</label>
+              <select class="form-select" id="role" required><option value="USER">User</option><option value="ADMIN">Admin</option></select>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="enabled" checked>
+                <label class="form-check-label" for="enabled">Account Enabled</label>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="mb-3"><small class="text-muted">* Required fields</small></div>
-    <div class="d-flex justify-content-between">
-      <a href="admin-users.dc.html" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Cancel</a>
-      <button type="submit" class="btn btn-primary" id="createUser" data-proto="skip"><i class="fas fa-user-plus me-1"></i> Create User</button>
+
+    <div class="col-lg-4">
+      <div class="sticky-lg-top" style="top: 1rem;">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-white py-3"><h5 class="mb-0">Summary</h5></div>
+          <div class="card-body">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width:2.75rem;height:2.75rem;" id="sAvatar">?</div>
+              <div><div class="fw-semibold" id="sName">New user</div><div class="text-muted small text-break" id="sEmail">-</div></div>
+            </div>
+            <div class="d-flex gap-2 mb-3"><span class="badge bg-secondary" id="sRole">USER</span><span class="badge bg-success" id="sStatus">Enabled</span></div>
+            <div class="text-muted small mb-3">* Required fields</div>
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary" id="createUser" data-proto="skip"><i class="fas fa-user-plus me-1"></i> Create User</button>
+              <a href="admin-users.dc.html" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Cancel</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </form>
-</div></div></div></div>
+  </div>
+</form>
 <script>
-  // Password confirmation validation như bản gốc; hợp lệ thì quay lại danh sách
-  var pw = document.getElementById('password'), cf = document.getElementById('confirmPassword');
-  function check() { cf.setCustomValidity(pw.value === cf.value ? '' : 'Passwords do not match'); }
-  cf.addEventListener('input', check); pw.addEventListener('input', check);
-  document.getElementById('createUser').addEventListener('click', function () {
-    check();
-    var f = document.getElementById('userForm');
-    if (f.reportValidity()) location.href = 'admin-users.dc.html';
-  });
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    function check() { var ok = $('password').value === $('confirmPassword').value; $('confirmPassword').setCustomValidity(ok ? '' : 'Passwords do not match'); $('confirmPassword').classList.toggle('is-invalid', !ok && !!$('confirmPassword').value); }
+    function summary() {
+      var u = $('username').value.trim();
+      $('sAvatar').textContent = u ? u[0].toUpperCase() : '?'; $('sName').textContent = u || 'New user'; $('sEmail').textContent = $('email').value.trim() || '-';
+      $('sRole').textContent = $('role').value; $('sRole').className = 'badge ' + ($('role').value === 'ADMIN' ? 'bg-danger' : 'bg-secondary');
+      $('sStatus').textContent = $('enabled').checked ? 'Enabled' : 'Disabled'; $('sStatus').className = 'badge ' + ($('enabled').checked ? 'bg-success' : 'bg-warning');
+    }
+    $('userForm').addEventListener('input', function () { check(); summary(); });
+    $('userForm').addEventListener('change', summary);
+    // Hợp lệ thì quay lại danh sách như redirect của server gốc
+    $('createUser').addEventListener('click', function () {
+      check(); $('userForm').classList.add('was-validated');
+      if ($('userForm').checkValidity()) location.href = 'admin-users.dc.html';
+    });
+  })();
 </script>
 
 </div>
@@ -138,6 +196,15 @@
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new bootstrap.Tooltip(el); });
   document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) { new bootstrap.Popover(el); });
   document.addEventListener('submit', function (e) { e.preventDefault(); });
+  // Nút hiện/ẩn mật khẩu dùng chung: <button data-toggle-password="<id ô nhập>">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle-password]'); if (!b) return;
+    var input = document.getElementById(b.getAttribute('data-toggle-password')), icon = b.querySelector('i');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = 'fas ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
   // Mở modal Bootstrap có sẵn sau khi hiện thông báo
   window.protoHideModal = function (id) { var m = bootstrap.Modal.getInstance(document.getElementById(id)); if (m) m.hide(); };
 </script>
