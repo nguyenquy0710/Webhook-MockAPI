@@ -116,6 +116,12 @@ Phương án không chọn: lưu ghi chú trong `responseHeaders` hoặc bảng 
 - Trạng thái Jira: **In Progress** (code xong nhưng chưa commit/PR; chuyển Done sau khi merge).
 - Việc còn lại ngoài plan: push/PR, chuyển QUYIT-960 sang Done sau khi merge. Đã ghi xác nhận vào GitHub issue #35 (xem mục 4d).
 
+## 4d. Xác nhận với người đề xuất (2026-10-27)
+
+- Đã comment vào GitHub issue #35 ([link](https://github.com/nguyenquy0710/Webhook-MockAPI/issues/35#issuecomment-6433714985)): tóm tắt phần đã làm và hỏi giữ hai trường (`description` + `note`) hay chỉ một. Mặc định giữ cả hai nếu không có ý kiến khác.
+- Trạng thái: **chờ phản hồi**. Nếu chọn một trường thì bỏ `note` (migration V4 chưa phát hành nên có thể sửa trực tiếp).
+- Đã commit cục bộ (2 commit), chưa push. QUYIT-960 giữ **In Progress**, chuyển Done sau khi merge.
+
 ## 5. Success Criteria
 
 - [x] Tạo và sửa endpoint với `description`/`note` hoặc để trống đều thành công. (đã kiểm tra thủ công trên app thật)
