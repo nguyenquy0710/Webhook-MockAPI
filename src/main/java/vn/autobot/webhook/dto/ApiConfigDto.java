@@ -8,6 +8,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Data
 @NoArgsConstructor
@@ -37,4 +38,10 @@ public class ApiConfigDto {
     @Min(value = 0, message = "Delay cannot be negative")
     @Max(value = 60000, message = "Delay cannot be more than 60 seconds")
     private Integer delayMs;
+
+    @Size(max = 500, message = "Description must be at most 500 characters")
+    private String description;
+
+    @Size(max = 2000, message = "Note must be at most 2000 characters")
+    private String note;
 }

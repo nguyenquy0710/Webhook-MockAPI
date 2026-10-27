@@ -11,95 +11,280 @@
     <div class="container">
       <div th:replace="fragments/navigation :: navigation"></div>
 
-      <h2 class="mb-4">Edit API Configuration</h2>
+      <style>
+        .method-badge { min-width: 4.5rem; }
+        .code-area { font-family: Consolas, "Courier New", monospace; font-size: .875rem; }
+        .status-chip.active { background-color: #0d6efd; color: #fff; border-color: #0d6efd; }
+      </style>
+
+      <!-- Layout: header shows which endpoint is being edited; fields grouped in cards; the right column
+           stays sticky so Update/Cancel remain visible; delete is separated from the save actions. -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2">
+          <li class="breadcrumb-item"><a th:href="@{/api-configs}" class="text-decoration-none">API Configs</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        </ol>
+      </nav>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <span class="badge bg-primary fs-6 method-badge" id="hMethod" th:text="${apiConfig.method}">GET</span>
+          <h2 class="mb-0 fs-3"><code id="hPath" th:text="${'/api/@' + username + apiConfig.path}">/api/@user/path</code></h2>
+          <span class="badge text-bg-warning" id="dirtyBadge" hidden>Unsaved changes</span>
+        </div>
+        <button type="button" class="btn btn-outline-secondary" id="copyUrlBtn"><i class="fas fa-copy me-1"></i> Copy URL</button>
+      </div>
 
       <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${errorMessage}">
         <span th:text="${errorMessage}">Error message</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h5>Update API Configuration</h5>
-        </div>
-        <div class="card-body">
-          <form th:action="@{/api-configs/{id}(id=${apiConfig.id})}" th:object="${apiConfig}" method="post">
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="path" class="form-label">Path*</label>
-                <div class="input-group">
-                  <span class="input-group-text" th:text="${'/api/@' + username}"></span>
-                  <input type="text" class="form-control" id="path" th:field="*{path}" required>
+      <form id="editForm" th:action="@{/api-configs/{id}(id=${apiConfig.id})}" th:object="${apiConfig}" method="post">
+        <div class="row g-4">
+          <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0 mb-4">
+              <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-link me-2 text-primary"></i>Endpoint</h5></div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-sm-4 col-md-3">
+                    <label for="method" class="form-label">HTTP Method*</label>
+                    <select class="form-select" id="method" th:field="*{method}" required>
+                      <option value="GET">GET</option>
+                      <option value="POST">POST</option>
+                      <option value="PUT">PUT</option>
+                      <option value="DELETE">DELETE</option>
+                      <option value="PATCH">PATCH</option>
+                      <option value="OPTIONS">OPTIONS</option>
+                      <option value="HEAD">HEAD</option>
+                    </select>
+                    <div class="text-danger" th:if="${#fields.hasErrors('method')}" th:errors="*{method}"></div>
+                  </div>
+                  <div class="col-sm-8 col-md-9">
+                    <label for="path" class="form-label">Path*</label>
+                    <div class="input-group">
+                      <span class="input-group-text" th:text="${'/api/@' + username}"></span>
+                      <input type="text" class="form-control" id="path" th:field="*{path}" required>
+                    </div>
+                    <div class="text-danger" th:if="${#fields.hasErrors('path')}" th:errors="*{path}"></div>
+                  </div>
+                  <div class="col-12">
+                    <label for="description" class="form-label">Description</label>
+                    <input type="text" class="form-control" id="description" th:field="*{description}" maxlength="500"
+                      placeholder="Short purpose of this endpoint, e.g. returns a mocked order">
+                    <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                  </div>
                 </div>
-                <small class="text-muted">The path to your API endpoint</small>
-                <div class="text-danger" th:if="${#fields.hasErrors('path')}" th:errors="*{path}"></div>
-              </div>
-              <div class="col-md-6">
-                <label for="method" class="form-label">HTTP Method*</label>
-                <select class="form-select" id="method" th:field="*{method}" required>
-                  <option value="GET">GET</option>
-                  <option value="POST">POST</option>
-                  <option value="PUT">PUT</option>
-                  <option value="DELETE">DELETE</option>
-                  <option value="PATCH">PATCH</option>
-                  <option value="OPTIONS">OPTIONS</option>
-                  <option value="HEAD">HEAD</option>
-                </select>
-                <div class="text-danger" th:if="${#fields.hasErrors('method')}" th:errors="*{method}"></div>
-              </div>
-            </div>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="statusCode" class="form-label">Status Code*</label>
-                <input type="number" class="form-control" id="statusCode" th:field="*{statusCode}" required min="100" max="599">
-                <small class="text-muted">HTTP status code for the response</small>
-                <div class="text-danger" th:if="${#fields.hasErrors('statusCode')}" th:errors="*{statusCode}"></div>
-              </div>
-              <div class="col-md-6">
-                <label for="contentType" class="form-label">Content Type*</label>
-                <select class="form-select" id="contentType" th:field="*{contentType}" required>
-                  <option value="application/json">application/json</option>
-                  <option value="text/plain">text/plain</option>
-                  <option value="text/html">text/html</option>
-                  <option value="application/xml">application/xml</option>
-                  <option value="application/octet-stream">application/octet-stream</option>
-                </select>
-                <div class="text-danger" th:if="${#fields.hasErrors('contentType')}" th:errors="*{contentType}"></div>
               </div>
             </div>
 
-            <!-- Response Body -->
-            <div class="mb-3">
-              <label for="responseBody" class="form-label">Response Body</label>
-              <textarea class="form-control" id="responseBody" th:field="*{responseBody}" rows="5"
-                placeholder='{"status_code": "{{status}}", "message": "Hello World!", "utm_source": "{{queryParams.utm_source}}"}'></textarea>
+            <div class="card shadow-sm border-0 mb-4">
+              <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-reply me-2 text-success"></i>Response</h5></div>
+              <div class="card-body">
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label for="statusCode" class="form-label">Status Code*</label>
+                    <input type="number" class="form-control" id="statusCode" th:field="*{statusCode}" required min="100" max="599" placeholder="200">
+                    <div class="d-flex flex-wrap gap-1 mt-2" id="statusChips">
+                      <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-code="200">200</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-code="201">201</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-code="204">204</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-code="400">400</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-code="404">404</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-code="500">500</button>
+                    </div>
+                    <div class="text-danger" th:if="${#fields.hasErrors('statusCode')}" th:errors="*{statusCode}"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="contentType" class="form-label">Content Type*</label>
+                    <select class="form-select" id="contentType" th:field="*{contentType}" required>
+                      <option value="application/json">application/json</option>
+                      <option value="text/plain">text/plain</option>
+                      <option value="text/html">text/html</option>
+                      <option value="application/xml">application/xml</option>
+                      <option value="application/octet-stream">application/octet-stream</option>
+                    </select>
+                    <div class="text-danger" th:if="${#fields.hasErrors('contentType')}" th:errors="*{contentType}"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="delayMs" class="form-label">Response Delay (ms)</label>
+                    <div class="input-group">
+                      <input type="number" class="form-control" id="delayMs" th:field="*{delayMs}" min="0" max="60000" placeholder="100">
+                      <span class="input-group-text">ms</span>
+                    </div>
+                    <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="responseBody" class="form-label mb-0">Response Body</label>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-format="responseBody"><i class="fas fa-align-left me-1"></i> Format JSON</button>
+                  </div>
+                  <textarea class="form-control code-area" id="responseBody" th:field="*{responseBody}" rows="8"
+                    placeholder='{"status_code": "{{status}}", "message": "Hello World!", "utm_source": "{{queryParams.utm_source}}"}'></textarea>
+                  <div class="invalid-feedback">Invalid JSON</div>
+                </div>
+
+                <!-- Include the context variable guide fragment -->
+                <div th:insert="fragments/request-vars :: requestVars"></div>
+
+                <div>
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="responseHeaders" class="form-label mb-0">Response Headers (JSON)</label>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-format="responseHeaders"><i class="fas fa-align-left me-1"></i> Format JSON</button>
+                  </div>
+                  <textarea class="form-control code-area" id="responseHeaders" th:field="*{responseHeaders}" rows="3"
+                    placeholder='{"X-Custom-Header": "Custom Value", "x-clientIp": "{{headers.x-forwarded-for}}"}'></textarea>
+                  <div class="invalid-feedback">Invalid JSON</div>
+                </div>
+              </div>
             </div>
 
-            <!-- Include the context variable guide fragment -->
-            <div th:insert="fragments/request-vars :: requestVars"></div>
+            <div class="card shadow-sm border-0 mb-4">
+              <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-sticky-note me-2 text-info"></i>Note</h5></div>
+              <div class="card-body">
+                <label for="note" class="visually-hidden">Note</label>
+                <textarea class="form-control" id="note" th:field="*{note}" rows="3" maxlength="2000"
+                  placeholder="Enter a note or describe the purpose of this endpoint..."></textarea>
+                <div class="text-muted small text-end mt-1"><span id="noteCount">0</span>/2000</div>
+                <div class="text-danger" th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></div>
+              </div>
+            </div>
+          </div>
 
-            <div class="mb-3">
-              <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
-              <textarea class="form-control" id="responseHeaders" th:field="*{responseHeaders}" rows="3"
-                placeholder='{"X-Custom-Header": "Custom Value", "x-clientIp": "{{headers.x-forwarded-for}}"}'></textarea>
-              <small class="text-muted">Enter response headers in JSON format</small>
+          <div class="col-lg-4">
+            <div class="sticky-lg-top" style="top: 1rem;">
+              <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3"><h5 class="mb-0">Summary</h5></div>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item">
+                    <div class="text-muted small">Full URL</div>
+                    <code class="text-break" id="sUrl" th:text="${domain + '/api/@' + username + apiConfig.path}">URL</code>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Status</span><span class="badge bg-success" id="sStatus" th:text="${apiConfig.statusCode}">200</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Content Type</span><span class="badge bg-secondary" id="sType" th:text="${apiConfig.contentType}">application/json</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Delay</span><span id="sDelay" th:text="${(apiConfig.delayMs != null ? apiConfig.delayMs : 0) + ' ms'}">0 ms</span>
+                  </li>
+                </ul>
+                <div class="card-body d-grid gap-2">
+                  <button type="submit" class="btn btn-primary" id="saveBtn"><i class="fas fa-save me-1"></i> Update API</button>
+                  <a th:href="@{/api-configs}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+              </div>
+
+              <div class="card border-danger-subtle">
+                <div class="card-body d-flex justify-content-between align-items-center gap-2">
+                  <span class="text-danger fw-semibold">Delete this API</span>
+                  <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash me-1"></i> Delete API
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="mb-3">
-              <label for="delayMs" class="form-label">Response Delay (ms)</label>
-              <input type="number" class="form-control" id="delayMs" th:field="*{delayMs}" min="0" max="60000">
-              <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
-              <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
-            </div>
-            <div>
-              <a th:href="@{/api-configs}" class="btn btn-secondary me-2">Cancel</a>
-              <button type="submit" class="btn btn-primary">Update API</button>
-            </div>
-          </form>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete API?</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete
+            <span class="fw-bold" th:text="${apiConfig.method + ' ' + apiConfig.path}">GET /path</span>?
+            This action cannot be undone.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <form th:action="@{/api-configs/{id}/delete(id=${apiConfig.id})}" method="post">
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
 
     <div th:replace="fragments/footer :: footer"></div>
+
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      (function () {
+        var $ = function (id) { return document.getElementById(id); };
+        var user = /*[[${username}]]*/ 'user';
+        var base = /*[[${domain}]]*/ 'https://domain';
+        var apiRoot = '/api/@' + user;
+        var methodCls = { GET: 'bg-success', POST: 'bg-primary', PUT: 'bg-info', DELETE: 'bg-danger' };
+        var form = $('editForm');
+        var snapshot = function () { return JSON.stringify([].map.call(form.elements, function (e) { return e.value; })); };
+        var initial = snapshot();
+        var submitting = false;
+
+        // Keep header, summary and the "Unsaved changes" badge in sync with the form
+        function sync() {
+          var m = $('method').value, path = $('path').value, code = parseInt($('statusCode').value, 10);
+          $('hMethod').textContent = m;
+          $('hMethod').className = 'badge fs-6 method-badge ' + (methodCls[m] || 'bg-secondary');
+          $('hPath').textContent = apiRoot + path;
+          $('sUrl').textContent = base + apiRoot + path;
+          $('sStatus').textContent = isNaN(code) ? '-' : code;
+          $('sStatus').className = 'badge ' + (code >= 200 && code < 300 ? 'bg-success' : (code >= 400 ? 'bg-danger' : 'bg-warning'));
+          $('sType').textContent = $('contentType').value;
+          $('sDelay').textContent = ($('delayMs').value || 0) + ' ms';
+          $('noteCount').textContent = $('note').value.length;
+          document.querySelectorAll('.status-chip').forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-code') === String(code)); });
+          $('dirtyBadge').hidden = snapshot() === initial;
+        }
+        form.addEventListener('input', sync);
+        form.addEventListener('change', sync);
+
+        $('statusChips').addEventListener('click', function (e) {
+          var c = e.target.closest('[data-code]'); if (!c) return;
+          $('statusCode').value = c.getAttribute('data-code'); sync();
+        });
+
+        // {{variable}} placeholders are ignored when checking JSON validity
+        function validJson(text) {
+          if (!text.trim()) return true;
+          try { JSON.parse(text.replace(/\{\{[^}]*\}\}/g, 'x')); return true; } catch (err) { return false; }
+        }
+        document.querySelectorAll('[data-format]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var area = $(b.getAttribute('data-format'));
+            var ok = validJson(area.value);
+            area.classList.toggle('is-invalid', !ok);
+            if (ok && area.value.trim() && area.value.indexOf('{{') === -1) { area.value = JSON.stringify(JSON.parse(area.value), null, 2); sync(); }
+          });
+        });
+
+        // Format JSON only reports problems; saving is never blocked because bodies may use {{variables}} in non-JSON positions
+        form.addEventListener('submit', function () { submitting = true; });
+
+        $('copyUrlBtn').addEventListener('click', function () {
+          var btn = this, old = btn.innerHTML;
+          if (navigator.clipboard) navigator.clipboard.writeText(base + apiRoot + $('path').value).catch(function () {});
+          btn.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+          setTimeout(function () { btn.innerHTML = old; }, 1500);
+        });
+
+        window.addEventListener('beforeunload', function (e) {
+          if (!submitting && snapshot() !== initial) { e.preventDefault(); e.returnValue = ''; }
+        });
+        sync();
+      })();
+      /*]]>*/
+    </script>
   </body>
 
 </html>

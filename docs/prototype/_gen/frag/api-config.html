@@ -1,0 +1,286 @@
+<!--title: API Configurations-->
+<!--layout: app-->
+<!--active: configs-->
+<!--
+  Nguồn gốc: templates/api-config.html (thiết kế lại). Ý đồ: danh sách là trọng tâm; form tạo mới chuyển vào hộp thoại mở bằng "New API"
+  thay vì card thu gọn chiếm đầu trang; Backup/Restore/Update Swagger gom vào menu "More"; có tìm kiếm và lọc theo method;
+  thao tác trong hàng là icon có tooltip (sửa, copy URL, xóa).
+-->
+<style>
+  .method-badge { min-width: 4.25rem; }
+  .code-area { font-family: Consolas, "Courier New", monospace; font-size: .875rem; }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <h2 class="mb-0">API Configurations</h2>
+  <div class="d-flex gap-2">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal"><i class="fas fa-plus me-1"></i> New API</button>
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">More</button>
+      <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+        <li><button class="dropdown-item" type="button"><i class="fas fa-download me-2"></i>Backup</button></li>
+        <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#restoreModal"><i class="fas fa-upload me-2"></i>Restore</button></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="swagger-ui.dc.html"><i class="fas fa-sync-alt me-2"></i>Update Swagger</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body border-bottom">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-5">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+          <input type="search" class="form-control" id="apiSearch" placeholder="Search by path or description...">
+        </div>
+      </div>
+      <div class="col-md-7 d-flex flex-wrap gap-1 justify-content-md-end" id="methodChips">
+        <button type="button" class="btn btn-sm btn-primary" data-proto="skip" data-method="">All</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-proto="skip" data-method="GET">GET</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-proto="skip" data-method="POST">POST</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-proto="skip" data-method="PUT">PUT</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-proto="skip" data-method="DELETE">DELETE</button>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" id="apiTable">
+      <thead><tr><th>Method</th><th>Path</th><th>Description</th><th>Status</th><th>Content Type</th><th>Delay</th><th>Actions</th></tr></thead>
+      <tbody>
+          <tr data-method="GET" data-search="/hello smoke test endpoint">
+            <td><span class="badge bg-success method-badge">GET</span></td>
+            <td>
+              <div class="d-flex align-items-center"><code>/api/@demo/hello</code></div>
+            </td>
+            <td><div class="small text-muted text-truncate" style="max-width:340px;" title="Smoke test endpoint">Smoke test endpoint</div></td>
+            <td><span class="badge bg-success">200</span></td>
+            <td><span class="badge bg-secondary">application/json</span></td>
+            <td>100 ms</td>
+            <td class="text-nowrap">
+              <a href="api-config-edit.dc.html" class="btn btn-sm btn-outline-primary" title="Edit API" aria-label="Edit API"><i class="fas fa-edit"></i></a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Copy full endpoint URL"><i class="fas fa-copy"></i></button>
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Delete API"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          <tr data-method="GET" data-search="/users/123 ">
+            <td><span class="badge bg-success method-badge">GET</span></td>
+            <td>
+              <div class="d-flex align-items-center"><code>/api/@demo/users/123</code></div>
+            </td>
+            <td></td>
+            <td><span class="badge bg-success">200</span></td>
+            <td><span class="badge bg-secondary">application/json</span></td>
+            <td>0 ms</td>
+            <td class="text-nowrap">
+              <a href="api-config-edit.dc.html" class="btn btn-sm btn-outline-primary" title="Edit API" aria-label="Edit API"><i class="fas fa-edit"></i></a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Copy full endpoint URL"><i class="fas fa-copy"></i></button>
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Delete API"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          <tr data-method="POST" data-search="/orders returns a mocked order">
+            <td><span class="badge bg-primary method-badge">POST</span></td>
+            <td>
+              <div class="d-flex align-items-center"><code>/api/@demo/orders</code>
+                <button type="button" class="btn btn-sm btn-link text-info p-0 ms-1" data-proto="skip" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-placement="right" title="Note" data-bs-content="Used by the checkout flow. Expect 201 with the created order id; retry once on 500." aria-label="Show note"><i class="fas fa-info-circle"></i></button></div>
+            </td>
+            <td><div class="small text-muted text-truncate" style="max-width:340px;" title="Returns a mocked order">Returns a mocked order</div></td>
+            <td><span class="badge bg-success">201</span></td>
+            <td><span class="badge bg-secondary">application/json</span></td>
+            <td>250 ms</td>
+            <td class="text-nowrap">
+              <a href="api-config-edit.dc.html" class="btn btn-sm btn-outline-primary" title="Edit API" aria-label="Edit API"><i class="fas fa-edit"></i></a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Copy full endpoint URL"><i class="fas fa-copy"></i></button>
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Delete API"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          <tr data-method="PUT" data-search="/orders/42 ">
+            <td><span class="badge bg-info method-badge">PUT</span></td>
+            <td>
+              <div class="d-flex align-items-center"><code>/api/@demo/orders/42</code></div>
+            </td>
+            <td></td>
+            <td><span class="badge bg-success">200</span></td>
+            <td><span class="badge bg-secondary">application/json</span></td>
+            <td>100 ms</td>
+            <td class="text-nowrap">
+              <a href="api-config-edit.dc.html" class="btn btn-sm btn-outline-primary" title="Edit API" aria-label="Edit API"><i class="fas fa-edit"></i></a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Copy full endpoint URL"><i class="fas fa-copy"></i></button>
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Delete API"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          <tr data-method="DELETE" data-search="/orders/42 ">
+            <td><span class="badge bg-danger method-badge">DELETE</span></td>
+            <td>
+              <div class="d-flex align-items-center"><code>/api/@demo/orders/42</code></div>
+            </td>
+            <td><span class="badge bg-success">204</span></td>
+            <td><span class="badge bg-secondary">text/plain</span></td>
+            <td>0 ms</td>
+            <td class="text-nowrap">
+              <a href="api-config-edit.dc.html" class="btn btn-sm btn-outline-primary" title="Edit API" aria-label="Edit API"><i class="fas fa-edit"></i></a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Copy full endpoint URL"><i class="fas fa-copy"></i></button>
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Delete API"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          <tr data-method="POST" data-search="/payments/callback simulates a failing payment provider">
+            <td><span class="badge bg-primary method-badge">POST</span></td>
+            <td>
+              <div class="d-flex align-items-center"><code>/api/@demo/payments/callback</code>
+                <button type="button" class="btn btn-sm btn-link text-info p-0 ms-1" data-proto="skip" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-placement="right" title="Note" data-bs-content="Returns 500 on purpose to test retry handling in the client." aria-label="Show note"><i class="fas fa-info-circle"></i></button></div>
+            </td>
+            <td><div class="small text-muted text-truncate" style="max-width:340px;" title="Simulates a failing payment provider">Simulates a failing payment provider</div></td>
+            <td><span class="badge bg-danger">500</span></td>
+            <td><span class="badge bg-secondary">application/json</span></td>
+            <td>1500 ms</td>
+            <td class="text-nowrap">
+              <a href="api-config-edit.dc.html" class="btn btn-sm btn-outline-primary" title="Edit API" aria-label="Edit API"><i class="fas fa-edit"></i></a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Copy full endpoint URL"><i class="fas fa-copy"></i></button>
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Delete API"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          <tr data-method="HEAD" data-search="/health ">
+            <td><span class="badge bg-secondary method-badge">HEAD</span></td>
+            <td>
+              <div class="d-flex align-items-center"><code>/api/@demo/health</code></div>
+            </td>
+            <td></td>
+            <td><span class="badge bg-success">200</span></td>
+            <td><span class="badge bg-secondary">text/plain</span></td>
+            <td>0 ms</td>
+            <td class="text-nowrap">
+              <a href="api-config-edit.dc.html" class="btn btn-sm btn-outline-primary" title="Edit API" aria-label="Edit API"><i class="fas fa-edit"></i></a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Copy full endpoint URL"><i class="fas fa-copy"></i></button>
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Delete API"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="text-center text-muted py-5" id="apiEmpty" hidden>
+    <i class="fas fa-inbox fa-3x mb-3"></i>
+    <p class="mb-3">No API configurations found.</p>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal"><i class="fas fa-plus me-1"></i> New API</button>
+  </div>
+</div>
+
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createModalLabel">Create New API Configuration</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="createForm" novalidate>
+          <div class="row g-3">
+            <div class="col-sm-4 col-md-3">
+              <label for="method" class="form-label">HTTP Method*</label>
+              <select class="form-select" id="method" required>
+                <option value="GET" selected>GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+                <option value="OPTIONS">OPTIONS</option>
+                <option value="HEAD">HEAD</option>
+              </select>
+            </div>
+            <div class="col-sm-8 col-md-9">
+              <label for="path" class="form-label">Path*</label>
+              <div class="input-group">
+                <span class="input-group-text">/api/@demo</span>
+                <input type="text" class="form-control" id="path" required placeholder="/hello">
+              </div>
+            </div>
+            <div class="col-12">
+              <label for="description" class="form-label">Description</label>
+              <input type="text" class="form-control" id="description" maxlength="500" placeholder="Short purpose of this endpoint, e.g. returns a mocked order">
+            </div>
+            <div class="col-md-4">
+              <label for="statusCode" class="form-label">Status Code*</label>
+              <input type="number" class="form-control" id="statusCode" required min="100" max="599" value="200" placeholder="200">
+            </div>
+            <div class="col-md-5">
+              <label for="contentType" class="form-label">Content Type*</label>
+              <select class="form-select" id="contentType" required>
+                <option value="application/json" selected>application/json</option>
+                <option value="text/plain">text/plain</option>
+                <option value="text/html">text/html</option>
+                <option value="application/xml">application/xml</option>
+                <option value="application/octet-stream">application/octet-stream</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="delayMs" class="form-label">Response Delay (ms)</label>
+              <input type="number" class="form-control" id="delayMs" min="0" max="60000" value="100" placeholder="100">
+            </div>
+            <div class="col-12">
+              <label for="responseBody" class="form-label">Response Body</label>
+              <textarea class="form-control code-area" id="responseBody" rows="5" placeholder='{"status_code": "{{status}}", "message": "Hello World!", "utm_source": "{{queryParams.utm_source}}"}'></textarea>
+            </div>
+            <div class="col-12">
+<!--include:request-vars-->
+            </div>
+            <div class="col-12">
+              <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
+              <textarea class="form-control code-area" id="responseHeaders" rows="3" placeholder='{"X-Custom-Header": "Custom Value", "x-clientIp": "{{headers.x-forwarded-for}}"}'></textarea>
+            </div>
+            <div class="col-12">
+              <label for="note" class="form-label">Note</label>
+              <textarea class="form-control" id="note" rows="3" maxlength="2000" placeholder="Enter a note or describe the purpose of this endpoint..."></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" data-act="create api" onclick="protoCreateApi(event)">Create API</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="restoreModalLabel">Restore API Configurations</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body">
+      <p>Select a backup JSON file to restore your API configurations:</p>
+      <div class="mb-3"><input type="file" class="form-control" id="backupFile" accept=".json"></div>
+      <div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle me-2"></i><small>Warning: This will overwrite your existing API configurations</small></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      <button type="button" class="btn btn-primary" data-act="restore confirm" onclick="protoHideModal('restoreModal')">Restore</button>
+    </div>
+  </div></div>
+</div>
+
+<script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var method = '';
+    // Lọc phía client theo path/description và method; hiện trạng thái rỗng khi không còn dòng nào
+    function filter() {
+      var q = $('apiSearch').value.trim().toLowerCase(), shown = 0;
+      document.querySelectorAll('#apiTable tbody tr').forEach(function (r) {
+        var ok = (!method || r.getAttribute('data-method') === method) && (!q || r.getAttribute('data-search').indexOf(q) !== -1);
+        r.hidden = !ok; if (ok) shown++;
+      });
+      $('apiEmpty').hidden = shown !== 0; $('apiTable').hidden = shown === 0;
+    }
+    $('apiSearch').addEventListener('input', filter);
+    $('methodChips').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-method]'); if (!b) return;
+      method = b.getAttribute('data-method');
+      document.querySelectorAll('#methodChips button').forEach(function (c) { var on = c === b; c.className = 'btn btn-sm ' + (on ? 'btn-primary' : 'btn-outline-secondary'); });
+      filter();
+    });
+    // Create API: bắt buộc path, đóng hộp thoại sau khi hiện thông báo của hành vi
+    window.protoCreateApi = function (e) {
+      if (!$('path').value.trim()) { e.stopPropagation(); $('path').classList.add('is-invalid'); return; }
+      $('path').classList.remove('is-invalid'); $('createForm').reset(); protoHideModal('createModal');
+    };
+  })();
+</script>

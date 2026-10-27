@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request Logs - Mock Webhook</title>
+<!-- Theme: bootstrap (https://getbootstrap.com/) 5.3.3, giống UI gốc src/main/resources/templates/fragments/header.html -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+<style>
+  /* Từ static/css/styles.css và copy-wrapper.css của UI gốc */
+  html { position: relative; min-height: 100%; }
+  body { padding-bottom: 160px; margin-bottom: 0; min-height: 100vh; background-color: #f8f9fa; }
+  footer { width: 100%; min-height: 160px; background-color: #f5f5f5; }
+  pre { white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; font-family: monospace;
+        background: #f8f9fa; border: 1px solid #e9ecef; border-radius: .25rem; padding: .5rem; font-size: .875rem; }
+  .copy-wrapper { position: relative; }
+  .copy-wrapper .copy-btn { display: none; position: absolute; top: 5px; right: 5px; padding: 2px 8px; font-size: 12px; cursor: pointer;
+        background: #007bff; border: none; color: #fff; border-radius: 3px; }
+  .copy-wrapper:hover .copy-btn { display: block; }
+  /* Dropdown mở khi rê chuột, như header gốc */
+  .dropdown:hover .dropdown-menu { display: block; opacity: 1; visibility: visible; }
+  .dropdown-menu { transition: opacity .15s ease-in-out, visibility .15s ease-in-out; }
+</style>
+</head>
+<body>
+<header class="bg-dark text-white py-4 mb-4 shadow">
+  <div class="container">
+    <div class="d-flex flex-wrap align-items-center justify-content-between">
+      <a href="index.dc.html" class="d-flex align-items-center text-white text-decoration-none">
+        <i class="fas fa-webhook fa-2x me-3 text-primary"></i>
+        <span class="fs-3 fw-bold">Mock Webhook</span>
+      </a>
+      <div class="text-end">
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle rounded-pill px-3" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user me-2"></i><span>demo</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="dashboard.dc.html"><i class="fas fa-home me-2 text-primary"></i> Dashboard</a></li>
+            <li><a class="dropdown-item" href="api-config.dc.html"><i class="fas fa-cogs me-2 text-success"></i> API Configs</a></li>
+            <li><a class="dropdown-item" href="request-logs.dc.html"><i class="fas fa-history me-2 text-info"></i> Request Logs</a></li>
+            <li><a class="dropdown-item" href="swagger-ui.dc.html"><i class="fas fa-book me-2 text-warning"></i> Swagger</a></li>
+            <li><a class="dropdown-item" href="change-password.dc.html"><i class="fas fa-key me-2 text-info"></i> Change Password</a></li>
+            <li><a class="dropdown-item" href="admin-users.dc.html"><i class="fas fa-users-cog me-2 text-danger"></i> Admin</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item text-danger" type="button" data-act="a1"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+    <div class="bg-white border rounded-3 p-3 mb-4 shadow-sm">
+      <nav class="nav nav-pills nav-justified">
+        <a class="nav-link rounded-pill" href="dashboard.dc.html"><i class="fas fa-home me-2"></i> Dashboard</a>
+        <a class="nav-link rounded-pill" href="api-config.dc.html"><i class="fas fa-cogs me-2"></i> API Configs</a>
+        <a class="nav-link rounded-pill active" href="request-logs.dc.html"><i class="fas fa-history me-2"></i> Request Logs</a>
+        <a class="nav-link rounded-pill" href="admin-users.dc.html"><i class="fas fa-users-cog me-2"></i> Admin</a>
+      </nav>
+    </div>
+<!--
+  Nguồn gốc: templates/request-logs.html + static/js/request-log.js (thiết kế lại). Ý đồ: thanh công cụ một hàng (tìm path, lọc method,
+  lọc status) thay vì chỉ ô tìm path; bấm cả hàng để xem chi tiết trong panel bên phải (vẫn thấy bảng); giờ hiện tại thu nhỏ dưới tiêu đề;
+  Export/Clear All tách khỏi tiêu đề bảng. Lọc method/status ở bản thật cần thêm tham số phía server.
+  Dữ liệu mẫu hư cấu, phân trang/lọc/chi tiết chạy phía client.
+-->
+<style>
+  .log-details { max-height: 55vh; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; }
+  .log-details pre { margin-bottom: 0; font-family: Consolas, "Courier New", monospace; font-size: .9rem; color: #212529; background: transparent; border: 0; padding: 0; }
+  .log-row { cursor: pointer; }
+  .method-badge { min-width: 4.25rem; }
+</style>
+<div id="flash"></div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+  <div>
+    <h2 class="mb-1">Request Logs for @<span>demo</span></h2>
+    <div class="text-muted small current-time"><strong>Current Time (UTC):</strong> <span id="current-time-display"></span></div>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="button" class="btn btn-outline-success" data-act="a2"><i class="fas fa-file-excel me-1"></i> Export Excel</button>
+    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fas fa-trash me-1"></i> Clear All</button>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body border-bottom">
+    <div class="row g-2 align-items-center">
+      <div class="col-lg-5">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+          <input type="search" class="form-control" id="pathSearchInput" placeholder="Search by path...">
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <select class="form-select" id="methodFilter" aria-label="Method">
+          <option value="">All methods</option><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option>
+        </select>
+      </div>
+      <div class="col-6 col-lg-2">
+        <select class="form-select" id="statusFilter" aria-label="Status">
+          <option value="">All status</option><option value="2">2xx</option><option value="4">4xx</option><option value="5">5xx</option>
+        </select>
+      </div>
+      <div class="col-lg-3 text-lg-end">
+        <span class="text-muted">Request History</span> <span class="badge bg-primary request-count" id="totalBadge">0</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" id="requestLogsTable">
+      <thead><tr><th>Time (UTC)</th><th>Method</th><th>Path</th><th>Status</th><th>Source IP</th><th class="text-end">Details</th></tr></thead>
+      <tbody id="logRows"></tbody>
+    </table>
+  </div>
+  <div class="card-body border-top">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2" id="pager">
+      <div class="d-flex align-items-center gap-2">
+        <span>Rows per page:</span>
+        <select id="pageSizeSelect" class="form-select form-select-sm" style="width:auto;">
+          <option value="5">5</option><option value="10" selected>10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+        </select>
+        <span class="text-muted" id="pageInfo">Showing 0 of 0 items</span>
+      </div>
+      <nav aria-label="Page navigation"><ul class="pagination pagination-sm mb-0" id="pageNav"></ul></nav>
+    </div>
+  </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="detailsPanel" aria-labelledby="detailsLabel" style="width:min(640px,100vw);">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title" id="detailsLabel"><span class="badge me-2" id="dBadge"></span><span id="dTitle">/path</span></h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-overview" type="button" role="tab">Overview</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-headers" type="button" role="tab">Headers</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-params" type="button" role="tab">Query Params</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-body" type="button" role="tab">Request Body</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-response" type="button" role="tab">Response</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-curl" type="button" role="tab">Curl</button></li>
+    </ul>
+    <div class="tab-content mt-3">
+      <div class="tab-pane fade show active" id="t-overview" role="tabpanel">
+        <table class="table table-bordered">
+          <tr><th style="width:150px;">Time (UTC)</th><td id="o-time"></td></tr>
+          <tr><th>Method</th><td id="o-method"></td></tr>
+          <tr><th>Path</th><td id="o-path"></td></tr>
+          <tr><th>Source IP</th><td id="o-ip"></td></tr>
+          <tr><th>Response Status</th><td id="o-status"></td></tr>
+        </table>
+      </div>
+      <div class="tab-pane fade" id="t-headers" role="tabpanel"><div class="log-details" data-field="headers" data-empty="No headers available"></div></div>
+      <div class="tab-pane fade" id="t-params" role="tabpanel"><div class="log-details" data-field="params" data-empty="No query parameters available"></div></div>
+      <div class="tab-pane fade" id="t-body" role="tabpanel"><div class="log-details" data-field="body" data-empty="No request body available"></div></div>
+      <div class="tab-pane fade" id="t-response" role="tabpanel"><div class="log-details" data-field="response" data-empty="No response body available"></div></div>
+      <div class="tab-pane fade" id="t-curl" role="tabpanel"><div class="log-details" data-field="curl" data-empty="No curl available"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body">Are you sure you want to delete all request logs? This action cannot be undone.</div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      <button type="button" class="btn btn-danger" id="deleteAll" data-proto="skip">Delete All</button>
+    </div>
+  </div></div>
+</div>
+
+<script>
+(function () {
+  var paths = ['/hello', '/users/123', '/orders', '/orders/42', '/payments/callback', '/health'];
+  var methods = ['GET', 'GET', 'POST', 'PUT', 'POST', 'GET'];
+  var statuses = [200, 200, 201, 200, 500, 200];
+  var logs = [];
+  for (var i = 0; i < 27; i++) {
+    var k = i % 6, min = 59 - i, t = '2026-10-27 09:' + (min < 10 ? '0' : '') + min + ':' + (10 + (i * 7) % 50);
+    var path = paths[k], body = methods[k] === 'POST' || methods[k] === 'PUT' ? '{"orderId": ' + (1000 + i) + ', "amount": ' + (20 + i) + '}' : '';
+    logs.push({ id: i + 1, time: t, method: methods[k], path: path, status: statuses[k], ip: '203.0.113.' + (10 + i % 9),
+      headers: '{"Host": "mock.example.test", "Content-Type": "application/json", "User-Agent": "curl/8.4.0"}',
+      params: i % 3 === 0 ? 'utm_source=newsletter&page=' + (i % 5 + 1) : '', body: body,
+      response: '{"status_code": "' + statuses[k] + '", "message": "Hello World!"}',
+      curl: "curl -X " + methods[k] + " 'https://mock.example.test/api/@demo" + path + "'" + (body ? " -H 'Content-Type: application/json' -d '" + body + "'" : '') });
+  }
+  var state = { page: 0, size: 10, filter: '', method: '', status: '' };
+  var $ = function (id) { return document.getElementById(id); };
+  var cls = { GET: 'bg-success', POST: 'bg-primary', PUT: 'bg-info', DELETE: 'bg-danger' };
+  var sCls = function (s) { return s >= 200 && s < 300 ? 'bg-success' : (s >= 400 ? 'bg-danger' : 'bg-warning'); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function filtered() {
+    var f = state.filter.toLowerCase();
+    return logs.filter(function (l) {
+      return (!f || l.path.toLowerCase().indexOf(f) !== -1) && (!state.method || l.method === state.method) && (!state.status || String(l.status).charAt(0) === state.status);
+    });
+  }
+
+  function render() {
+    var list = filtered(), total = list.length, pages = Math.ceil(total / state.size);
+    if (state.page >= pages) state.page = Math.max(0, pages - 1);
+    var slice = list.slice(state.page * state.size, (state.page + 1) * state.size);
+    $('totalBadge').textContent = total;
+    $('logRows').innerHTML = slice.length ? slice.map(function (l) {
+      return '<tr class="log-row" data-log="' + l.id + '"><td>' + l.time + '</td><td><span class="badge method-badge ' + (cls[l.method] || 'bg-secondary') + '">' + l.method + '</span></td><td>' + esc(l.path) +
+        '</td><td><span class="badge ' + sCls(l.status) + '">' + l.status + '</span></td><td>' + l.ip +
+        '</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" data-proto="skip" data-log="' + l.id + '" title="View details" aria-label="View details"><i class="fas fa-eye"></i></button></td></tr>';
+    }).join('') : '<tr><td colspan="6" class="text-center py-5"><div class="text-muted"><i class="fas fa-inbox fa-3x mb-3"></i><p>No request logs found.</p>' +
+      '<p class="mb-0">Send requests to <code>https://mock.example.test/api/@demo</code> to see them here.</p></div></td></tr>';
+    $('pager').hidden = pages === 0;
+    $('pageInfo').textContent = 'Showing ' + slice.length + ' of ' + total + ' items';
+    var nav = '', item = function (label, p, disabled, active) {
+      return '<li class="page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '') + '"><a class="page-link" href="#" data-page="' + p + '">' + label + '</a></li>';
+    };
+    nav += item('&laquo;', 0, state.page === 0) + item('&lt;', state.page - 1, state.page === 0);
+    var start = Math.max(0, Math.min(state.page - 2, pages - 5)), end = Math.min(pages - 1, start + 4);
+    if (start > 0) nav += item('1', 0) + (start > 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : '');
+    for (var p = start; p <= end; p++) nav += item(p + 1, p, false, p === state.page);
+    if (end < pages - 1) nav += (end < pages - 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : '') + item(pages, pages - 1);
+    nav += item('&gt;', state.page + 1, state.page >= pages - 1) + item('&raquo;', pages - 1, state.page >= pages - 1);
+    $('pageNav').innerHTML = nav;
+  }
+
+  $('pathSearchInput').addEventListener('input', function () { state.filter = this.value.trim(); state.page = 0; render(); });
+  $('methodFilter').addEventListener('change', function () { state.method = this.value; state.page = 0; render(); });
+  $('statusFilter').addEventListener('change', function () { state.status = this.value; state.page = 0; render(); });
+  $('pageSizeSelect').addEventListener('change', function () { state.size = +this.value; state.page = 0; render(); });
+  $('pageNav').addEventListener('click', function (e) {
+    var a = e.target.closest('[data-page]'); if (!a) return;
+    e.preventDefault();
+    if (!a.parentNode.classList.contains('disabled')) { state.page = +a.getAttribute('data-page'); render(); }
+  });
+
+  // Chi tiết log: một panel dùng chung, điền lại nội dung mỗi lần mở
+  function fillPane(pane, text) {
+    pane.innerHTML = text ? '<div class="copy-wrapper"><pre>' + esc(text) + '</pre><button class="copy-btn" data-proto="skip"><i class="fas fa-copy"></i> Copy</button></div>'
+      : '<div class="text-muted">' + pane.getAttribute('data-empty') + '</div>';
+  }
+  $('logRows').addEventListener('click', function (e) {
+    var r = e.target.closest('[data-log]'); if (!r) return;
+    var l = logs.filter(function (x) { return x.id === +r.getAttribute('data-log'); })[0];
+    $('dTitle').textContent = l.path; $('dBadge').textContent = l.method; $('dBadge').className = 'badge me-2 ' + (cls[l.method] || 'bg-secondary');
+    $('o-time').textContent = l.time; $('o-method').textContent = l.method; $('o-path').textContent = l.path;
+    $('o-ip').textContent = l.ip; $('o-status').textContent = l.status;
+    document.querySelectorAll('#detailsPanel [data-field]').forEach(function (p) { fillPane(p, l[p.getAttribute('data-field')]); });
+    bootstrap.Tab.getOrCreateInstance(document.querySelector('#detailsPanel .nav-link')).show();
+    bootstrap.Offcanvas.getOrCreateInstance($('detailsPanel')).show();
+  });
+  $('detailsPanel').addEventListener('click', function (e) {
+    var c = e.target.closest('.copy-btn'); if (!c) return;
+    var text = c.parentNode.querySelector('pre').textContent;
+    if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function () {});
+    var old = c.innerHTML; c.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    setTimeout(function () { c.innerHTML = old; }, 1500);
+  });
+
+  $('deleteAll').addEventListener('click', function () {
+    logs = []; render(); protoHideModal('deleteModal');
+    $('flash').innerHTML = '<div class="alert alert-success alert-dismissible fade show" role="alert">All request logs have been deleted successfully.' +
+      '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+  });
+
+  function tick() { $('current-time-display').textContent = new Date().toISOString().replace('T', ' ').slice(0, 19); }
+  tick(); setInterval(tick, 1000);
+  render();
+})();
+</script>
+
+</div>
+
+<footer class="bg-light text-center text-lg-start mt-4 border-top">
+  <div class="container p-4 mt-2" style="padding-top: 0 !important;">
+    <h5 class="text-uppercase fw-bold text-primary"><i class="fas fa-webhook me-2"></i>Mock Webhook</h5>
+    <p class="text-muted mb-3">A simple application to create, manage, and test webhook APIs. Create custom endpoints, view incoming requests, and configure responses.</p>
+    <p class="mt-3 mb-0"><strong>Part of <a href="#" class="text-primary text-decoration-none fw-bold">QuyIT Platform</a> tools suite</strong></p>
+  </div>
+  <div class="text-center p-3 bg-white border-top">
+    <small class="text-muted">© 2026 <a href="#" class="text-primary text-decoration-none mx-2">QuyIT Platform</a> | Mock Webhook Tool</small>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script>
+  // Tooltip như footer gốc; form không gửi đi đâu, hành vi do nút (actions.py) mô phỏng
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new bootstrap.Tooltip(el); });
+  document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) { new bootstrap.Popover(el); });
+  document.addEventListener('submit', function (e) { e.preventDefault(); });
+  // Nút hiện/ẩn mật khẩu dùng chung: <button data-toggle-password="<id ô nhập>">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle-password]'); if (!b) return;
+    var input = document.getElementById(b.getAttribute('data-toggle-password')), icon = b.querySelector('i');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = 'fas ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
+  // Mở modal Bootstrap có sẵn sau khi hiện thông báo
+  window.protoHideModal = function (id) { var m = bootstrap.Modal.getInstance(document.getElementById(id)); if (m) m.hide(); };
+</script>
+<!--proto:begin-->
+<!-- Được sinh bởi _gen/interact.py. Đừng sửa tay: sửa nguồn trong _gen/ rồi dựng lại. -->
+<style>
+[hidden]{display:none!important}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;padding:4px;line-height:1;cursor:pointer}
+.icon-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.proto-layer{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:2147483000}
+.proto-dialog{background:var(--proto-surface,Canvas);color:var(--proto-text,CanvasText);border-radius:12px;padding:20px;width:min(440px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3);font:inherit}
+.proto-title{margin:0 0 8px;font-size:1.1em}
+.proto-body{margin:0 0 12px;opacity:.8}
+.proto-field{margin:0 0 12px;display:flex;flex-direction:column;gap:4px}
+.proto-field input,.proto-field select,.proto-field textarea{font:inherit;padding:8px;border:1px solid rgba(128,128,128,.5);border-radius:8px;background:transparent;color:inherit}
+.proto-field [aria-invalid=true]{border-color:#dc2626}
+.proto-error{color:#dc2626;font-size:.9em}
+.proto-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.proto-btn{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid rgba(128,128,128,.5);background:transparent;color:inherit;cursor:pointer}
+.proto-btn-primary{background:var(--proto-accent,#2563eb);border-color:var(--proto-accent,#2563eb);color:#fff}
+.proto-btn-danger{background:#dc2626;border-color:#dc2626}
+.proto-btn:disabled{opacity:.6;cursor:default}
+.proto-toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:2147483001}
+.proto-toast{background:#111827;color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.proto-toast-error{background:#b91c1c}
+</style>
+<script>window.__PROTO_ACTIONS={"a1": {"type": "goto", "screen": "login"}, "a2": {"type": "toast", "message": "Excel file exported", "delay": 800}};window.__PROTO_STRINGS={"required": "Please enter {label}", "processing": "Processing…", "saved": "Saved", "cancel": "Cancel", "confirm": "Save", "confirm_danger": "Delete", "error": "Something went wrong. Please try again."};</script>
+<script>
+(function () {
+  var A = window.__PROTO_ACTIONS || {};
+  var S = window.__PROTO_STRINGS || {};
+  var layer = null, opener = null;
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function toast(msg, kind) {
+    var box = document.querySelector('.proto-toasts');
+    if (!box) {
+      box = el('div', 'proto-toasts');
+      box.setAttribute('role', 'status');
+      box.setAttribute('aria-live', 'polite');
+      document.body.appendChild(box);
+    }
+    var t = el('div', 'proto-toast' + (kind === 'error' ? ' proto-toast-error' : ''), msg);
+    box.appendChild(t);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3200);
+  }
+  function closeModal() {
+    if (layer && layer.parentNode) layer.parentNode.removeChild(layer);
+    layer = null;
+    if (opener && opener.focus) opener.focus();
+    opener = null;
+  }
+  function openModal(spec, danger) {
+    closeModal();
+    opener = document.activeElement;
+    layer = el('div', 'proto-layer');
+    var dlg = el('div', 'proto-dialog');
+    dlg.setAttribute('role', 'dialog');
+    dlg.setAttribute('aria-modal', 'true');
+    dlg.setAttribute('aria-labelledby', 'proto-title');
+    var title = el('h2', 'proto-title', spec.title || '');
+    title.id = 'proto-title';
+    dlg.appendChild(title);
+    if (spec.body) dlg.appendChild(el('p', 'proto-body', spec.body));
+    var inputs = [];
+    (spec.fields || []).forEach(function (f, i) {
+      var row = el('div', 'proto-field');
+      var id = 'proto-f' + i;
+      var lab = el('label', null, f.label || '');
+      lab.setAttribute('for', id);
+      var ctl;
+      if (f.type === 'select') {
+        ctl = el('select');
+        (f.options || []).forEach(function (o) { var op = el('option', null, o); op.value = o; ctl.appendChild(op); });
+      } else if (f.type === 'textarea') {
+        ctl = el('textarea');
+        ctl.rows = 3;
+      } else {
+        ctl = el('input');
+        ctl.type = f.type || 'text';
+      }
+      ctl.id = id;
+      if (f.placeholder) ctl.placeholder = f.placeholder;
+      if (f.value != null) ctl.value = f.value;
+      var err = el('div', 'proto-error');
+      err.hidden = true;
+      row.appendChild(lab); row.appendChild(ctl); row.appendChild(err);
+      dlg.appendChild(row);
+      inputs.push({ f: f, ctl: ctl, err: err });
+    });
+    var bar = el('div', 'proto-actions');
+    var cancel = el('button', 'proto-btn', spec.cancel || S.cancel);
+    cancel.type = 'button';
+    var ok = el('button', 'proto-btn proto-btn-primary' + (danger ? ' proto-btn-danger' : ''),
+                spec.confirm || (danger ? S.confirm_danger : S.confirm));
+    ok.type = 'button';
+    bar.appendChild(cancel); bar.appendChild(ok); dlg.appendChild(bar);
+    layer.appendChild(dlg);
+    document.body.appendChild(layer);
+    cancel.addEventListener('click', closeModal);
+    layer.addEventListener('mousedown', function (e) { if (e.target === layer) closeModal(); });
+    ok.addEventListener('click', function () {
+      var valid = true, first = null;
+      inputs.forEach(function (x) {
+        var empty = !String(x.ctl.value).trim();
+        if (x.f.required && empty) {
+          x.err.textContent = (S.required || '').replace('{label}', String(x.f.label || '').toLowerCase());
+          x.err.hidden = false;
+          x.ctl.setAttribute('aria-invalid', 'true');
+          valid = false;
+          if (!first) first = x.ctl;
+        } else {
+          x.err.hidden = true;
+          x.ctl.removeAttribute('aria-invalid');
+        }
+      });
+      if (!valid) { first.focus(); return; }
+      var label = ok.textContent;
+      ok.disabled = true; cancel.disabled = true; ok.textContent = S.processing;
+      setTimeout(function () {
+        if (spec.outcome === 'error') {
+          ok.disabled = false; cancel.disabled = false; ok.textContent = label;
+          toast(spec.error || S.error, 'error');
+          return;
+        }
+        closeModal();
+        toast(spec.toast || S.saved);
+      }, spec.delay == null ? 600 : spec.delay);
+    });
+    (inputs.length ? inputs[0].ctl : ok).focus();
+  }
+  function toggle(name, trigger) {
+    var r = document.querySelector('[data-region="' + name + '"]');
+    if (!r) return;
+    r.hidden = !r.hidden;
+    if (trigger && trigger.setAttribute) trigger.setAttribute('aria-expanded', String(!r.hidden));
+  }
+  function run(spec, trigger) {
+    switch (spec.type) {
+      case 'modal': openModal(spec, false); break;
+      case 'confirm': openModal(spec, true); break;
+      case 'toggle': toggle(spec.region, trigger); break;
+      case 'toast':
+        if (spec.delay) {
+          var old = trigger.innerHTML;
+          trigger.disabled = true;
+          trigger.textContent = S.processing;
+          setTimeout(function () {
+            trigger.disabled = false;
+            trigger.innerHTML = old;
+            toast(spec.message, spec.outcome === 'error' ? 'error' : null);
+          }, spec.delay);
+        } else {
+          toast(spec.message, spec.outcome === 'error' ? 'error' : null);
+        }
+        break;
+      case 'goto':
+        var ev = new CustomEvent('proto:goto', { detail: { screen: spec.screen }, cancelable: true });
+        if (window.dispatchEvent(ev)) location.href = spec.screen + '.dc.html';
+        break;
+      case 'close': closeModal(); break;
+    }
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!t || t.disabled) return;
+    var spec = A[t.getAttribute('data-act')];
+    if (!spec) return;
+    e.preventDefault();
+    run(spec, t);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+})();
+</script>
+<!--proto:end-->
+</body>
+</html>

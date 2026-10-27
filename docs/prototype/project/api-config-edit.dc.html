@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit API Configuration - Mock Webhook</title>
+<!-- Theme: bootstrap (https://getbootstrap.com/) 5.3.3, giống UI gốc src/main/resources/templates/fragments/header.html -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+<style>
+  /* Từ static/css/styles.css và copy-wrapper.css của UI gốc */
+  html { position: relative; min-height: 100%; }
+  body { padding-bottom: 160px; margin-bottom: 0; min-height: 100vh; background-color: #f8f9fa; }
+  footer { width: 100%; min-height: 160px; background-color: #f5f5f5; }
+  pre { white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; font-family: monospace;
+        background: #f8f9fa; border: 1px solid #e9ecef; border-radius: .25rem; padding: .5rem; font-size: .875rem; }
+  .copy-wrapper { position: relative; }
+  .copy-wrapper .copy-btn { display: none; position: absolute; top: 5px; right: 5px; padding: 2px 8px; font-size: 12px; cursor: pointer;
+        background: #007bff; border: none; color: #fff; border-radius: 3px; }
+  .copy-wrapper:hover .copy-btn { display: block; }
+  /* Dropdown mở khi rê chuột, như header gốc */
+  .dropdown:hover .dropdown-menu { display: block; opacity: 1; visibility: visible; }
+  .dropdown-menu { transition: opacity .15s ease-in-out, visibility .15s ease-in-out; }
+</style>
+</head>
+<body>
+<header class="bg-dark text-white py-4 mb-4 shadow">
+  <div class="container">
+    <div class="d-flex flex-wrap align-items-center justify-content-between">
+      <a href="index.dc.html" class="d-flex align-items-center text-white text-decoration-none">
+        <i class="fas fa-webhook fa-2x me-3 text-primary"></i>
+        <span class="fs-3 fw-bold">Mock Webhook</span>
+      </a>
+      <div class="text-end">
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle rounded-pill px-3" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user me-2"></i><span>demo</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="dashboard.dc.html"><i class="fas fa-home me-2 text-primary"></i> Dashboard</a></li>
+            <li><a class="dropdown-item" href="api-config.dc.html"><i class="fas fa-cogs me-2 text-success"></i> API Configs</a></li>
+            <li><a class="dropdown-item" href="request-logs.dc.html"><i class="fas fa-history me-2 text-info"></i> Request Logs</a></li>
+            <li><a class="dropdown-item" href="swagger-ui.dc.html"><i class="fas fa-book me-2 text-warning"></i> Swagger</a></li>
+            <li><a class="dropdown-item" href="change-password.dc.html"><i class="fas fa-key me-2 text-info"></i> Change Password</a></li>
+            <li><a class="dropdown-item" href="admin-users.dc.html"><i class="fas fa-users-cog me-2 text-danger"></i> Admin</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item text-danger" type="button" data-act="a1"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+    <div class="bg-white border rounded-3 p-3 mb-4 shadow-sm">
+      <nav class="nav nav-pills nav-justified">
+        <a class="nav-link rounded-pill" href="dashboard.dc.html"><i class="fas fa-home me-2"></i> Dashboard</a>
+        <a class="nav-link rounded-pill active" href="api-config.dc.html"><i class="fas fa-cogs me-2"></i> API Configs</a>
+        <a class="nav-link rounded-pill" href="request-logs.dc.html"><i class="fas fa-history me-2"></i> Request Logs</a>
+        <a class="nav-link rounded-pill" href="admin-users.dc.html"><i class="fas fa-users-cog me-2"></i> Admin</a>
+      </nav>
+    </div>
+<!--
+  Nguồn gốc: templates/api-config-edit.html (thiết kế lại bố cục, giữ nguyên trường và nhãn nút).
+  Ý đồ: header cho biết đang sửa endpoint nào; form chia theo nhóm (Endpoint, Response, Note);
+  cột phải dính (sticky) giữ Update/Cancel luôn trong tầm mắt cùng tóm tắt URL; thao tác xóa tách khỏi nút lưu.
+  Cấu hình mẫu: POST /orders.
+-->
+<style>
+  .method-badge { min-width: 4.5rem; }
+  .code-area { font-family: Consolas, "Courier New", monospace; font-size: .875rem; }
+  .status-chip.active { background-color: #0d6efd; color: #fff; border-color: #0d6efd; }
+</style>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item"><a href="api-config.dc.html" class="text-decoration-none">API Configs</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Edit</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <span class="badge bg-primary fs-6 method-badge" id="hMethod">POST</span>
+    <h2 class="mb-0 fs-3"><code id="hPath">/api/@demo/orders</code></h2>
+    <span class="badge text-bg-warning" id="dirtyBadge" hidden>Unsaved changes</span>
+  </div>
+  <button type="button" class="btn btn-outline-secondary" data-act="a2"><i class="fas fa-copy me-1"></i> Copy URL</button>
+</div>
+
+<form id="editForm" novalidate>
+  <div class="row g-4">
+    <div class="col-lg-8">
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-link me-2 text-primary"></i>Endpoint</h5></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-4 col-md-3">
+              <label for="method" class="form-label">HTTP Method*</label>
+              <select class="form-select" id="method" required>
+            <option value="GET">GET</option>
+            <option value="POST" selected>POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+            <option value="PATCH">PATCH</option>
+            <option value="OPTIONS">OPTIONS</option>
+            <option value="HEAD">HEAD</option>
+              </select>
+            </div>
+            <div class="col-sm-8 col-md-9">
+              <label for="path" class="form-label">Path*</label>
+              <div class="input-group">
+                <span class="input-group-text">/api/@demo</span>
+                <input type="text" class="form-control" id="path" required value="/orders">
+              </div>
+            </div>
+            <div class="col-12">
+              <label for="description" class="form-label">Description</label>
+              <input type="text" class="form-control" id="description" maxlength="500" placeholder="Short purpose of this endpoint, e.g. returns a mocked order" value="Returns a mocked order">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-reply me-2 text-success"></i>Response</h5></div>
+        <div class="card-body">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="statusCode" class="form-label">Status Code*</label>
+              <input type="number" class="form-control" id="statusCode" required min="100" max="599" value="201" placeholder="200">
+              <div class="d-flex flex-wrap gap-1 mt-2" id="statusChips">
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="200">200</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="201">201</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="204">204</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="400">400</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="404">404</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="500">500</button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="contentType" class="form-label">Content Type*</label>
+              <select class="form-select" id="contentType" required>
+            <option value="application/json" selected>application/json</option>
+            <option value="text/plain">text/plain</option>
+            <option value="text/html">text/html</option>
+            <option value="application/xml">application/xml</option>
+            <option value="application/octet-stream">application/octet-stream</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="delayMs" class="form-label">Response Delay (ms)</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="delayMs" min="0" max="60000" value="250" placeholder="100">
+                <span class="input-group-text">ms</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="responseBody" class="form-label mb-0">Response Body</label>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-proto="skip" data-format="responseBody"><i class="fas fa-align-left me-1"></i> Format JSON</button>
+            </div>
+            <textarea class="form-control code-area" id="responseBody" rows="8" placeholder='{"status_code": "{{status}}", "message": "Hello World!", "utm_source": "{{queryParams.utm_source}}"}'>{"id": 42, "status": "created", "method": "{{method}}"}</textarea>
+            <div class="invalid-feedback" id="bodyError">Invalid JSON</div>
+          </div>
+
+<!-- Nguồn: templates/fragments/request-vars.html (accordion biến ngữ cảnh dùng trong response body) -->
+<div class="mb-3">
+  <div class="accordion" id="contextVariablesAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingContextVars">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContextVars" aria-expanded="false" aria-controls="collapseContextVars">Available Context Variables</button>
+      </h2>
+      <div id="collapseContextVars" class="accordion-collapse collapse" aria-labelledby="headingContextVars" data-bs-parent="#contextVariablesAccordion">
+        <div class="accordion-body">
+          <p>You can use these variables in your response body using <code>{{variable}}</code> syntax:</p>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+              <thead class="table-light"><tr><th>Key</th><th>Description</th></tr></thead>
+              <tbody>
+            <tr><td>status</td><td>HTTP status code (e.g. 200, 404)</td></tr>
+            <tr><td>method</td><td>HTTP method (GET, POST, etc.)</td></tr>
+            <tr><td>path</td><td>Request URI path</td></tr>
+            <tr><td>remoteAddr</td><td>Client IP address</td></tr>
+            <tr><td>remoteHost</td><td>Client hostname</td></tr>
+            <tr><td>remotePort</td><td>Client port</td></tr>
+            <tr><td>localAddr</td><td>Server IP address</td></tr>
+            <tr><td>localName</td><td>Server hostname</td></tr>
+            <tr><td>localPort</td><td>Server port</td></tr>
+            <tr><td>url</td><td>Full request URL</td></tr>
+            <tr><td>uri</td><td>Request URI</td></tr>
+            <tr><td>protocol</td><td>HTTP protocol (e.g. HTTP/1.1)</td></tr>
+            <tr><td>scheme</td><td>Request scheme (http/https)</td></tr>
+            <tr><td>serverName</td><td>Server name</td></tr>
+            <tr><td>serverPort</td><td>Server port</td></tr>
+            <tr><td>contextPath</td><td>App context path</td></tr>
+            <tr><td>servletPath</td><td>Servlet path</td></tr>
+            <tr><td>characterEncoding</td><td>Character encoding (e.g. UTF-8)</td></tr>
+            <tr><td>contentType</td><td>Request Content-Type header</td></tr>
+            <tr><td>headers</td><td>Map of HTTP headers</td></tr>
+            <tr><td>queryParams</td><td>Map of query string parameters</td></tr>
+            <tr><td>params</td><td>Map of all parameters (form/query)</td></tr>
+            <tr><td>cookies</td><td>Map of cookie name/value pairs</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-3 mb-0"><strong>Example usage:</strong></p>
+          <pre><code>{
+  "method": "{{method}}",
+  "client": "{{remoteAddr}}",
+  "headers": {
+    "host": "{{headers.host}}",
+    "user-agent": "{{headers.user-agent}}"
+  },
+  "query": {
+    "param1": "{{queryParams.param1}}",
+    "param2": "{{queryParams.param2}}"
+  }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="responseHeaders" class="form-label mb-0">Response Headers (JSON)</label>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-proto="skip" data-format="responseHeaders"><i class="fas fa-align-left me-1"></i> Format JSON</button>
+            </div>
+            <textarea class="form-control code-area" id="responseHeaders" rows="3" placeholder='{"X-Custom-Header": "Custom Value", "x-clientIp": "{{headers.x-forwarded-for}}"}'>{"X-Request-Source": "mock-webhook"}</textarea>
+            <div class="invalid-feedback" id="headersError">Invalid JSON</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-sticky-note me-2 text-info"></i>Note</h5></div>
+        <div class="card-body">
+          <label for="note" class="visually-hidden">Note</label>
+          <textarea class="form-control" id="note" rows="3" maxlength="2000" placeholder="Enter a note or describe the purpose of this endpoint...">Used by the checkout flow. Expect 201 with the created order id; retry once on 500.</textarea>
+          <div class="text-muted small text-end mt-1"><span id="noteCount">0</span>/2000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="sticky-lg-top" style="top: 1rem;">
+        <div class="card shadow-sm border-0 mb-4">
+          <div class="card-header bg-white py-3"><h5 class="mb-0">Summary</h5></div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="text-muted small">Full URL</div>
+              <code class="text-break" id="sUrl">https://mock.example.test/api/@demo/orders</code>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Status</span><span class="badge bg-success" id="sStatus">201</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Content Type</span><span class="badge bg-secondary" id="sType">application/json</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Delay</span><span id="sDelay">250 ms</span>
+            </li>
+          </ul>
+          <div class="card-body d-grid gap-2">
+            <button type="submit" class="btn btn-primary" id="saveBtn" data-proto="skip"><i class="fas fa-save me-1"></i> Update API</button>
+            <a href="api-config.dc.html" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </div>
+
+        <div class="card border-danger-subtle">
+          <div class="card-body d-flex justify-content-between align-items-center gap-2">
+            <span class="text-danger fw-semibold">Delete this API</span>
+            <button type="button" class="btn btn-outline-danger btn-sm" data-act="a3"><i class="fas fa-trash me-1"></i> Delete API</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var base = 'https://mock.example.test/api/@demo';
+    var methodCls = { GET: 'bg-success', POST: 'bg-primary', PUT: 'bg-info', DELETE: 'bg-danger' };
+    var form = $('editForm');
+    var snapshot = function () { return JSON.stringify([].map.call(form.elements, function (e) { return e.value; })); };
+    var initial = snapshot();
+
+    // Cập nhật header, tóm tắt và dấu "Unsaved changes" mỗi khi form đổi
+    function sync() {
+      var m = $('method').value, path = $('path').value, code = parseInt($('statusCode').value, 10);
+      $('hMethod').textContent = m;
+      $('hMethod').className = 'badge fs-6 method-badge ' + (methodCls[m] || 'bg-secondary');
+      $('hPath').textContent = '/api/@demo' + path;
+      $('sUrl').textContent = base + path;
+      $('sStatus').textContent = isNaN(code) ? '-' : code;
+      $('sStatus').className = 'badge ' + (code >= 200 && code < 300 ? 'bg-success' : (code >= 400 ? 'bg-danger' : 'bg-warning'));
+      $('sType').textContent = $('contentType').value;
+      $('sDelay').textContent = ($('delayMs').value || 0) + ' ms';
+      $('noteCount').textContent = $('note').value.length;
+      document.querySelectorAll('.status-chip').forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-code') === String(code)); });
+      $('dirtyBadge').hidden = snapshot() === initial;
+    }
+    form.addEventListener('input', sync);
+    form.addEventListener('change', sync);
+
+    $('statusChips').addEventListener('click', function (e) {
+      var c = e.target.closest('[data-code]'); if (!c) return;
+      $('statusCode').value = c.getAttribute('data-code'); sync();
+    });
+
+    // Format JSON: báo lỗi ngay tại ô nếu JSON sai (bỏ qua biến {{...}} khi kiểm tra)
+    function validJson(text) {
+      if (!text.trim()) return true;
+      try { JSON.parse(text.replace(/\{\{[^}]*\}\}/g, 'x')); return true; } catch (err) { return false; }
+    }
+    document.querySelectorAll('[data-format]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var area = $(b.getAttribute('data-format'));
+        var ok = validJson(area.value);
+        area.classList.toggle('is-invalid', !ok);
+        if (ok && area.value.trim() && area.value.indexOf('{{') === -1) area.value = JSON.stringify(JSON.parse(area.value), null, 2);
+      });
+    });
+
+    // Update API: kiểm tra bắt buộc và JSON rồi sang danh sách
+    $('saveBtn').addEventListener('click', function () {
+      form.classList.add('was-validated');
+      var okBody = validJson($('responseBody').value), okHeaders = validJson($('responseHeaders').value);
+      $('responseBody').classList.toggle('is-invalid', !okBody);
+      $('responseHeaders').classList.toggle('is-invalid', !okHeaders);
+      if (form.checkValidity() && okBody && okHeaders) location.href = 'api-config.dc.html';
+    });
+
+    // Cảnh báo khi rời trang với thay đổi chưa lưu
+    window.addEventListener('beforeunload', function (e) { if (snapshot() !== initial) { e.preventDefault(); e.returnValue = ''; } });
+    sync();
+  })();
+</script>
+
+</div>
+
+<footer class="bg-light text-center text-lg-start mt-4 border-top">
+  <div class="container p-4 mt-2" style="padding-top: 0 !important;">
+    <h5 class="text-uppercase fw-bold text-primary"><i class="fas fa-webhook me-2"></i>Mock Webhook</h5>
+    <p class="text-muted mb-3">A simple application to create, manage, and test webhook APIs. Create custom endpoints, view incoming requests, and configure responses.</p>
+    <p class="mt-3 mb-0"><strong>Part of <a href="#" class="text-primary text-decoration-none fw-bold">QuyIT Platform</a> tools suite</strong></p>
+  </div>
+  <div class="text-center p-3 bg-white border-top">
+    <small class="text-muted">© 2026 <a href="#" class="text-primary text-decoration-none mx-2">QuyIT Platform</a> | Mock Webhook Tool</small>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script>
+  // Tooltip như footer gốc; form không gửi đi đâu, hành vi do nút (actions.py) mô phỏng
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new bootstrap.Tooltip(el); });
+  document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) { new bootstrap.Popover(el); });
+  document.addEventListener('submit', function (e) { e.preventDefault(); });
+  // Nút hiện/ẩn mật khẩu dùng chung: <button data-toggle-password="<id ô nhập>">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle-password]'); if (!b) return;
+    var input = document.getElementById(b.getAttribute('data-toggle-password')), icon = b.querySelector('i');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = 'fas ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
+  // Mở modal Bootstrap có sẵn sau khi hiện thông báo
+  window.protoHideModal = function (id) { var m = bootstrap.Modal.getInstance(document.getElementById(id)); if (m) m.hide(); };
+</script>
+<!--proto:begin-->
+<!-- Được sinh bởi _gen/interact.py. Đừng sửa tay: sửa nguồn trong _gen/ rồi dựng lại. -->
+<style>
+[hidden]{display:none!important}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;padding:4px;line-height:1;cursor:pointer}
+.icon-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.proto-layer{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:2147483000}
+.proto-dialog{background:var(--proto-surface,Canvas);color:var(--proto-text,CanvasText);border-radius:12px;padding:20px;width:min(440px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3);font:inherit}
+.proto-title{margin:0 0 8px;font-size:1.1em}
+.proto-body{margin:0 0 12px;opacity:.8}
+.proto-field{margin:0 0 12px;display:flex;flex-direction:column;gap:4px}
+.proto-field input,.proto-field select,.proto-field textarea{font:inherit;padding:8px;border:1px solid rgba(128,128,128,.5);border-radius:8px;background:transparent;color:inherit}
+.proto-field [aria-invalid=true]{border-color:#dc2626}
+.proto-error{color:#dc2626;font-size:.9em}
+.proto-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.proto-btn{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid rgba(128,128,128,.5);background:transparent;color:inherit;cursor:pointer}
+.proto-btn-primary{background:var(--proto-accent,#2563eb);border-color:var(--proto-accent,#2563eb);color:#fff}
+.proto-btn-danger{background:#dc2626;border-color:#dc2626}
+.proto-btn:disabled{opacity:.6;cursor:default}
+.proto-toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:2147483001}
+.proto-toast{background:#111827;color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.proto-toast-error{background:#b91c1c}
+</style>
+<script>window.__PROTO_ACTIONS={"a1": {"type": "goto", "screen": "login"}, "a2": {"type": "toast", "message": "URL copied to clipboard"}, "a3": {"type": "confirm", "title": "Delete API?", "body": "This action cannot be undone.", "confirm": "Delete", "toast": "API configuration deleted successfully!"}};window.__PROTO_STRINGS={"required": "Please enter {label}", "processing": "Processing…", "saved": "Saved", "cancel": "Cancel", "confirm": "Save", "confirm_danger": "Delete", "error": "Something went wrong. Please try again."};</script>
+<script>
+(function () {
+  var A = window.__PROTO_ACTIONS || {};
+  var S = window.__PROTO_STRINGS || {};
+  var layer = null, opener = null;
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function toast(msg, kind) {
+    var box = document.querySelector('.proto-toasts');
+    if (!box) {
+      box = el('div', 'proto-toasts');
+      box.setAttribute('role', 'status');
+      box.setAttribute('aria-live', 'polite');
+      document.body.appendChild(box);
+    }
+    var t = el('div', 'proto-toast' + (kind === 'error' ? ' proto-toast-error' : ''), msg);
+    box.appendChild(t);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3200);
+  }
+  function closeModal() {
+    if (layer && layer.parentNode) layer.parentNode.removeChild(layer);
+    layer = null;
+    if (opener && opener.focus) opener.focus();
+    opener = null;
+  }
+  function openModal(spec, danger) {
+    closeModal();
+    opener = document.activeElement;
+    layer = el('div', 'proto-layer');
+    var dlg = el('div', 'proto-dialog');
+    dlg.setAttribute('role', 'dialog');
+    dlg.setAttribute('aria-modal', 'true');
+    dlg.setAttribute('aria-labelledby', 'proto-title');
+    var title = el('h2', 'proto-title', spec.title || '');
+    title.id = 'proto-title';
+    dlg.appendChild(title);
+    if (spec.body) dlg.appendChild(el('p', 'proto-body', spec.body));
+    var inputs = [];
+    (spec.fields || []).forEach(function (f, i) {
+      var row = el('div', 'proto-field');
+      var id = 'proto-f' + i;
+      var lab = el('label', null, f.label || '');
+      lab.setAttribute('for', id);
+      var ctl;
+      if (f.type === 'select') {
+        ctl = el('select');
+        (f.options || []).forEach(function (o) { var op = el('option', null, o); op.value = o; ctl.appendChild(op); });
+      } else if (f.type === 'textarea') {
+        ctl = el('textarea');
+        ctl.rows = 3;
+      } else {
+        ctl = el('input');
+        ctl.type = f.type || 'text';
+      }
+      ctl.id = id;
+      if (f.placeholder) ctl.placeholder = f.placeholder;
+      if (f.value != null) ctl.value = f.value;
+      var err = el('div', 'proto-error');
+      err.hidden = true;
+      row.appendChild(lab); row.appendChild(ctl); row.appendChild(err);
+      dlg.appendChild(row);
+      inputs.push({ f: f, ctl: ctl, err: err });
+    });
+    var bar = el('div', 'proto-actions');
+    var cancel = el('button', 'proto-btn', spec.cancel || S.cancel);
+    cancel.type = 'button';
+    var ok = el('button', 'proto-btn proto-btn-primary' + (danger ? ' proto-btn-danger' : ''),
+                spec.confirm || (danger ? S.confirm_danger : S.confirm));
+    ok.type = 'button';
+    bar.appendChild(cancel); bar.appendChild(ok); dlg.appendChild(bar);
+    layer.appendChild(dlg);
+    document.body.appendChild(layer);
+    cancel.addEventListener('click', closeModal);
+    layer.addEventListener('mousedown', function (e) { if (e.target === layer) closeModal(); });
+    ok.addEventListener('click', function () {
+      var valid = true, first = null;
+      inputs.forEach(function (x) {
+        var empty = !String(x.ctl.value).trim();
+        if (x.f.required && empty) {
+          x.err.textContent = (S.required || '').replace('{label}', String(x.f.label || '').toLowerCase());
+          x.err.hidden = false;
+          x.ctl.setAttribute('aria-invalid', 'true');
+          valid = false;
+          if (!first) first = x.ctl;
+        } else {
+          x.err.hidden = true;
+          x.ctl.removeAttribute('aria-invalid');
+        }
+      });
+      if (!valid) { first.focus(); return; }
+      var label = ok.textContent;
+      ok.disabled = true; cancel.disabled = true; ok.textContent = S.processing;
+      setTimeout(function () {
+        if (spec.outcome === 'error') {
+          ok.disabled = false; cancel.disabled = false; ok.textContent = label;
+          toast(spec.error || S.error, 'error');
+          return;
+        }
+        closeModal();
+        toast(spec.toast || S.saved);
+      }, spec.delay == null ? 600 : spec.delay);
+    });
+    (inputs.length ? inputs[0].ctl : ok).focus();
+  }
+  function toggle(name, trigger) {
+    var r = document.querySelector('[data-region="' + name + '"]');
+    if (!r) return;
+    r.hidden = !r.hidden;
+    if (trigger && trigger.setAttribute) trigger.setAttribute('aria-expanded', String(!r.hidden));
+  }
+  function run(spec, trigger) {
+    switch (spec.type) {
+      case 'modal': openModal(spec, false); break;
+      case 'confirm': openModal(spec, true); break;
+      case 'toggle': toggle(spec.region, trigger); break;
+      case 'toast':
+        if (spec.delay) {
+          var old = trigger.innerHTML;
+          trigger.disabled = true;
+          trigger.textContent = S.processing;
+          setTimeout(function () {
+            trigger.disabled = false;
+            trigger.innerHTML = old;
+            toast(spec.message, spec.outcome === 'error' ? 'error' : null);
+          }, spec.delay);
+        } else {
+          toast(spec.message, spec.outcome === 'error' ? 'error' : null);
+        }
+        break;
+      case 'goto':
+        var ev = new CustomEvent('proto:goto', { detail: { screen: spec.screen }, cancelable: true });
+        if (window.dispatchEvent(ev)) location.href = spec.screen + '.dc.html';
+        break;
+      case 'close': closeModal(); break;
+    }
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!t || t.disabled) return;
+    var spec = A[t.getAttribute('data-act')];
+    if (!spec) return;
+    e.preventDefault();
+    run(spec, t);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+})();
+</script>
+<!--proto:end-->
+</body>
+</html>

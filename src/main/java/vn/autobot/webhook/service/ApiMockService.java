@@ -56,6 +56,8 @@ public class ApiMockService {
     apiConfig.setResponseBody(apiConfigDto.getResponseBody());
     apiConfig.setResponseHeaders(apiConfigDto.getResponseHeaders());
     apiConfig.setDelayMs(apiConfigDto.getDelayMs());
+    apiConfig.setDescription(blankToNull(apiConfigDto.getDescription()));
+    apiConfig.setNote(blankToNull(apiConfigDto.getNote()));
 
     return apiConfigRepository.save(apiConfig);
   }
@@ -254,7 +256,14 @@ public class ApiMockService {
     dto.setResponseBody(apiConfig.getResponseBody());
     dto.setResponseHeaders(apiConfig.getResponseHeaders());
     dto.setDelayMs(apiConfig.getDelayMs());
+    dto.setDescription(apiConfig.getDescription());
+    dto.setNote(apiConfig.getNote());
     return dto;
+  }
+
+  // Empty textarea is bound as "", store null instead so views can simply test for presence
+  private static String blankToNull(String value) {
+    return value == null || value.trim().isEmpty() ? null : value.trim();
   }
 
 }

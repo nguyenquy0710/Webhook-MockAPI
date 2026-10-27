@@ -46,7 +46,8 @@ public class SwaggerService {
             Map<String, Object> pathItem = (Map<String, Object>) paths.computeIfAbsent(fullPath, k -> new LinkedHashMap<>());
 
             Map<String, Object> op = new LinkedHashMap<>();
-            op.put("summary", "Mock API for " + fullPath);
+            String description = cfg.getDescription();
+            op.put("summary", description != null && !description.trim().isEmpty() ? description : "Mock API for " + fullPath);
             Map<String, Object> responses = new LinkedHashMap<>();
             int status = cfg.getStatusCode() != null ? cfg.getStatusCode() : 200;
             responses.put(String.valueOf(status), Map.of("description", "Mock response"));

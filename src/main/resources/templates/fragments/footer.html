@@ -44,6 +44,8 @@
         // Initialize tooltips
         var tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         var tooltipList = [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el));
+        // Initialize popovers (endpoint notes)
+        document.querySelectorAll('[data-bs-toggle="popover"]').forEach(el => new bootstrap.Popover(el));
       </script>
     </footer>
   </body>

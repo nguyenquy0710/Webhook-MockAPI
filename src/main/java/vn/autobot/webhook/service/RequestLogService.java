@@ -171,6 +171,28 @@ public class RequestLogService {
     return requestLogRepository.countByUser(user);
   }
 
+  public long countRequestLogsSince(String username, java.time.LocalDateTime since) {
+    User user = userService.findByUsername(username);
+    return requestLogRepository.countByUserAndTimestampGreaterThanEqual(user, since);
+  }
+
+  /**
+   * Request logs filtered by path text, HTTP method and status class (1-5 for 1xx-5xx; empty for any).
+   */
+  public Page<RequestLogDto> searchRequestLogs(String username, String pathFilter, String method, String statusClass,
+                                               Pageable pageable) {
+    User user = userService.findByUsername(username);
+    int min = 0;
+    int max = Integer.MAX_VALUE;
+    if (statusClass != null && statusClass.matches("[1-5]")) {
+      min = Integer.parseInt(statusClass) * 100;
+      max = min + 100;
+    }
+    String path = pathFilter == null ? "" : pathFilter.trim();
+    String m = method == null ? "" : method.trim().toUpperCase();
+    return requestLogRepository.search(user, path, m, min, max, pageable).map(this::convertToDto);
+  }
+
   public long countRequestLogs(String username, String pathFilter) {
     User user = userService.findByUsername(username);
     

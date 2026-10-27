@@ -1,0 +1,86 @@
+<!--title: Register-->
+<!--
+  Nguồn gốc: templates/register.html (thiết kế lại). Ý đồ: URL webhook hiện trực tiếp theo username đang gõ,
+  độ mạnh mật khẩu và khớp mật khẩu báo ngay, nút hiện/ẩn mật khẩu.
+-->
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-5">
+    <div class="card shadow border-0 rounded-4 mt-5">
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mb-3" style="width:3.5rem;height:3.5rem;"><i class="fas fa-user-plus fa-lg"></i></div>
+          <h3 class="fw-light mb-1">Create Account</h3>
+          <p class="text-muted mb-0">Join the Mock Webhook platform</p>
+        </div>
+        <div class="alert alert-danger d-flex align-items-center py-2" id="regError" role="alert" hidden>
+          <i class="fas fa-exclamation-triangle me-2"></i><div id="regErrorText">Error message</div>
+        </div>
+        <form id="regForm" novalidate>
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input class="form-control" id="username" type="text" autocomplete="username" required>
+            </div>
+            <small class="form-text text-muted">Your webhook API URL will be: <code id="urlPreview" class="text-break">https://domain/api/@username</code></small>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+              <input class="form-control" id="email" type="email" placeholder="name@example.com" autocomplete="email" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input class="form-control" id="password" type="password" autocomplete="new-password" required>
+              <button class="btn btn-outline-secondary" type="button" data-proto="skip" data-toggle-password="password" aria-label="Show password"><i class="fas fa-eye"></i></button>
+            </div>
+            <div class="progress mt-2" style="height:4px;" aria-hidden="true"><div class="progress-bar" id="strengthBar" style="width:0"></div></div>
+          </div>
+          <div class="mb-4">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input class="form-control" id="confirmPassword" type="password" autocomplete="new-password" required>
+              <button class="btn btn-outline-secondary" type="button" data-proto="skip" data-toggle-password="confirmPassword" aria-label="Show password"><i class="fas fa-eye"></i></button>
+            </div>
+            <div class="small mt-1" id="matchHint" hidden></div>
+          </div>
+          <div class="d-grid mb-3">
+            <button class="btn btn-primary btn-lg" type="submit" data-proto="skip" id="createAccount"><i class="fas fa-user-plus me-2"></i>Create Account</button>
+          </div>
+          <div class="text-center">
+            <p class="mb-0">Already have an account? <a href="login.dc.html" class="text-decoration-none fw-bold">Sign In</a></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    $('username').addEventListener('input', function () { $('urlPreview').textContent = 'https://domain/api/@' + (this.value.trim() || 'username'); });
+    // Độ mạnh mật khẩu: độ dài + chữ hoa/thường + số + ký tự đặc biệt
+    function strength(v) { var s = 0; if (v.length >= 6) s++; if (v.length >= 10) s++; if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++; if (/\d/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++; return s; }
+    function match() {
+      var p = $('password').value, c = $('confirmPassword').value, bar = $('strengthBar'), s = p ? Math.max(1, strength(p)) : 0;
+      bar.style.width = (s * 20) + '%'; bar.className = 'progress-bar ' + (s <= 1 ? 'bg-danger' : (s <= 3 ? 'bg-warning' : 'bg-success'));
+      var hint = $('matchHint'); hint.hidden = !c;
+      var ok = p === c; hint.className = 'small mt-1 ' + (ok ? 'text-success' : 'text-danger'); hint.textContent = ok ? 'Passwords match' : 'Passwords do not match';
+    }
+    $('password').addEventListener('input', match); $('confirmPassword').addEventListener('input', match);
+    // Mô phỏng kiểm tra phía server: thiếu trường / mật khẩu ngắn / không khớp thì báo lỗi, hợp lệ thì sang login
+    $('createAccount').addEventListener('click', function () {
+      var v = function (id) { return $(id).value; }, msg = '';
+      if (!v('username').trim() || !v('email').trim() || !v('password')) msg = 'Please fill in all required fields.';
+      else if (v('password').length < 6) msg = 'Password must be at least 6 characters.';
+      else if (v('password') !== v('confirmPassword')) msg = 'Passwords do not match.';
+      $('regErrorText').textContent = msg; $('regError').hidden = !msg;
+      if (!msg) location.href = 'login.dc.html';
+    });
+  })();
+</script>
