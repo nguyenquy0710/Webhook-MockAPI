@@ -3,7 +3,7 @@ type: feature
 complexity: low
 status: completed
 related_issues: [#35, QUYIT-960]
-related_prs: []
+related_prs: [#37]
 estimated_hours: ~5
 ---
 
@@ -121,6 +121,12 @@ Phương án không chọn: lưu ghi chú trong `responseHeaders` hoặc bảng 
 - Đã comment vào GitHub issue #35 ([link](https://github.com/nguyenquy0710/Webhook-MockAPI/issues/35#issuecomment-6433714985)): tóm tắt phần đã làm và hỏi giữ hai trường (`description` + `note`) hay chỉ một. Mặc định giữ cả hai nếu không có ý kiến khác.
 - Trạng thái: **chờ phản hồi**. Nếu chọn một trường thì bỏ `note` (migration V4 chưa phát hành nên có thể sửa trực tiếp).
 - Đã commit cục bộ (2 commit), chưa push. QUYIT-960 giữ **In Progress**, chuyển Done sau khi merge.
+
+## 4e. Hoàn tất (2026-10-27)
+
+- PR [#37](https://github.com/nguyenquy0710/Webhook-MockAPI/pull/37) đã merge vào `main` (`47a2d44`) và đã deploy.
+- QUYIT-960 chuyển **Done**; GitHub issue #35 đã đóng (completed).
+- Câu hỏi hai trường ở #35 không nhận phản hồi trước khi merge: giữ cả hai trường. Muốn đổi sang một trường thì mở issue/PR mới (cần migration mới, không sửa V4 vì đã deploy).
 
 ## 5. Success Criteria
 
