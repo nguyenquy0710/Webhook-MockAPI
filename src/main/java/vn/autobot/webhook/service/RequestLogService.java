@@ -171,6 +171,11 @@ public class RequestLogService {
     return requestLogRepository.countByUser(user);
   }
 
+  public long countRequestLogsSince(String username, java.time.LocalDateTime since) {
+    User user = userService.findByUsername(username);
+    return requestLogRepository.countByUserAndTimestampGreaterThanEqual(user, since);
+  }
+
   /**
    * Request logs filtered by path text, HTTP method and status class (1-5 for 1xx-5xx; empty for any).
    */

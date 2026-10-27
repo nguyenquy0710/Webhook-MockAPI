@@ -20,6 +20,7 @@ import vn.autobot.webhook.service.RequestLogService;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.time.LocalDate;
 
 @Controller
 @RequiredArgsConstructor
@@ -36,8 +37,15 @@ public class WebhookViewController {
 
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        model.addAttribute("username", userDetails.getUsername());
+        String username = userDetails.getUsername();
+        model.addAttribute("username", username);
         model.addAttribute("domain", appConfig.getDomain());
+        // Quick stats and the latest requests shown on the dashboard
+        model.addAttribute("apiConfigCount", apiMockService.getApiConfigs(username).size());
+        model.addAttribute("requestsToday",
+            requestLogService.countRequestLogsSince(username, LocalDate.now().atStartOfDay()));
+        Page<RequestLogDto> recent = requestLogService.getRequestLogs(username, PageRequest.of(0, 5));
+        model.addAttribute("recentLogs", recent.getContent());
         return "dashboard";
     }
 
