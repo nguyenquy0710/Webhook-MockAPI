@@ -61,55 +61,113 @@
         <a class="nav-link rounded-pill" href="admin-users.dc.html"><i class="fas fa-users-cog me-2"></i> Admin</a>
       </nav>
     </div>
-<!-- Nguồn: templates/api-config-edit.html. Cấu hình mẫu: POST /orders -->
-<h2 class="mb-4">Edit API Configuration</h2>
-<div class="card">
-  <div class="card-header"><h5>Update API Configuration</h5></div>
-  <div class="card-body">
-    <form>
-<div class="row mb-3">
-  <div class="col-md-6">
-    <label for="path" class="form-label">Path*</label>
-    <div class="input-group">
-      <span class="input-group-text">/api/@demo</span>
-      <input type="text" class="form-control" id="path" required value="/orders">
-    </div>
-    <small class="text-muted">The path to your API endpoint</small>
+<!--
+  Nguồn gốc: templates/api-config-edit.html (thiết kế lại bố cục, giữ nguyên trường và nhãn nút).
+  Ý đồ: header cho biết đang sửa endpoint nào; form chia theo nhóm (Endpoint, Response, Note);
+  cột phải dính (sticky) giữ Update/Cancel luôn trong tầm mắt cùng tóm tắt URL; thao tác xóa tách khỏi nút lưu.
+  Cấu hình mẫu: POST /orders.
+-->
+<style>
+  .method-badge { min-width: 4.5rem; }
+  .code-area { font-family: Consolas, "Courier New", monospace; font-size: .875rem; }
+  .status-chip.active { background-color: #0d6efd; color: #fff; border-color: #0d6efd; }
+</style>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item"><a href="api-config.dc.html" class="text-decoration-none">API Configs</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Edit</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <span class="badge bg-primary fs-6 method-badge" id="hMethod">POST</span>
+    <h2 class="mb-0 fs-3"><code id="hPath">/api/@demo/orders</code></h2>
+    <span class="badge text-bg-warning" id="dirtyBadge" hidden>Unsaved changes</span>
   </div>
-  <div class="col-md-6">
-    <label for="method" class="form-label">HTTP Method*</label>
-    <select class="form-select" id="method" required>
-      <option value="GET">GET</option>
-      <option value="POST" selected>POST</option>
-      <option value="PUT">PUT</option>
-      <option value="DELETE">DELETE</option>
-      <option value="PATCH">PATCH</option>
-      <option value="OPTIONS">OPTIONS</option>
-      <option value="HEAD">HEAD</option>
-    </select>
-  </div>
+  <button type="button" class="btn btn-outline-secondary" data-act="a2"><i class="fas fa-copy me-1"></i> Copy URL</button>
 </div>
-<div class="row mb-3">
-  <div class="col-md-6">
-    <label for="statusCode" class="form-label">Status Code*</label>
-    <input type="number" class="form-control" id="statusCode" required min="100" max="599" value="201" placeholder="200">
-    <small class="text-muted">HTTP status code for the response</small>
-  </div>
-  <div class="col-md-6">
-    <label for="contentType" class="form-label">Content Type*</label>
-    <select class="form-select" id="contentType" required>
-      <option value="application/json" selected>application/json</option>
-      <option value="text/plain">text/plain</option>
-      <option value="text/html">text/html</option>
-      <option value="application/xml">application/xml</option>
-      <option value="application/octet-stream">application/octet-stream</option>
-    </select>
-  </div>
-</div>
-<div class="mb-3">
-  <label for="responseBody" class="form-label">Response Body</label>
-  <textarea class="form-control" id="responseBody" rows="5" placeholder='{"status_code": "{{status}}", "message": "Hello World!", "utm_source": "{{queryParams.utm_source}}"}'>{"id": 42, "status": "created", "method": "{{method}}"}</textarea>
-</div>
+
+<form id="editForm" novalidate>
+  <div class="row g-4">
+    <div class="col-lg-8">
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-link me-2 text-primary"></i>Endpoint</h5></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-4 col-md-3">
+              <label for="method" class="form-label">HTTP Method*</label>
+              <select class="form-select" id="method" required>
+            <option value="GET">GET</option>
+            <option value="POST" selected>POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+            <option value="PATCH">PATCH</option>
+            <option value="OPTIONS">OPTIONS</option>
+            <option value="HEAD">HEAD</option>
+              </select>
+            </div>
+            <div class="col-sm-8 col-md-9">
+              <label for="path" class="form-label">Path*</label>
+              <div class="input-group">
+                <span class="input-group-text">/api/@demo</span>
+                <input type="text" class="form-control" id="path" required value="/orders">
+              </div>
+            </div>
+            <div class="col-12">
+              <label for="description" class="form-label">Description</label>
+              <input type="text" class="form-control" id="description" maxlength="500" placeholder="Short purpose of this endpoint, e.g. returns a mocked order" value="Returns a mocked order">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-reply me-2 text-success"></i>Response</h5></div>
+        <div class="card-body">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="statusCode" class="form-label">Status Code*</label>
+              <input type="number" class="form-control" id="statusCode" required min="100" max="599" value="201" placeholder="200">
+              <div class="d-flex flex-wrap gap-1 mt-2" id="statusChips">
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="200">200</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="201">201</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="204">204</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="400">400</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="404">404</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary status-chip" data-proto="skip" data-code="500">500</button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="contentType" class="form-label">Content Type*</label>
+              <select class="form-select" id="contentType" required>
+            <option value="application/json" selected>application/json</option>
+            <option value="text/plain">text/plain</option>
+            <option value="text/html">text/html</option>
+            <option value="application/xml">application/xml</option>
+            <option value="application/octet-stream">application/octet-stream</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="delayMs" class="form-label">Response Delay (ms)</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="delayMs" min="0" max="60000" value="250" placeholder="100">
+                <span class="input-group-text">ms</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="responseBody" class="form-label mb-0">Response Body</label>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-proto="skip" data-format="responseBody"><i class="fas fa-align-left me-1"></i> Format JSON</button>
+            </div>
+            <textarea class="form-control code-area" id="responseBody" rows="8" placeholder='{"status_code": "{{status}}", "message": "Hello World!", "utm_source": "{{queryParams.utm_source}}"}'>{"id": 42, "status": "created", "method": "{{method}}"}</textarea>
+            <div class="invalid-feedback" id="bodyError">Invalid JSON</div>
+          </div>
+
 <!-- Nguồn: templates/fragments/request-vars.html (accordion biến ngữ cảnh dùng trong response body) -->
 <div class="mb-3">
   <div class="accordion" id="contextVariablesAccordion">
@@ -169,40 +227,122 @@
   </div>
 </div>
 
-<div class="mb-3">
-  <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
-  <textarea class="form-control" id="responseHeaders" rows="3" placeholder='{"X-Custom-Header": "Custom Value", "x-clientIp": "{{headers.x-forwarded-for}}"}'>{"X-Request-Source": "mock-webhook"}</textarea>
-  <small class="text-muted">Enter response headers in JSON format</small>
-</div>
-<div class="mb-3">
-  <label for="delayMs" class="form-label">Response Delay (ms)</label>
-  <input type="number" class="form-control" id="delayMs" min="0" max="60000" value="250" placeholder="100">
-  <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
-</div>
-      <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <input type="text" class="form-control" id="description" maxlength="500" placeholder="Short purpose of this endpoint, e.g. returns a mocked order" value="Returns a mocked order">
+
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="responseHeaders" class="form-label mb-0">Response Headers (JSON)</label>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-proto="skip" data-format="responseHeaders"><i class="fas fa-align-left me-1"></i> Format JSON</button>
+            </div>
+            <textarea class="form-control code-area" id="responseHeaders" rows="3" placeholder='{"X-Custom-Header": "Custom Value", "x-clientIp": "{{headers.x-forwarded-for}}"}'>{"X-Request-Source": "mock-webhook"}</textarea>
+            <div class="invalid-feedback" id="headersError">Invalid JSON</div>
+          </div>
+        </div>
       </div>
-      <div class="mb-3">
-        <label for="note" class="form-label">Note</label>
-        <textarea class="form-control" id="note" rows="3" maxlength="2000" placeholder="Enter a note or describe the purpose of this endpoint...">Used by the checkout flow. Expect 201 with the created order id; retry once on 500.</textarea>
-        <small class="text-muted"><span id="noteCount">0</span>/2000 characters. Shown as an info icon in the endpoint list.</small>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0"><i class="fas fa-sticky-note me-2 text-info"></i>Note</h5></div>
+        <div class="card-body">
+          <label for="note" class="visually-hidden">Note</label>
+          <textarea class="form-control" id="note" rows="3" maxlength="2000" placeholder="Enter a note or describe the purpose of this endpoint...">Used by the checkout flow. Expect 201 with the created order id; retry once on 500.</textarea>
+          <div class="text-muted small text-end mt-1"><span id="noteCount">0</span>/2000</div>
+        </div>
       </div>
-      <div>
-        <a href="api-config.dc.html" class="btn btn-secondary me-2">Cancel</a>
-        <button type="submit" class="btn btn-primary" data-act="a2">Update API</button>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="sticky-lg-top" style="top: 1rem;">
+        <div class="card shadow-sm border-0 mb-4">
+          <div class="card-header bg-white py-3"><h5 class="mb-0">Summary</h5></div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="text-muted small">Full URL</div>
+              <code class="text-break" id="sUrl">https://mock.example.test/api/@demo/orders</code>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Status</span><span class="badge bg-success" id="sStatus">201</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Content Type</span><span class="badge bg-secondary" id="sType">application/json</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Delay</span><span id="sDelay">250 ms</span>
+            </li>
+          </ul>
+          <div class="card-body d-grid gap-2">
+            <button type="submit" class="btn btn-primary" id="saveBtn" data-proto="skip"><i class="fas fa-save me-1"></i> Update API</button>
+            <a href="api-config.dc.html" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </div>
+
+        <div class="card border-danger-subtle">
+          <div class="card-body d-flex justify-content-between align-items-center gap-2">
+            <span class="text-danger fw-semibold">Delete this API</span>
+            <button type="button" class="btn btn-outline-danger btn-sm" data-act="a3"><i class="fas fa-trash me-1"></i> Delete API</button>
+          </div>
+        </div>
       </div>
-    </form>
+    </div>
   </div>
-</div>
+</form>
+
 <script>
-  // Live character counter for the Note textarea
   (function () {
-    var note = document.getElementById('note'), count = document.getElementById('noteCount');
-    if (!note || !count) return;
-    var update = function () { count.textContent = note.value.length; };
-    note.addEventListener('input', update);
-    update();
+    var $ = function (id) { return document.getElementById(id); };
+    var base = 'https://mock.example.test/api/@demo';
+    var methodCls = { GET: 'bg-success', POST: 'bg-primary', PUT: 'bg-info', DELETE: 'bg-danger' };
+    var form = $('editForm');
+    var snapshot = function () { return JSON.stringify([].map.call(form.elements, function (e) { return e.value; })); };
+    var initial = snapshot();
+
+    // Cập nhật header, tóm tắt và dấu "Unsaved changes" mỗi khi form đổi
+    function sync() {
+      var m = $('method').value, path = $('path').value, code = parseInt($('statusCode').value, 10);
+      $('hMethod').textContent = m;
+      $('hMethod').className = 'badge fs-6 method-badge ' + (methodCls[m] || 'bg-secondary');
+      $('hPath').textContent = '/api/@demo' + path;
+      $('sUrl').textContent = base + path;
+      $('sStatus').textContent = isNaN(code) ? '-' : code;
+      $('sStatus').className = 'badge ' + (code >= 200 && code < 300 ? 'bg-success' : (code >= 400 ? 'bg-danger' : 'bg-warning'));
+      $('sType').textContent = $('contentType').value;
+      $('sDelay').textContent = ($('delayMs').value || 0) + ' ms';
+      $('noteCount').textContent = $('note').value.length;
+      document.querySelectorAll('.status-chip').forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-code') === String(code)); });
+      $('dirtyBadge').hidden = snapshot() === initial;
+    }
+    form.addEventListener('input', sync);
+    form.addEventListener('change', sync);
+
+    $('statusChips').addEventListener('click', function (e) {
+      var c = e.target.closest('[data-code]'); if (!c) return;
+      $('statusCode').value = c.getAttribute('data-code'); sync();
+    });
+
+    // Format JSON: báo lỗi ngay tại ô nếu JSON sai (bỏ qua biến {{...}} khi kiểm tra)
+    function validJson(text) {
+      if (!text.trim()) return true;
+      try { JSON.parse(text.replace(/\{\{[^}]*\}\}/g, 'x')); return true; } catch (err) { return false; }
+    }
+    document.querySelectorAll('[data-format]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var area = $(b.getAttribute('data-format'));
+        var ok = validJson(area.value);
+        area.classList.toggle('is-invalid', !ok);
+        if (ok && area.value.trim() && area.value.indexOf('{{') === -1) area.value = JSON.stringify(JSON.parse(area.value), null, 2);
+      });
+    });
+
+    // Update API: kiểm tra bắt buộc và JSON rồi sang danh sách
+    $('saveBtn').addEventListener('click', function () {
+      form.classList.add('was-validated');
+      var okBody = validJson($('responseBody').value), okHeaders = validJson($('responseHeaders').value);
+      $('responseBody').classList.toggle('is-invalid', !okBody);
+      $('responseHeaders').classList.toggle('is-invalid', !okHeaders);
+      if (form.checkValidity() && okBody && okHeaders) location.href = 'api-config.dc.html';
+    });
+
+    // Cảnh báo khi rời trang với thay đổi chưa lưu
+    window.addEventListener('beforeunload', function (e) { if (snapshot() !== initial) { e.preventDefault(); e.returnValue = ''; } });
+    sync();
   })();
 </script>
 
@@ -225,6 +365,15 @@
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new bootstrap.Tooltip(el); });
   document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) { new bootstrap.Popover(el); });
   document.addEventListener('submit', function (e) { e.preventDefault(); });
+  // Nút hiện/ẩn mật khẩu dùng chung: <button data-toggle-password="<id ô nhập>">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle-password]'); if (!b) return;
+    var input = document.getElementById(b.getAttribute('data-toggle-password')), icon = b.querySelector('i');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = 'fas ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
   // Mở modal Bootstrap có sẵn sau khi hiện thông báo
   window.protoHideModal = function (id) { var m = bootstrap.Modal.getInstance(document.getElementById(id)); if (m) m.hide(); };
 </script>
@@ -251,7 +400,7 @@
 .proto-toast{background:#111827;color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .proto-toast-error{background:#b91c1c}
 </style>
-<script>window.__PROTO_ACTIONS={"a1": {"type": "goto", "screen": "login"}, "a2": {"type": "goto", "screen": "api-config"}};window.__PROTO_STRINGS={"required": "Please enter {label}", "processing": "Processing…", "saved": "Saved", "cancel": "Cancel", "confirm": "Save", "confirm_danger": "Delete", "error": "Something went wrong. Please try again."};</script>
+<script>window.__PROTO_ACTIONS={"a1": {"type": "goto", "screen": "login"}, "a2": {"type": "toast", "message": "URL copied to clipboard"}, "a3": {"type": "confirm", "title": "Delete API?", "body": "This action cannot be undone.", "confirm": "Delete", "toast": "API configuration deleted successfully!"}};window.__PROTO_STRINGS={"required": "Please enter {label}", "processing": "Processing…", "saved": "Saved", "cancel": "Cancel", "confirm": "Save", "confirm_danger": "Delete", "error": "Something went wrong. Please try again."};</script>
 <script>
 (function () {
   var A = window.__PROTO_ACTIONS || {};

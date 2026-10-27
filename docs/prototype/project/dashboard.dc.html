@@ -61,49 +61,126 @@
         <a class="nav-link rounded-pill" href="admin-users.dc.html"><i class="fas fa-users-cog me-2"></i> Admin</a>
       </nav>
     </div>
-<!-- Nguồn: templates/dashboard.html. username mẫu "demo", domain mẫu mock.example.test -->
-<h2 class="mb-4">Welcome, <span>demo</span>!</h2>
-<div class="row g-4 mb-5">
-  <div class="col-md-4"><div class="card h-100 shadow-sm border-0 border-start border-primary border-4"><div class="card-body text-center p-4">
-    <div class="bg-primary bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width:3rem;height:3rem;"><i class="fas fa-link"></i></div>
-    <h5 class="card-title fw-bold text-primary">Your Webhook URL</h5>
-    <p class="card-text small mb-3"><code class="bg-light px-2 py-1 rounded">https://mock.example.test/api/@demo</code></p>
-    <button class="btn btn-outline-primary copy-btn" data-act="a2"><i class="fas fa-copy me-1"></i> Copy URL</button>
-  </div></div></div>
-  <div class="col-md-4"><div class="card h-100 shadow-sm border-0 border-start border-success border-4"><div class="card-body text-center p-4">
-    <div class="bg-success bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width:3rem;height:3rem;"><i class="fas fa-cogs"></i></div>
-    <h5 class="card-title fw-bold text-success">API Configurations</h5>
-    <p class="card-text text-muted mb-3">Manage your webhook API configurations and responses</p>
-    <a href="api-config.dc.html" class="btn btn-outline-success"><i class="fas fa-cogs me-1"></i> Manage APIs</a>
-  </div></div></div>
-  <div class="col-md-4"><div class="card h-100 shadow-sm border-0 border-start border-info border-4"><div class="card-body text-center p-4">
-    <div class="bg-info bg-gradient text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width:3rem;height:3rem;"><i class="fas fa-history"></i></div>
-    <h5 class="card-title fw-bold text-info">Request Logs</h5>
-    <p class="card-text text-muted mb-3">View incoming webhook request logs and analytics</p>
-    <a href="request-logs.dc.html" class="btn btn-outline-info"><i class="fas fa-history me-1"></i> View Logs</a>
-  </div></div></div>
+<!--
+  Nguồn gốc: templates/dashboard.html (thiết kế lại bố cục, giữ chữ gốc của các bước hướng dẫn).
+  Ý đồ: việc cần làm nhiều nhất (copy URL webhook, tạo API mới) nằm trên cùng; số liệu nhanh và yêu cầu gần đây
+  giúp thấy hệ thống có đang nhận request không; hướng dẫn 4 bước chuyển sang cột phụ, thu gọn được.
+  Số liệu thống kê và danh sách yêu cầu gần đây là dữ liệu mẫu, bản thật cần thêm truy vấn ở controller.
+  Người dùng mẫu: demo, domain mẫu mock.example.test.
+-->
+<style>
+  .stat-icon { width: 2.75rem; height: 2.75rem; }
+  .step-dot { width: 1.75rem; height: 1.75rem; font-size: .8rem; }
+  .row-link { cursor: pointer; }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <h2 class="mb-0">Welcome, <span>demo</span>!</h2>
+  <a href="api-config.dc.html" class="btn btn-primary"><i class="fas fa-plus me-1"></i> New API</a>
 </div>
-<div class="card shadow-sm border-0 mb-4">
-  <div class="card-header bg-white border-0 py-3"><h5 class="mb-0 d-flex align-items-center"><i class="fas fa-rocket me-2 text-primary"></i>Quick Start Guide</h5></div>
-  <div class="card-body"><div class="row g-4">
-    <div class="col-md-6"><div class="d-flex">
-      <div class="flex-shrink-0"><div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:2rem;height:2rem;"><small class="fw-bold">1</small></div></div>
-      <div class="flex-grow-1 ms-3"><h6 class="fw-bold">Create API Configs</h6><p class="text-muted mb-0">Go to API Configurations to create endpoints with customized responses</p></div>
-    </div></div>
-    <div class="col-md-6"><div class="d-flex">
-      <div class="flex-shrink-0"><div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width:2rem;height:2rem;"><small class="fw-bold">2</small></div></div>
-      <div class="flex-grow-1 ms-3"><h6 class="fw-bold">Test Your Webhook</h6><p class="text-muted mb-0">Send requests to: <code class="small">https://mock.example.test/api/@demo/your-path</code></p></div>
-    </div></div>
-    <div class="col-md-6"><div class="d-flex">
-      <div class="flex-shrink-0"><div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width:2rem;height:2rem;"><small class="fw-bold">3</small></div></div>
-      <div class="flex-grow-1 ms-3"><h6 class="fw-bold">View Request Logs</h6><p class="text-muted mb-0">Check the Request Logs page to see detailed information about incoming requests</p></div>
-    </div></div>
-    <div class="col-md-6"><div class="d-flex">
-      <div class="flex-shrink-0"><div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width:2rem;height:2rem;"><small class="fw-bold">4</small></div></div>
-      <div class="flex-grow-1 ms-3"><h6 class="fw-bold">Share Your Webhook</h6><p class="text-muted mb-0">Give others your webhook URL to let them send requests to your mock API</p></div>
-    </div></div>
-  </div></div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <label for="webhookUrl" class="form-label fw-semibold"><i class="fas fa-link me-2 text-primary"></i>Your Webhook URL</label>
+        <div class="input-group">
+          <input type="text" class="form-control font-monospace" id="webhookUrl" readonly value="https://mock.example.test/api/@demo">
+          <button class="btn btn-primary" type="button" data-act="a2"><i class="fas fa-copy me-1"></i> Copy URL</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-sm-4">
+        <a href="api-config.dc.html" class="card h-100 shadow-sm border-0 text-decoration-none text-body">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="stat-icon rounded-3 bg-success-subtle text-success d-flex align-items-center justify-content-center"><i class="fas fa-cogs"></i></div>
+            <div><div class="fs-4 fw-bold lh-1">7</div><div class="text-muted small">API Configs</div></div>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-4">
+        <a href="request-logs.dc.html" class="card h-100 shadow-sm border-0 text-decoration-none text-body">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="stat-icon rounded-3 bg-info-subtle text-info d-flex align-items-center justify-content-center"><i class="fas fa-history"></i></div>
+            <div><div class="fs-4 fw-bold lh-1">128</div><div class="text-muted small">Requests today</div></div>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-4">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="stat-icon rounded-3 bg-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-center"><i class="fas fa-clock"></i></div>
+            <div><div class="fs-6 fw-bold lh-sm">2026-10-27 09:59:10</div><div class="text-muted small">Last request</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-history me-2 text-info"></i>Recent Requests</h5>
+        <a href="request-logs.dc.html" class="btn btn-sm btn-outline-info">View Logs</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Time (UTC)</th><th>Method</th><th>Path</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr class="row-link" data-href="request-logs.dc.html"><td>2026-10-27 09:59:10</td><td><span class="badge bg-success">GET</span></td><td>/hello</td><td><span class="badge bg-success">200</span></td></tr>
+            <tr class="row-link" data-href="request-logs.dc.html"><td>2026-10-27 09:58:17</td><td><span class="badge bg-primary">POST</span></td><td>/orders</td><td><span class="badge bg-success">201</span></td></tr>
+            <tr class="row-link" data-href="request-logs.dc.html"><td>2026-10-27 09:57:24</td><td><span class="badge bg-primary">POST</span></td><td>/payments/callback</td><td><span class="badge bg-danger">500</span></td></tr>
+            <tr class="row-link" data-href="request-logs.dc.html"><td>2026-10-27 09:56:31</td><td><span class="badge bg-info">PUT</span></td><td>/orders/42</td><td><span class="badge bg-success">200</span></td></tr>
+            <tr class="row-link" data-href="request-logs.dc.html"><td>2026-10-27 09:55:38</td><td><span class="badge bg-success">GET</span></td><td>/users/123</td><td><span class="badge bg-success">200</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 d-flex align-items-center"><i class="fas fa-rocket me-2 text-primary"></i>Quick Start Guide</h5>
+        <button class="btn btn-sm btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#guideSteps" aria-expanded="true" aria-controls="guideSteps" aria-label="Toggle guide"><i class="fas fa-chevron-up"></i></button>
+      </div>
+      <div class="collapse show" id="guideSteps">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex gap-3 py-3">
+            <div class="step-dot bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold">1</div>
+            <div><h6 class="fw-bold mb-1">Create API Configs</h6><p class="text-muted small mb-0">Go to API Configurations to create endpoints with customized responses</p></div>
+          </li>
+          <li class="list-group-item d-flex gap-3 py-3">
+            <div class="step-dot bg-success text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold">2</div>
+            <div><h6 class="fw-bold mb-1">Test Your Webhook</h6><p class="text-muted small mb-0">Send requests to: <code class="small text-break">https://mock.example.test/api/@demo/your-path</code></p></div>
+          </li>
+          <li class="list-group-item d-flex gap-3 py-3">
+            <div class="step-dot bg-info text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold">3</div>
+            <div><h6 class="fw-bold mb-1">View Request Logs</h6><p class="text-muted small mb-0">Check the Request Logs page to see detailed information about incoming requests</p></div>
+          </li>
+          <li class="list-group-item d-flex gap-3 py-3">
+            <div class="step-dot bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold">4</div>
+            <div><h6 class="fw-bold mb-1">Share Your Webhook</h6><p class="text-muted small mb-0">Give others your webhook URL to let them send requests to your mock API</p></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="list-group shadow-sm">
+      <a href="api-config.dc.html" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span><i class="fas fa-cogs me-2 text-success"></i>Manage APIs</span><i class="fas fa-chevron-right text-muted small"></i></a>
+      <a href="request-logs.dc.html" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span><i class="fas fa-history me-2 text-info"></i>View Logs</span><i class="fas fa-chevron-right text-muted small"></i></a>
+      <a href="swagger-ui.dc.html" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span><i class="fas fa-book me-2 text-warning"></i>Swagger</span><i class="fas fa-chevron-right text-muted small"></i></a>
+    </div>
+  </div>
 </div>
+
+<script>
+  // Hàng trong bảng yêu cầu gần đây mở trang Request Logs
+  document.querySelectorAll('.row-link').forEach(function (r) {
+    r.addEventListener('click', function () { location.href = r.getAttribute('data-href'); });
+  });
+</script>
 
 </div>
 
@@ -124,6 +201,15 @@
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new bootstrap.Tooltip(el); });
   document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) { new bootstrap.Popover(el); });
   document.addEventListener('submit', function (e) { e.preventDefault(); });
+  // Nút hiện/ẩn mật khẩu dùng chung: <button data-toggle-password="<id ô nhập>">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle-password]'); if (!b) return;
+    var input = document.getElementById(b.getAttribute('data-toggle-password')), icon = b.querySelector('i');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = 'fas ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
   // Mở modal Bootstrap có sẵn sau khi hiện thông báo
   window.protoHideModal = function (id) { var m = bootstrap.Modal.getInstance(document.getElementById(id)); if (m) m.hide(); };
 </script>

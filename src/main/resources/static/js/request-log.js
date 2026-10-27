@@ -1,47 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Set the current user and time to match the provided ones
-    const currentUser = 'hades12x1'; // Using the provided username
-    let currentTime = '2025-03-04 05:45:37'; // Using the updated provided time
 
-    // Format the current time (UTC)
+    // Show the current UTC time, refreshed every second
     const updateCurrentTime = () => {
         const currentTimeElement = document.getElementById('current-time-display');
         if (!currentTimeElement) return;
-
-        // Initially set the current time if it's empty
-        if (currentTimeElement.textContent === '') {
-            currentTimeElement.textContent = currentTime;
-        }
-
-        // Parse the current time
-        const [datePart, timePart] = currentTime.split(' ');
-        const [year, month, day] = datePart.split('-');
-        const [hours, minutes, seconds] = timePart.split(':');
-
-        // Create a Date object
-        const date = new Date(Date.UTC(
-            parseInt(year),
-            parseInt(month) - 1,
-            parseInt(day),
-            parseInt(hours),
-            parseInt(minutes),
-            parseInt(seconds)
-        ));
-
-        // Increment by 1 second
-        date.setUTCSeconds(date.getUTCSeconds() + 1);
-
-        // Format back to string
-        const updatedYear = date.getUTCFullYear();
-        const updatedMonth = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const updatedDay = String(date.getUTCDate()).padStart(2, '0');
-        const updatedHours = String(date.getUTCHours()).padStart(2, '0');
-        const updatedMinutes = String(date.getUTCMinutes()).padStart(2, '0');
-        const updatedSeconds = String(date.getUTCSeconds()).padStart(2, '0');
-
-        currentTime = `${updatedYear}-${updatedMonth}-${updatedDay} ${updatedHours}:${updatedMinutes}:${updatedSeconds}`;
-
-        currentTimeElement.textContent = currentTime;
+        currentTimeElement.textContent = new Date().toISOString().replace('T', ' ').slice(0, 19);
     };
 
     // Add real-time indicator
@@ -101,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateRequestCount(data.count);
 
                     // Check if any modal is open
-                    const anyModalOpen = document.querySelector('.modal.show');
+                    const anyModalOpen = document.querySelector('.modal.show, .offcanvas.show');
                     // Reload the page to show the latest logs if we're on the first page
                     const currentPage = parseInt(document.querySelector('.page-item.active')?.textContent) || 1;
                     if (!anyModalOpen && currentPage === 1) {

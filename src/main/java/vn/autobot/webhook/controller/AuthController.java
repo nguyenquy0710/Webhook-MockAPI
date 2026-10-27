@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import vn.autobot.webhook.config.AppConfig;
 import vn.autobot.webhook.dto.ChangePasswordRequestDto;
 import vn.autobot.webhook.dto.RegisterRequestDto;
 import vn.autobot.webhook.model.User;
@@ -28,6 +29,20 @@ public class AuthController {
 
   private final UserService userService;
   private final UserDetailsService userDetailsService;
+  private final AppConfig appConfig;
+
+  // Public base URL, used by the register page to preview the webhook URL
+  @ModelAttribute("domain")
+  public String domain() {
+    return appConfig.getDomain();
+  }
+
+  // The shared header shows the signed-in user's name; pages in this controller did not provide it before
+  @ModelAttribute("username")
+  public String currentUsername() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    return auth != null && auth.getPrincipal() instanceof UserDetails ? ((UserDetails) auth.getPrincipal()).getUsername() : null;
+  }
 
   @GetMapping("/login")
   public String loginPage() {

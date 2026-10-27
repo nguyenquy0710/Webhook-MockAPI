@@ -20,6 +20,7 @@ import vn.autobot.webhook.service.RequestLogService;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.time.LocalDate;
 
 @Controller
 @RequiredArgsConstructor
@@ -36,15 +37,28 @@ public class WebhookViewController {
 
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        model.addAttribute("username", userDetails.getUsername());
+        String username = userDetails.getUsername();
+        model.addAttribute("username", username);
         model.addAttribute("domain", appConfig.getDomain());
+        // Quick stats and the latest requests shown on the dashboard
+        model.addAttribute("apiConfigCount", apiMockService.getApiConfigs(username).size());
+        model.addAttribute("requestsToday",
+            requestLogService.countRequestLogsSince(username, LocalDate.now().atStartOfDay()));
+        Page<RequestLogDto> recent = requestLogService.getRequestLogs(username, PageRequest.of(0, 5));
+        model.addAttribute("recentLogs", recent.getContent());
         return "dashboard";
     }
 
     @GetMapping("/api-configs")
     public String apiConfigs(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
-        model.addAttribute("newApiConfig", new ApiConfigDto());
+        // Sensible defaults so the create form can be submitted with just a path
+        ApiConfigDto newApiConfig = new ApiConfigDto();
+        newApiConfig.setMethod("GET");
+        newApiConfig.setStatusCode(200);
+        newApiConfig.setContentType("application/json");
+        newApiConfig.setDelayMs(100);
+        model.addAttribute("newApiConfig", newApiConfig);
         model.addAttribute("username", userDetails.getUsername());
         model.addAttribute("domain", appConfig.getDomain());
         return "api-config";
@@ -87,18 +101,21 @@ public class WebhookViewController {
                                   @PathVariable Long id,
                                   @Valid @ModelAttribute("apiConfig") ApiConfigDto apiConfigDto,
                                   BindingResult bindingResult, Model model) {
+        // The form action and delete button need the id when the page is re-rendered after an error
+        apiConfigDto.setId(id);
         if (bindingResult.hasErrors()) {
             model.addAttribute("username", userDetails.getUsername());
+            model.addAttribute("domain", appConfig.getDomain());
             return "api-config-edit";
         }
 
         try {
-            apiConfigDto.setId(id);
             apiMockService.saveApiConfig(userDetails.getUsername(), apiConfigDto);
             return "redirect:/api-configs?updated";
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("username", userDetails.getUsername());
+            model.addAttribute("domain", appConfig.getDomain());
             return "api-config-edit";
         }
     }
@@ -119,11 +136,15 @@ public class WebhookViewController {
                                   @RequestParam(required = false, defaultValue = "10") int size,
                                   @RequestParam(required = false, defaultValue = "0") int page,
                                   @RequestParam(required = false) String path,
+                                  @RequestParam(required = false) String method,
+                                  @RequestParam(required = false) String status,
                                   @AuthenticationPrincipal UserDetails userDetails,
                                   Model model) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<RequestLogDto> logs = requestLogService.getRequestLogs(username, path, pageable);
-        long totalLogs = requestLogService.countRequestLogs(username, path);
+        Page<RequestLogDto> logs = requestLogService.searchRequestLogs(username, path, method, status, pageable);
+        long totalLogs = logs.getTotalElements();
+        model.addAttribute("methodFilter", method != null ? method : "");
+        model.addAttribute("statusFilter", status != null ? status : "");
 
         model.addAttribute("logs", logs);
         model.addAttribute("targetUsername", username);

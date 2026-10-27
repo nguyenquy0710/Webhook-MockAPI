@@ -49,12 +49,14 @@ ACTIONS = {
         "restore confirm": {"type": "toast", "message": "API configurations restored successfully!", "delay": 600},
         "copy full endpoint url": {"type": "toast", "message": "Endpoint URL copied to clipboard!"},
         "create api": {"type": "toast", "message": "API configuration saved successfully!", "delay": 600},
-        "delete": {"type": "confirm", "title": "Confirm Delete",
+        "delete api": {"type": "confirm", "title": "Confirm Delete",
                    "body": "Are you sure you want to delete this API configuration?",
                    "confirm": "Delete", "toast": "API configuration deleted successfully!"},
     },
     "api-config-edit": {
-        "update api": {"type": "goto", "screen": "api-config"},
+        "copy url": {"type": "toast", "message": "URL copied to clipboard"},
+        "delete api": {"type": "confirm", "title": "Delete API?", "body": "This action cannot be undone.",
+                       "confirm": "Delete", "toast": "API configuration deleted successfully!"},
     },
     "request-logs": {
         "export excel": {"type": "toast", "message": "Excel file exported", "delay": 800},
