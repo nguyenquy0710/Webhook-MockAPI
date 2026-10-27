@@ -111,11 +111,15 @@ public class AdminController {
                                      @RequestParam(required = false, defaultValue = "10") int size,
                                      @RequestParam(required = false, defaultValue = "0") int page,
                                      @RequestParam(required = false) String path,
+                                     @RequestParam(required = false) String method,
+                                     @RequestParam(required = false) String status,
                                      @AuthenticationPrincipal UserDetails userDetails,
                                      Model model) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<RequestLogDto> logs = requestLogService.getRequestLogs(username, path, pageable);
-        long totalLogs = requestLogService.countRequestLogs(username, path);
+        Page<RequestLogDto> logs = requestLogService.searchRequestLogs(username, path, method, status, pageable);
+        long totalLogs = logs.getTotalElements();
+        model.addAttribute("methodFilter", method != null ? method : "");
+        model.addAttribute("statusFilter", status != null ? status : "");
 
         model.addAttribute("logs", logs);
         model.addAttribute("targetUsername", username);

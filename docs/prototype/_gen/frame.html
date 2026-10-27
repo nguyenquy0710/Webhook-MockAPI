@@ -47,6 +47,15 @@
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new bootstrap.Tooltip(el); });
   document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) { new bootstrap.Popover(el); });
   document.addEventListener('submit', function (e) { e.preventDefault(); });
+  // Nút hiện/ẩn mật khẩu dùng chung: <button data-toggle-password="<id ô nhập>">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle-password]'); if (!b) return;
+    var input = document.getElementById(b.getAttribute('data-toggle-password')), icon = b.querySelector('i');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = 'fas ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
   // Mở modal Bootstrap có sẵn sau khi hiện thông báo
   window.protoHideModal = function (id) { var m = bootstrap.Modal.getInstance(document.getElementById(id)); if (m) m.hide(); };
 </script>

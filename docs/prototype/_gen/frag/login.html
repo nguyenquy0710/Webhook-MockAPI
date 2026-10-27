@@ -1,24 +1,35 @@
 <!--title: Login-->
-<!-- Nguồn: templates/login.html. Alert đăng ký/đăng xuất/lỗi (theo query param) chỉ hiện khi đăng nhập sai -->
+<!--
+  Nguồn gốc: templates/login.html (thiết kế lại). Ý đồ: thẻ đăng nhập gọn ở giữa, nhãn luôn hiện (không dùng floating label),
+  có nút hiện/ẩn mật khẩu, trạng thái đang đăng nhập và lỗi ngay tại form.
+-->
 <div class="row justify-content-center">
-  <div class="col-md-6 col-lg-5">
+  <div class="col-md-6 col-lg-4">
     <div class="card shadow border-0 rounded-4 mt-5">
-      <div class="card-header bg-white border-0 text-center py-4">
-        <h3 class="text-dark fw-light mb-0">Welcome Back</h3>
-        <p class="text-muted mt-2 mb-0">Sign in to your account</p>
-      </div>
-      <div class="card-body px-4 pb-4">
-        <div class="alert alert-danger d-flex align-items-center" id="loginError" hidden>
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mb-3" style="width:3.5rem;height:3.5rem;"><i class="fas fa-lock fa-lg"></i></div>
+          <h3 class="fw-light mb-1">Welcome Back</h3>
+          <p class="text-muted mb-0">Sign in to your account</p>
+        </div>
+        <div class="alert alert-danger d-flex align-items-center py-2" id="loginError" role="alert" hidden>
           <i class="fas fa-exclamation-triangle me-2"></i><div>Invalid username or password.</div>
         </div>
-        <form>
-          <div class="form-floating mb-3">
-            <input class="form-control form-control-lg" id="username" name="username" type="text" placeholder="Username" required>
-            <label for="username"><i class="fas fa-user me-2"></i>Username</label>
+        <form id="loginForm" novalidate>
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input class="form-control" id="username" name="username" type="text" autocomplete="username" autofocus required>
+            </div>
           </div>
-          <div class="form-floating mb-4">
-            <input class="form-control form-control-lg" id="password" name="password" type="password" placeholder="Password" required>
-            <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+          <div class="mb-4">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+              <button class="btn btn-outline-secondary" type="button" data-proto="skip" data-toggle-password="password" aria-label="Show password"><i class="fas fa-eye"></i></button>
+            </div>
           </div>
           <div class="d-grid mb-3">
             <button class="btn btn-primary btn-lg" type="submit" data-proto="skip" id="signIn"><i class="fas fa-sign-in-alt me-2"></i>Sign In</button>
@@ -32,10 +43,12 @@
   </div>
 </div>
 <script>
-  // Mô phỏng đăng nhập: bỏ trống một ô thì báo lỗi như server gốc, đủ thông tin thì sang dashboard
+  // Mô phỏng đăng nhập: thiếu thông tin thì báo lỗi tại form, đủ thì hiện trạng thái đang xử lý rồi sang dashboard
   document.getElementById('signIn').addEventListener('click', function () {
     var u = document.getElementById('username').value.trim(), p = document.getElementById('password').value;
     document.getElementById('loginError').hidden = !!(u && p);
-    if (u && p) location.href = 'dashboard.dc.html';
+    if (!(u && p)) return;
+    var btn = this; btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in…';
+    setTimeout(function () { location.href = 'dashboard.dc.html'; }, 600);
   });
 </script>

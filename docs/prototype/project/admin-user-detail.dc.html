@@ -61,31 +61,60 @@
         <a class="nav-link rounded-pill active" href="admin-users.dc.html"><i class="fas fa-users-cog me-2"></i> Admin</a>
       </nav>
     </div>
-<!-- Nguồn: templates/admin/user-detail.html. Người dùng mẫu: alice_dev (USER, enabled) -->
-<h2 class="mb-4">User Detail</h2>
-<div class="card"><div class="card-body">
-  <div class="row">
-    <div class="col-md-6">
-      <p><strong>ID:</strong> <span>2</span></p>
-      <p><strong>Username:</strong> <span>alice_dev</span></p>
-      <p><strong>Email:</strong> <span>alice@example.test</span></p>
+<!--
+  Nguồn gốc: templates/admin/user-detail.html (thiết kế lại). Ý đồ: đầu trang là hồ sơ (avatar, tên, vai trò, trạng thái), thao tác ở góc phải,
+  thông tin chi tiết dạng lưới nhãn/giá trị và số API configuration thành ô thống kê. Người dùng mẫu: alice_dev.
+-->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item"><a href="admin-users.dc.html" class="text-decoration-none">Users</a></li>
+    <li class="breadcrumb-item active" aria-current="page">User Detail</li>
+  </ol>
+</nav>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-circle bg-primary-subtle text-primary fw-bold fs-4 d-flex align-items-center justify-content-center" style="width:4rem;height:4rem;">A</div>
+      <div>
+        <h2 class="mb-1 fs-3">alice_dev</h2>
+        <div class="d-flex flex-wrap gap-2 align-items-center"><span class="badge bg-secondary">USER</span><span class="badge bg-success">Enabled</span><span class="text-muted small">alice@example.test</span></div>
+      </div>
     </div>
-    <div class="col-md-6">
-      <p><strong>Role:</strong> <span class="badge bg-secondary">USER</span></p>
-      <p><strong>Status:</strong> <span class="badge bg-success">Enabled</span></p>
-      <p><strong>Created:</strong> <span>2026-03-04 14:05:12</span></p>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="request-logs.dc.html" class="btn btn-info"><i class="fas fa-history me-1"></i> View Request Logs</a>
+      <button class="btn btn-outline-info" type="button" data-act="a2"><i class="fas fa-user-shield"></i> <span>Promote</span></button>
+      <button class="btn btn-outline-warning" type="button" data-act="a3"><i class="fas fa-user-slash"></i> <span>Disable</span></button>
     </div>
-  </div>
-  <div class="mt-3"><p><strong>API Configurations:</strong> <span class="badge bg-info">7</span></p></div>
-</div></div>
-<div class="mt-3">
-  <a href="admin-users.dc.html" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Back to list</a>
-  <a href="request-logs.dc.html" class="btn btn-info"><i class="fas fa-history me-1"></i> View Request Logs</a>
-  <div class="btn-group ms-2" role="group">
-    <button class="btn btn-outline-info" type="button" data-act="a2"><i class="fas fa-user-shield"></i> <span>Promote</span></button>
-    <button class="btn btn-outline-warning" type="button" data-act="a3"><i class="fas fa-user-slash"></i> <span>Disable</span></button>
   </div>
 </div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3"><h5 class="mb-0">Details</h5></div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted fw-normal">ID</dt><dd class="col-sm-8">2</dd>
+          <dt class="col-sm-4 text-muted fw-normal">Username</dt><dd class="col-sm-8">alice_dev</dd>
+          <dt class="col-sm-4 text-muted fw-normal">Email</dt><dd class="col-sm-8">alice@example.test</dd>
+          <dt class="col-sm-4 text-muted fw-normal">Role</dt><dd class="col-sm-8"><span class="badge bg-secondary">USER</span></dd>
+          <dt class="col-sm-4 text-muted fw-normal">Status</dt><dd class="col-sm-8"><span class="badge bg-success">Enabled</span></dd>
+          <dt class="col-sm-4 text-muted fw-normal">Created</dt><dd class="col-sm-8 mb-0">2026-03-04 14:05:12</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-success-subtle text-success d-flex align-items-center justify-content-center" style="width:2.75rem;height:2.75rem;"><i class="fas fa-cogs"></i></div>
+        <div><div class="fs-4 fw-bold lh-1">7</div><div class="text-muted small">API Configurations</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mt-4"><a href="admin-users.dc.html" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Back to list</a></div>
 
 </div>
 
@@ -106,6 +135,15 @@
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new bootstrap.Tooltip(el); });
   document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) { new bootstrap.Popover(el); });
   document.addEventListener('submit', function (e) { e.preventDefault(); });
+  // Nút hiện/ẩn mật khẩu dùng chung: <button data-toggle-password="<id ô nhập>">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle-password]'); if (!b) return;
+    var input = document.getElementById(b.getAttribute('data-toggle-password')), icon = b.querySelector('i');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = 'fas ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
   // Mở modal Bootstrap có sẵn sau khi hiện thông báo
   window.protoHideModal = function (id) { var m = bootstrap.Modal.getInstance(document.getElementById(id)); if (m) m.hide(); };
 </script>

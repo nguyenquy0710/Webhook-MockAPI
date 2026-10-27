@@ -3,103 +3,42 @@
 
   <head th:replace="fragments/header :: head('Request Logs')">
     <title>Request Logs - Mock Webhook</title>
-    <style type="text/css">
-      /* Vùng chi tiết log cuộn dọc khi dài */
-      .log-details {
-        max-height: 250px;
-        overflow-y: auto;
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        padding: 10px;
-        position: relative;
-      }
-
-      /* Định dạng nội dung log */
-      .log-details pre {
-        margin-bottom: 0;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        font-family: Consolas, "Courier New", monospace;
-        font-size: 0.9rem;
-        color: #212529;
-      }
-
-      /* Nút copy trong log */
-      .copy-wrapper {
-        position: relative;
-      }
-
-      .copy-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #0d6efd;
-        color: white;
-        border: none;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        opacity: 0.8;
-        transition: opacity 0.2s ease;
-      }
-
-      .copy-btn:hover {
-        opacity: 1;
-      }
-
-      /* Giảm khoảng cách dưới của thẻ <pre> */
-      pre {
-        margin-bottom: 0;
-      }
-
-      /* Tuỳ chọn phân trang */
-      .pagination-options {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      /* Container phân trang tổng thể */
-      .pagination-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-top: 20px;
-        gap: 10px;
-      }
-
-      /* Giúp selector gọn */
-      .pagination-options select {
-        width: auto;
-      }
-
-      /* Cải thiện hiển thị trên màn hình nhỏ */
-      @media (max-width: 600px) {
-        .pagination-container {
-          flex-direction: column;
-          align-items: stretch;
-        }
-
-        .pagination-options {
-          justify-content: center;
-        }
-      }
-    </style>
   </head>
 
-  <body>
+  <body th:with="baseUrl=${(isAdminView != null && isAdminView) ? '/admin/user/@' + targetUsername + '/logs' : '/view/@' + targetUsername}">
     <div th:replace="fragments/header :: header"></div>
 
     <div class="container">
       <div th:replace="fragments/navigation :: navigation"></div>
 
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Request Logs for @<span th:text="${targetUsername}">username</span></h2>
-        <div class="current-time" th:attr="data-username=${targetUsername}">
-          <strong>Current Time (UTC):</strong> <span id="current-time-display"></span>
+      <style>
+        .log-details { max-height: 55vh; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; }
+        .log-details pre { margin-bottom: 0; font-family: Consolas, "Courier New", monospace; font-size: .9rem; color: #212529; background: transparent; border: 0; padding: 0; }
+        .copy-wrapper .copy-btn { top: 0; right: 0; }
+        .log-row { cursor: pointer; }
+        .method-badge { min-width: 4.25rem; }
+      </style>
+
+      <!-- Layout: one toolbar row (path search, method, status filters), rows open a details panel on the right,
+           export / clear are separated from the table header. Filters are applied on the server. -->
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+        <div>
+          <h2 class="mb-1">Request Logs for @<span th:text="${targetUsername}">username</span></h2>
+          <div class="text-muted small current-time" th:attr="data-username=${targetUsername}">
+            <strong>Current Time (UTC):</strong> <span id="current-time-display"></span>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a th:if="${isAdminView != null && isAdminView}" th:href="@{|/admin/user/@${targetUsername}/export|}" class="btn btn-outline-success">
+            <i class="fas fa-file-excel me-1"></i> Export Excel
+          </a>
+          <a th:if="${isAdminView == null || !isAdminView}" th:href="@{|/view/@${targetUsername}/export|}" class="btn btn-outline-success">
+            <i class="fas fa-file-excel me-1"></i> Export Excel
+          </a>
+          <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+            th:if="${username == targetUsername}">
+            <i class="fas fa-trash me-1"></i> Clear All
+          </button>
         </div>
       </div>
 
@@ -113,257 +52,88 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
 
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            Request History
-            <span class="badge bg-primary request-count" th:text="${totalLogs}">0</span>
-          </h5>
-          <!-- Export button section -->
-          <div>
-            <a th:if="${isAdminView != null && isAdminView}" th:href="@{|/admin/user/@${targetUsername}/export|}"
-              class="btn btn-outline-success me-2">
-              <i class="fas fa-file-excel me-1"></i> Export Excel
-            </a>
-            <a th:if="${isAdminView == null || !isAdminView}" th:href="@{|/view/@${targetUsername}/export|}"
-              class="btn btn-outline-success me-2">
-              <i class="fas fa-file-excel me-1"></i> Export Excel
-            </a>
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
-              th:if="${username == targetUsername}">
-              <i class="fas fa-trash me-1"></i> Clear All
-            </button>
-          </div>
-        </div>
-        <div class="card-body">
-          <!-- Search Section -->
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <div class="input-group">
-                <input type="text" class="form-control" id="pathSearchInput" placeholder="Search by path..." 
-                       th:value="${pathFilter}">
-                <button class="btn btn-primary" type="button" id="searchButton">
-                  <i class="fas fa-search me-1"></i> Search
-                </button>
-                <button class="btn btn-outline-secondary" type="button" id="clearButton" th:if="${pathFilter != null && pathFilter != ''}">
-                  <i class="fas fa-times me-1"></i> Clear
-                </button>
+      <div class="card shadow-sm border-0">
+        <div class="card-body border-bottom">
+          <form method="get" th:action="@{${baseUrl}}" id="filterForm">
+            <input type="hidden" name="size" th:value="${pageSize}">
+            <div class="row g-2 align-items-center">
+              <div class="col-lg-5">
+                <div class="input-group">
+                  <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                  <input type="search" class="form-control" id="pathSearchInput" name="path" placeholder="Search by path..." th:value="${pathFilter}">
+                </div>
+              </div>
+              <div class="col-6 col-lg-2">
+                <select class="form-select" name="method" aria-label="Method" onchange="this.form.submit()">
+                  <option value="">All methods</option>
+                  <option th:each="m : ${#strings.arraySplit('GET,POST,PUT,PATCH,DELETE', ',')}" th:value="${m}" th:text="${m}" th:selected="${methodFilter == m}">GET</option>
+                </select>
+              </div>
+              <div class="col-6 col-lg-2">
+                <select class="form-select" name="status" aria-label="Status" onchange="this.form.submit()">
+                  <option value="">All status</option>
+                  <option value="2" th:selected="${statusFilter == '2'}">2xx</option>
+                  <option value="4" th:selected="${statusFilter == '4'}">4xx</option>
+                  <option value="5" th:selected="${statusFilter == '5'}">5xx</option>
+                </select>
+              </div>
+              <div class="col-lg-3 d-flex align-items-center justify-content-lg-end gap-2">
+                <a class="btn btn-sm btn-outline-secondary" th:href="@{${baseUrl}(size=${pageSize})}"
+                  th:if="${(pathFilter != null && pathFilter != '') || methodFilter != '' || statusFilter != ''}"><i class="fas fa-times me-1"></i> Clear</a>
+                <span><span class="text-muted">Request History</span> <span class="badge bg-primary request-count" th:text="${totalLogs}">0</span></span>
               </div>
             </div>
-          </div>
-          
-          <div class="table-responsive">
-            <table class="table table-striped table-hover" id="requestLogsTable">
-              <thead>
-                <tr>
-                  <th>Time (UTC)</th>
-                  <th>Method</th>
-                  <th>Path</th>
-                  <th>Status</th>
-                  <th>Source IP</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr th:if="${logs.empty}">
-                  <td colspan="6" class="text-center py-5">
-                    <div class="text-muted">
-                      <i class="fas fa-inbox fa-3x mb-3"></i>
-                      <p>No request logs found.</p>
-                      <p>Send requests to <code th:text="${domain + '/api/@' + targetUsername}">API URL</code> to see them here.</p>
-                    </div>
-                  </td>
-                </tr>
-                <tr th:each="log : ${logs}" th:attr="data-logid=${log.id}">
-                  <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}">2025-03-04 03:02:04</td>
-                  <td>
-                    <span th:class="${'badge ' +
-                                         (log.method == 'GET' ? 'bg-success' :
-                                         (log.method == 'POST' ? 'bg-primary' :
-                                         (log.method == 'PUT' ? 'bg-info' :
-                                         (log.method == 'DELETE' ? 'bg-danger' : 'bg-secondary'))))}">
-                      <span th:text="${log.method}">GET</span>
-                    </span>
-                  </td>
-                  <td th:text="${log.path}">/path</td>
-                  <td>
-                    <span th:class="${'badge ' +
-                                         (log.responseStatus >= 200 && log.responseStatus < 300 ? 'bg-success' :
-                                         (log.responseStatus >= 400 ? 'bg-danger' : 'bg-warning'))}"
-                      th:text="${log.responseStatus}">200</span>
-                  </td>
-                  <td th:text="${log.sourceIp}">127.0.0.1</td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-primary view-details-btn" data-bs-toggle="modal"
-                      th:attr="data-bs-target='#detailsModal' + ${log.id}">
-                      <i class="fas fa-eye me-1"></i> View
-                    </button>
+          </form>
+        </div>
 
-                    <!-- Details Modal for each log -->
-                    <div class="modal fade" th:id="'detailsModal' + ${log.id}" tabindex="-1"
-                      th:attr="aria-labelledby='detailsModalLabel' + ${log.id}" aria-hidden="true">
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" th:id="'detailsModalLabel' + ${log.id}">
-                              Request Details - <span th:text="${log.method + ' ' + log.path}">GET /path</span>
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                            <ul class="nav nav-tabs" role="tablist" th:id="'logTabs' + ${log.id}">
-                              <li class="nav-item" role="presentation">
-                                <button class="nav-link active" th:id="'overview-tab' + ${log.id}" data-bs-toggle="tab"
-                                  th:data-bs-target="'#overview' + ${log.id}" type="button" role="tab">
-                                  Overview
-                                </button>
-                              </li>
-                              <li class="nav-item" role="presentation">
-                                <button class="nav-link" th:id="'headers-tab' + ${log.id}" data-bs-toggle="tab"
-                                  th:data-bs-target="'#headers' + ${log.id}" type="button" role="tab">
-                                  Headers
-                                </button>
-                              </li>
-                              <li class="nav-item" role="presentation">
-                                <button class="nav-link" th:id="'params-tab' + ${log.id}" data-bs-toggle="tab"
-                                  th:data-bs-target="'#params' + ${log.id}" type="button" role="tab">
-                                  Query Params
-                                </button>
-                              </li>
-                              <li class="nav-item" role="presentation">
-                                <button class="nav-link" th:id="'body-tab' + ${log.id}" data-bs-toggle="tab"
-                                  th:data-bs-target="'#body' + ${log.id}" type="button" role="tab">
-                                  Request Body
-                                </button>
-                              </li>
-                              <li class="nav-item" role="presentation">
-                                <button class="nav-link" th:id="'response-tab' + ${log.id}" data-bs-toggle="tab"
-                                  th:data-bs-target="'#response' + ${log.id}" type="button" role="tab">
-                                  Response
-                                </button>
-                              </li>
-                              <li class="nav-item" role="presentation">
-                                <button class="nav-link" th:id="'curl-tab' + ${log.id}" data-bs-toggle="tab"
-                                  th:data-bs-target="'#curl' + ${log.id}" type="button" role="tab">
-                                  Curl
-                                </button>
-                              </li>
-                            </ul>
-                            <div class="tab-content mt-3" th:id="'logTabContent' + ${log.id}">
-                              <!-- Overview Tab -->
-                              <div class="tab-pane fade show active" th:id="'overview' + ${log.id}" role="tabpanel">
-                                <table class="table table-bordered">
-                                  <tr>
-                                    <th style="width: 150px;">Time (UTC)</th>
-                                    <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}">2025-03-04 03:02:04</td>
-                                  </tr>
-                                  <tr>
-                                    <th>Method</th>
-                                    <td th:text="${log.method}">GET</td>
-                                  </tr>
-                                  <tr>
-                                    <th>Path</th>
-                                    <td th:text="${log.path}">/path</td>
-                                  </tr>
-                                  <tr>
-                                    <th>Source IP</th>
-                                    <td th:text="${log.sourceIp}">127.0.0.1</td>
-                                  </tr>
-                                  <tr>
-                                    <th>Response Status</th>
-                                    <td th:text="${log.responseStatus}">200</td>
-                                  </tr>
-                                </table>
-                              </div>
-                              <!-- Headers Tab -->
-                              <div class="tab-pane fade" th:id="'headers' + ${log.id}" role="tabpanel">
-                                <div class="log-details">
-                                  <div class="copy-wrapper">
-                                    <pre th:if="${log.requestHeaders != null && log.requestHeaders != ''}" th:text="${log.requestHeaders}">
-                                                                    {"Content-Type": "application/json"}
-                                                                </pre>
-                                    <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
-                                  </div>
-                                  <div th:if="${log.requestHeaders == null || log.requestHeaders == ''}" class="text-muted">No headers
-                                    available</div>
-                                </div>
-                              </div>
-                              <!-- Query Params Tab -->
-                              <div class="tab-pane fade" th:id="'params' + ${log.id}" role="tabpanel">
-                                <div class="log-details">
-                                  <div class="copy-wrapper">
-                                    <pre th:if="${log.queryParams != null && log.queryParams != ''}" th:text="${log.queryParams}">
-                                                                    param1=value1&param2=value2
-                                                                </pre>
-                                    <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
-                                  </div>
-                                  <div th:if="${log.queryParams == null || log.queryParams == ''}" class="text-muted">No query parameters
-                                    available</div>
-                                </div>
-                              </div>
-                              <!-- Request Body Tab -->
-                              <div class="tab-pane fade" th:id="'body' + ${log.id}" role="tabpanel">
-                                <div class="log-details">
-                                  <div class="copy-wrapper">
-                                    <pre th:if="${log.requestBody != null && log.requestBody != ''}" th:text="${log.requestBody}">
-                                                                {"key": "value"}
-                                                            </pre>
-                                    <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
-                                  </div>
-                                  <div th:if="${log.requestBody == null || log.requestBody == ''}" class="text-muted">No request body
-                                    available</div>
-                                </div>
-                              </div>
-                              <!-- Response Tab -->
-                              <div class="tab-pane fade" th:id="'response' + ${log.id}" role="tabpanel">
-                                <div class="log-details">
-                                  <div class="copy-wrapper">
-                                    <pre th:if="${log.responseBody != null && log.responseBody != ''}" th:text="${log.responseBody}">
-                                                                {"response": "data"}
-                                                            </pre>
-                                    <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
-                                  </div>
-                                  <div th:if="${log.responseBody == null || log.responseBody == ''}" class="text-muted">No response body
-                                    available</div>
-                                </div>
-                              </div>
-                              <!-- Curl Tab -->
-                              <div class="tab-pane fade" th:id="'curl' + ${log.id}" role="tabpanel">
-                                <div class="log-details">
-                                  <div class="copy-wrapper">
-                                    <pre th:if="${log.curl != null && log.curl != ''}" th:text="${log.curl}">
-                                                                </pre>
-                                    <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
-                                  </div>
-                                  <!--/*
-                                                        <button class="btn btn-sm btn-outline-secondary mt-2 copy-curl-btn"
-                                                                th:if="${log.curl != null && log.curl != ''}"
-                                                                th:data-curl="${log.curl}">
-                                                            <i class="fas fa-copy"></i> Copy
-                                                        </button>
-                                                        */-->
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="requestLogsTable">
+            <thead>
+              <tr>
+                <th>Time (UTC)</th>
+                <th>Method</th>
+                <th>Path</th>
+                <th>Status</th>
+                <th>Source IP</th>
+                <th class="text-end">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${logs.empty}">
+                <td colspan="6" class="text-center py-5">
+                  <div class="text-muted">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>No request logs found.</p>
+                    <p class="mb-0">Send requests to <code th:text="${domain + '/api/@' + targetUsername}">API URL</code> to see them here.</p>
+                  </div>
+                </td>
+              </tr>
+              <tr th:each="log : ${logs}" class="log-row"
+                th:attr="data-logid=${log.id},data-time=${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')},data-method=${log.method},data-path=${log.path},data-ip=${log.sourceIp},data-status=${log.responseStatus},data-headers=${log.requestHeaders},data-params=${log.queryParams},data-body=${log.requestBody},data-response=${log.responseBody},data-curl=${log.curl}">
+                <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}">2025-03-04 03:02:04</td>
+                <td>
+                  <span class="badge method-badge" th:text="${log.method}"
+                    th:classappend="${log.method == 'GET' ? 'bg-success' : (log.method == 'POST' ? 'bg-primary' : (log.method == 'PUT' ? 'bg-info' : (log.method == 'DELETE' ? 'bg-danger' : 'bg-secondary')))}">GET</span>
+                </td>
+                <td th:text="${log.path}">/path</td>
+                <td>
+                  <span th:class="${'badge ' + (log.responseStatus >= 200 && log.responseStatus < 300 ? 'bg-success' : (log.responseStatus >= 400 ? 'bg-danger' : 'bg-warning'))}"
+                    th:text="${log.responseStatus}">200</span>
+                </td>
+                <td th:text="${log.sourceIp}">127.0.0.1</td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-primary view-details-btn" type="button" title="View details" aria-label="View details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-                                  <div th:if="${log.curl == null || log.curl == ''}" class="text-muted">No curl available</div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Improved Pagination with page size selector -->
-          <div class="pagination-container" th:if="${logs.totalPages > 0}">
-            <!-- Page size selector -->
-            <div class="pagination-options">
+        <div class="card-body border-top" th:if="${logs.totalPages > 0}">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
               <span>Rows per page:</span>
               <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
                 <option th:selected="${pageSize == 5}" value="5">5</option>
@@ -372,82 +142,81 @@
                 <option th:selected="${pageSize == 50}" value="50">50</option>
                 <option th:selected="${pageSize == 100}" value="100">100</option>
               </select>
-              <span th:text="${'Showing ' + (logs.numberOfElements) + ' of ' + totalLogs + ' items'}">Showing X of Y items</span>
+              <span class="text-muted" th:text="${'Showing ' + (logs.numberOfElements) + ' of ' + totalLogs + ' items'}">Showing X of Y items</span>
             </div>
 
-            <!-- Page navigation -->
             <nav aria-label="Page navigation">
-              <ul class="pagination mb-0">
+              <ul class="pagination pagination-sm mb-0"
+                th:with="totalPages=${logs.totalPages},
+                         startPage=${currentPage - 2 < 0 ? 0 : currentPage - 2},
+                         endPage=${startPage + 4 > totalPages - 1 ? totalPages - 1 : startPage + 4},
+                         firstPage=${endPage - 4 < 0 ? 0 : (endPage - 4 > startPage ? startPage : endPage - 4)}">
                 <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                  <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=0, size=${pageSize}, path=${pathFilter})}">&laquo;</a>
-                  <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                    th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize}, path=${pathFilter})}">&laquo;</a>
+                  <a class="page-link" th:href="@{${baseUrl}(page=0, size=${pageSize}, path=${pathFilter}, method=${methodFilter}, status=${statusFilter})}">&laquo;</a>
                 </li>
                 <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
-                  <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${currentPage - 1}, size=${pageSize}, path=${pathFilter})}">&lt;</a>
-                  <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                    th:href="@{|/view/@${targetUsername}|(page=${currentPage - 1}, size=${pageSize}, path=${pathFilter})}">&lt;</a>
+                  <a class="page-link" th:href="@{${baseUrl}(page=${currentPage - 1}, size=${pageSize}, path=${pathFilter}, method=${methodFilter}, status=${statusFilter})}">&lt;</a>
                 </li>
 
-                <!-- Show limited page numbers with ellipsis for many pages -->
-                <th:block
-                  th:with="
-                            totalPages=${logs.totalPages},
-                            maxPagesToShow=5,
-                            halfMax=${maxPagesToShow / 2},
-                            startPage=${currentPage - halfMax < 0 ? 0 : currentPage - halfMax},
-                            endPage=${startPage + maxPagesToShow - 1 > totalPages - 1 ? totalPages - 1 : startPage + maxPagesToShow - 1},
-                            startPage=${endPage - maxPagesToShow + 1 < 0 ? 0 : (endPage - maxPagesToShow + 1 > startPage ? startPage : endPage - maxPagesToShow + 1)}">
-
-                  <!-- Show first page with ellipsis if needed -->
-                  <li class="page-item" th:if="${startPage > 0}">
-                    <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=0, size=${pageSize}, path=${pathFilter})}">1</a>
-                    <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                      th:href="@{|/view/@${targetUsername}|(page=0, size=${pageSize}, path=${pathFilter})}">1</a>
-                  </li>
-                  <li class="page-item disabled" th:if="${startPage > 1}">
-                    <span class="page-link">...</span>
-                  </li>
-
-                  <!-- Show page numbers -->
-                  <li class="page-item" th:each="i: ${#numbers.sequence(startPage, endPage)}"
-                    th:classappend="${i == currentPage ? 'active' : ''}">
-                    <a class="page-link" th:if="${isAdminView != null && isAdminView}" th:text="${i + 1}"
-                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=${i}, size=${pageSize}, path=${pathFilter})}">1</a>
-                    <a class="page-link" th:if="${isAdminView == null || !isAdminView}" th:text="${i + 1}"
-                      th:href="@{|/view/@${targetUsername}|(page=${i}, size=${pageSize}, path=${pathFilter})}">1</a>
-                  </li>
-
-                  <!-- Show last page with ellipsis if needed -->
-                  <li class="page-item disabled" th:if="${endPage < totalPages - 2}">
-                    <span class="page-link">...</span>
-                  </li>
-                  <li class="page-item" th:if="${endPage < totalPages - 1}">
-                    <a class="page-link" th:if="${isAdminView != null && isAdminView}" th:text="${totalPages}"
-                      th:href="@{|/admin/user/@${targetUsername}/logs|(page=${totalPages - 1}, size=${pageSize}, path=${pathFilter})}">#</a>
-                    <a class="page-link" th:if="${isAdminView == null || !isAdminView}" th:text="${totalPages}"
-                      th:href="@{|/view/@${targetUsername}|(page=${totalPages - 1}, size=${pageSize}, path=${pathFilter})}">#</a>
-                  </li>
-                </th:block>
-
-                <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
-                  <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${currentPage + 1}, size=${pageSize}, path=${pathFilter})}">&gt;</a>
-                  <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                    th:href="@{|/view/@${targetUsername}|(page=${currentPage + 1}, size=${pageSize}, path=${pathFilter})}">&gt;</a>
+                <li class="page-item" th:if="${firstPage > 0}">
+                  <a class="page-link" th:href="@{${baseUrl}(page=0, size=${pageSize}, path=${pathFilter}, method=${methodFilter}, status=${statusFilter})}">1</a>
                 </li>
-                <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1 ? 'disabled' : ''}">
-                  <a class="page-link" th:if="${isAdminView != null && isAdminView}"
-                    th:href="@{|/admin/user/@${targetUsername}/logs|(page=${logs.totalPages - 1}, size=${pageSize}, path=${pathFilter})}">&raquo;</a>
-                  <a class="page-link" th:if="${isAdminView == null || !isAdminView}"
-                    th:href="@{|/view/@${targetUsername}|(page=${logs.totalPages - 1}, size=${pageSize}, path=${pathFilter})}">&raquo;</a>
+                <li class="page-item disabled" th:if="${firstPage > 1}"><span class="page-link">...</span></li>
+
+                <li class="page-item" th:each="i : ${#numbers.sequence(firstPage, endPage)}" th:classappend="${i == currentPage ? 'active' : ''}">
+                  <a class="page-link" th:text="${i + 1}"
+                    th:href="@{${baseUrl}(page=${i}, size=${pageSize}, path=${pathFilter}, method=${methodFilter}, status=${statusFilter})}">1</a>
+                </li>
+
+                <li class="page-item disabled" th:if="${endPage < totalPages - 2}"><span class="page-link">...</span></li>
+                <li class="page-item" th:if="${endPage < totalPages - 1}">
+                  <a class="page-link" th:text="${totalPages}"
+                    th:href="@{${baseUrl}(page=${totalPages - 1}, size=${pageSize}, path=${pathFilter}, method=${methodFilter}, status=${statusFilter})}">#</a>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                  <a class="page-link" th:href="@{${baseUrl}(page=${currentPage + 1}, size=${pageSize}, path=${pathFilter}, method=${methodFilter}, status=${statusFilter})}">&gt;</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                  <a class="page-link" th:href="@{${baseUrl}(page=${totalPages - 1}, size=${pageSize}, path=${pathFilter}, method=${methodFilter}, status=${statusFilter})}">&raquo;</a>
                 </li>
               </ul>
             </nav>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details panel: one shared panel filled from the clicked row's data attributes -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="detailsPanel" aria-labelledby="detailsLabel" style="width: min(640px, 100vw);">
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="detailsLabel"><span class="badge me-2" id="dBadge"></span><span id="dTitle">/path</span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-overview" type="button" role="tab">Overview</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-headers" type="button" role="tab">Headers</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-params" type="button" role="tab">Query Params</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-body" type="button" role="tab">Request Body</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-response" type="button" role="tab">Response</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-curl" type="button" role="tab">Curl</button></li>
+        </ul>
+        <div class="tab-content mt-3">
+          <div class="tab-pane fade show active" id="t-overview" role="tabpanel">
+            <table class="table table-bordered">
+              <tr><th style="width:150px;">Time (UTC)</th><td id="o-time"></td></tr>
+              <tr><th>Method</th><td id="o-method"></td></tr>
+              <tr><th>Path</th><td id="o-path"></td></tr>
+              <tr><th>Source IP</th><td id="o-ip"></td></tr>
+              <tr><th>Response Status</th><td id="o-status"></td></tr>
+            </table>
+          </div>
+          <div class="tab-pane fade" id="t-headers" role="tabpanel"><div class="log-details" data-field="headers" data-empty="No headers available"></div></div>
+          <div class="tab-pane fade" id="t-params" role="tabpanel"><div class="log-details" data-field="params" data-empty="No query parameters available"></div></div>
+          <div class="tab-pane fade" id="t-body" role="tabpanel"><div class="log-details" data-field="body" data-empty="No request body available"></div></div>
+          <div class="tab-pane fade" id="t-response" role="tabpanel"><div class="log-details" data-field="response" data-empty="No response body available"></div></div>
+          <div class="tab-pane fade" id="t-curl" role="tabpanel"><div class="log-details" data-field="curl" data-empty="No curl available"></div></div>
         </div>
       </div>
     </div>
@@ -475,19 +244,6 @@
 
     <div th:replace="fragments/footer :: footer"></div>
 
-    <!-- Copy Curl Toast -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
-      <div id="copyCurlToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive"
-        aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body">
-            <i class="fas fa-check-circle me-2"></i> <span id="copyCurlToastMessage">Curl copied to clipboard!</span>
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-      </div>
-    </div>
-
     <script type="text/javascript" th:inline="javascript">
       /*<![CDATA[*/
       const username = /*[[${targetUsername}]]*/;
@@ -498,37 +254,56 @@
 
     <script type="text/javascript" th:src="@{/js/request-log.js}"></script>
     <script type="text/javascript">
-      // Page size selector functionality
-      document.getElementById('pageSizeSelect').addEventListener('change', function () {
-        const selectedSize = this.value;
-        const pathFilter = document.getElementById('pathSearchInput')?.value || '';
-        const baseUrl = isAdminView ? `/admin/user/@${username}/logs` : `/view/@${username}`;
-        const pathParam = pathFilter ? `&path=${encodeURIComponent(pathFilter)}` : '';
-        window.location.href = `${baseUrl}?page=0&size=${selectedSize}${pathParam}`;
-      });
-
-      // Search button functionality
-      document.getElementById('searchButton')?.addEventListener('click', function () {
-        const pathFilter = document.getElementById('pathSearchInput').value;
-        const pageSize = document.getElementById('pageSizeSelect').value;
-        const baseUrl = isAdminView ? `/admin/user/@${username}/logs` : `/view/@${username}`;
-        const pathParam = pathFilter ? `&path=${encodeURIComponent(pathFilter)}` : '';
-        window.location.href = `${baseUrl}?page=0&size=${pageSize}${pathParam}`;
-      });
-
-      // Clear button functionality
-      document.getElementById('clearButton')?.addEventListener('click', function () {
-        const pageSize = document.getElementById('pageSizeSelect').value;
-        const baseUrl = isAdminView ? `/admin/user/@${username}/logs` : `/view/@${username}`;
-        window.location.href = `${baseUrl}?page=0&size=${pageSize}`;
-      });
-
-      // Allow Enter key to trigger search
-      document.getElementById('pathSearchInput')?.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-          document.getElementById('searchButton').click();
+      (function () {
+        var $ = function (id) { return document.getElementById(id); };
+        var badge = { GET: 'bg-success', POST: 'bg-primary', PUT: 'bg-info', DELETE: 'bg-danger' };
+        function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+        // Pretty-print JSON when possible, otherwise show the text as is
+        function pretty(text) {
+          var t = (text || '').trim();
+          if (t.charAt(0) === '{' || t.charAt(0) === '[') { try { return JSON.stringify(JSON.parse(t), null, 2); } catch (e) { /* not JSON */ } }
+          return text;
         }
-      });
+        function fillPane(pane, text) {
+          pane.innerHTML = text
+            ? '<div class="copy-wrapper position-relative"><pre>' + esc(pretty(text)) + '</pre><button class="copy-btn" type="button"><i class="fas fa-copy"></i> Copy</button></div>'
+            : '<div class="text-muted">' + pane.getAttribute('data-empty') + '</div>';
+        }
+        // Whole rows open the details panel
+        document.querySelector('#requestLogsTable tbody').addEventListener('click', function (e) {
+          var row = e.target.closest('tr[data-logid]');
+          if (!row) return;
+          var d = row.dataset;
+          $('dTitle').textContent = d.path;
+          $('dBadge').textContent = d.method;
+          $('dBadge').className = 'badge me-2 ' + (badge[d.method] || 'bg-secondary');
+          $('o-time').textContent = d.time; $('o-method').textContent = d.method; $('o-path').textContent = d.path;
+          $('o-ip').textContent = d.ip; $('o-status').textContent = d.status;
+          document.querySelectorAll('#detailsPanel [data-field]').forEach(function (p) { fillPane(p, d[p.getAttribute('data-field')]); });
+          bootstrap.Tab.getOrCreateInstance(document.querySelector('#detailsPanel .nav-link')).show();
+          bootstrap.Offcanvas.getOrCreateInstance($('detailsPanel')).show();
+        });
+        $('detailsPanel').addEventListener('click', function (e) {
+          var c = e.target.closest('.copy-btn');
+          if (!c) return;
+          var text = c.parentNode.querySelector('pre').textContent;
+          if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function () {});
+          var old = c.innerHTML;
+          c.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          setTimeout(function () { c.innerHTML = old; }, 1500);
+        });
+
+        // Page size keeps the current filters
+        var size = $('pageSizeSelect');
+        if (size) {
+          size.addEventListener('change', function () {
+            var f = new URLSearchParams(new FormData($('filterForm')));
+            f.set('size', this.value);
+            f.set('page', '0');
+            window.location.href = (isAdminView ? `/admin/user/@${username}/logs` : `/view/@${username}`) + '?' + f.toString();
+          });
+        }
+      })();
     </script>
   </body>
 

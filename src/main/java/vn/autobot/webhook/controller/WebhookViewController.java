@@ -44,7 +44,13 @@ public class WebhookViewController {
     @GetMapping("/api-configs")
     public String apiConfigs(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
-        model.addAttribute("newApiConfig", new ApiConfigDto());
+        // Sensible defaults so the create form can be submitted with just a path
+        ApiConfigDto newApiConfig = new ApiConfigDto();
+        newApiConfig.setMethod("GET");
+        newApiConfig.setStatusCode(200);
+        newApiConfig.setContentType("application/json");
+        newApiConfig.setDelayMs(100);
+        model.addAttribute("newApiConfig", newApiConfig);
         model.addAttribute("username", userDetails.getUsername());
         model.addAttribute("domain", appConfig.getDomain());
         return "api-config";
@@ -119,11 +125,15 @@ public class WebhookViewController {
                                   @RequestParam(required = false, defaultValue = "10") int size,
                                   @RequestParam(required = false, defaultValue = "0") int page,
                                   @RequestParam(required = false) String path,
+                                  @RequestParam(required = false) String method,
+                                  @RequestParam(required = false) String status,
                                   @AuthenticationPrincipal UserDetails userDetails,
                                   Model model) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<RequestLogDto> logs = requestLogService.getRequestLogs(username, path, pageable);
-        long totalLogs = requestLogService.countRequestLogs(username, path);
+        Page<RequestLogDto> logs = requestLogService.searchRequestLogs(username, path, method, status, pageable);
+        long totalLogs = logs.getTotalElements();
+        model.addAttribute("methodFilter", method != null ? method : "");
+        model.addAttribute("statusFilter", status != null ? status : "");
 
         model.addAttribute("logs", logs);
         model.addAttribute("targetUsername", username);
