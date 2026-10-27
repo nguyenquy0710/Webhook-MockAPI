@@ -41,7 +41,7 @@ class ApiConfigDescriptionNoteTest {
     user.setId(1L);
     when(userService.findByUsername("demo")).thenReturn(user);
     when(repository.save(any(ApiConfig.class))).thenAnswer(inv -> inv.getArgument(0));
-    apiMockService = new ApiMockService(repository, userService, new ObjectMapper());
+    apiMockService = new ApiMockService(repository, userService, new ObjectMapper(), new FailureSimulationService());
   }
 
   private ApiConfigDto dto(String description, String note) {

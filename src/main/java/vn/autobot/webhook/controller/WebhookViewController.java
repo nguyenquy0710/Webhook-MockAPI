@@ -58,6 +58,10 @@ public class WebhookViewController {
         newApiConfig.setStatusCode(200);
         newApiConfig.setContentType("application/json");
         newApiConfig.setDelayMs(100);
+        newApiConfig.setFailureEnabled(false);
+        newApiConfig.setFailureCount(3);
+        newApiConfig.setFailureStatusCodes("503");
+        newApiConfig.setRetryAfterSeconds(1);
         model.addAttribute("newApiConfig", newApiConfig);
         model.addAttribute("username", userDetails.getUsername());
         model.addAttribute("domain", settingsService.getDomain());

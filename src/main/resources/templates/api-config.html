@@ -125,6 +125,8 @@
                   <span
                     th:class="${'badge ' + (config.statusCode >= 200 && config.statusCode < 300 ? 'bg-success' : (config.statusCode >= 400 ? 'bg-danger' : 'bg-warning'))}"
                     th:text="${config.statusCode}">200</span>
+                  <span class="badge bg-warning text-dark ms-1" th:if="${config.failureEnabled}"
+                    th:text="${'Fails ×' + config.failureCount}" title="Failure simulation is on">Fails ×3</span>
                 </td>
                 <td><span class="badge bg-secondary" th:text="${config.contentType}">application/json</span></td>
                 <td th:text="${(config.delayMs != null ? config.delayMs : 0) + ' ms'}">0 ms</td>
