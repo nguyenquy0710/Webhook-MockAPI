@@ -3,16 +3,16 @@ type: refactor
 complexity: high
 impact: high
 related_issues: [QUYIT-961]
-related_prs: []
+related_prs: [#39, #40, #41]
 time_spent_hours: ~12
-status: in_progress
+status: completed
 ---
 
 # Kế hoạch: Thiết kế lại giao diện các màn của Webhook MockAPI (UX/UI)
 
 > **Ngày:** 2026-10-27
 > **Phạm vi:** toàn bộ template Thymeleaf (dashboard, api-config, api-config-edit, request-logs, login, register, change-password, admin/users, admin/user-create, admin/user-detail), `docs/prototype/`
-> **Trạng thái:** 🚧 Code xong trên 3 nhánh, chưa push/PR
+> **Trạng thái:** ✅ Đã hoàn thành, đã merge vào `coding` (PR #39, #40, #41)
 
 ---
 
@@ -62,15 +62,15 @@ Quyết định và đánh đổi chính:
 
 ## 4. Trạng thái hiện tại
 
-- Jira: [QUYIT-961](https://nhquydev.atlassian.net/browse/QUYIT-961) (Task, Sprint 35, version Tháng 10/2026, ước lượng 12h, liên kết Relates QUYIT-960), trạng thái In Progress.
-- Đã commit cục bộ, chưa push, chưa PR. Nhánh này: `2cb9edd` prototype, `c515ca0` fix Bootstrap JS, `3073890` template và backend.
+- Jira: [QUYIT-961](https://nhquydev.atlassian.net/browse/QUYIT-961) (Task, Sprint 35, version Tháng 10/2026, ước lượng 12h, liên kết Relates QUYIT-960), trạng thái **Done** (2026-10-27).
+- Đã merge vào `coding`: #41 (screens), #40 (api-config-edit), #39 (dashboard; xung đột `RequestLogService` đã xử lý bằng cách giữ cả `countRequestLogsSince` và `searchRequestLogs`). Sau khi gộp đã chạy lại app thật: dashboard, lọc log và các trang đã gộp hoạt động. Nhánh screens gồm: `2cb9edd` prototype, `c515ca0` fix Bootstrap JS, `3073890` template và backend.
 - Đã chạy app thật và kiểm tra: đăng ký, đăng nhập, đổi mật khẩu, tạo/xóa API, lọc method/status, panel chi tiết, phân trang, vô hiệu hóa/tạo/xóa người dùng; 9 unit test pass; 7 trang không tràn ngang ở 390px; không lỗi JS.
 - Chưa kiểm tra: Backup/Restore bằng tệp thật, chạy lại trên DB trống, trình duyệt thật (mới dùng Chromium headless).
 
 ## 5. Việc còn mở (chưa làm, để quyết định sau)
 
-- [ ] Push ba nhánh và mở PR vào `coding`
-- [ ] Xử lý xung đột nhỏ khi gộp ba nhánh (cùng sửa `RequestLogRepository`, `WebhookViewController`, `actions.py` của prototype)
+- [x] Push ba nhánh và mở PR vào `coding` (#39, #40, #41)
+- [x] Xử lý xung đột khi gộp ba nhánh (chỉ có `RequestLogService`)
 - [ ] Kiểm tra thủ công Backup/Restore, Copy URL, Format JSON, giao diện mobile bằng trình duyệt thật
 - [ ] Áp dụng bố cục form tạo mới cho đồng nhất với trang sửa (đã gần giống, chưa có chip status/Format JSON trong modal)
 - [ ] Test tự động cho `countRequestLogsSince` và controller view
