@@ -10,11 +10,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import vn.autobot.webhook.config.AppConfig;
 import vn.autobot.webhook.dto.ChangePasswordRequestDto;
 import vn.autobot.webhook.dto.RegisterRequestDto;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.service.UserService;
+import vn.autobot.webhook.service.SettingsService;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,12 +29,12 @@ public class AuthController {
 
   private final UserService userService;
   private final UserDetailsService userDetailsService;
-  private final AppConfig appConfig;
+  private final SettingsService settingsService;
 
   // Public base URL, used by the register page to preview the webhook URL
   @ModelAttribute("domain")
   public String domain() {
-    return appConfig.getDomain();
+    return settingsService.getDomain();
   }
 
   // The shared header shows the signed-in user's name; pages in this controller did not provide it before
@@ -51,6 +51,9 @@ public class AuthController {
 
   @GetMapping("/register")
   public String registrationPage(Model model) {
+    if (!settingsService.isRegistrationEnabled()) {
+      return "redirect:/login?registrationClosed";
+    }
     model.addAttribute("registerRequest", new RegisterRequestDto());
     return "register";
   }
@@ -58,6 +61,9 @@ public class AuthController {
   @PostMapping("/register")
   public String registerUser(@Valid @ModelAttribute("registerRequest") RegisterRequestDto registerRequest,
       BindingResult bindingResult, Model model) {
+    if (!settingsService.isRegistrationEnabled()) {
+      return "redirect:/login?registrationClosed";
+    }
     if (bindingResult.hasErrors()) {
       return "register";
     }

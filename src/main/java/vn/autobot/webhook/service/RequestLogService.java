@@ -203,6 +203,12 @@ public class RequestLogService {
     }
   }
 
+  /** Deletes logs older than the given number of days (all users); returns how many were removed. */
+  @Transactional
+  public int purgeOlderThan(int days) {
+    return requestLogRepository.deleteOlderThan(java.time.LocalDateTime.now().minusDays(days));
+  }
+
   @Transactional
   public void deleteAllRequestLogs(String username) {
     User user = userService.findByUsername(username);

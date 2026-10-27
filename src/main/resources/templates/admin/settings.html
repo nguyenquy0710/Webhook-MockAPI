@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+  <head th:replace="fragments/header :: head('Settings')">
+    <title>Settings</title>
+  </head>
+
+  <body>
+    <div th:replace="fragments/header :: header"></div>
+    <div class="container">
+      <div th:replace="fragments/navigation :: navigation"></div>
+
+      <div class="row g-4">
+        <aside th:replace="fragments/admin-sidebar :: sidebar('settings')"></aside>
+        <main class="col-lg-9" style="min-width:0">
+
+          <!-- Layout: one card per area. General holds product-wide options; Database maintenance explains what the
+               run does, shows the last result and asks for confirmation because the first run can block writes. -->
+          <h2 class="mb-4">Settings</h2>
+
+          <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${successMessage}">
+            <span th:text="${successMessage}">Saved</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${errorMessage}">
+            <span th:text="${errorMessage}">Error</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+
+          <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3">
+              <h5 class="mb-0"><i class="fas fa-cog me-2 text-primary"></i>General</h5>
+            </div>
+            <form th:action="@{/admin/settings/general}" th:object="${general}" method="post" novalidate>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="siteName" class="form-label fw-semibold">Site name</label>
+                  <input type="text" class="form-control" id="siteName" th:field="*{siteName}" maxlength="60"
+                    th:classappend="${#fields.hasErrors('siteName')} ? 'is-invalid'">
+                  <div class="invalid-feedback" th:if="${#fields.hasErrors('siteName')}" th:errors="*{siteName}">Site name is required</div>
+                  <div class="form-text">Shown in the header and footer.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="publicBaseUrl" class="form-label fw-semibold">Public base URL</label>
+                  <input type="text" class="form-control font-monospace" id="publicBaseUrl" th:field="*{publicBaseUrl}" maxlength="200"
+                    placeholder="https://mock-api.example.com" th:classappend="${#fields.hasErrors('publicBaseUrl')} ? 'is-invalid'">
+                  <div class="invalid-feedback" th:if="${#fields.hasErrors('publicBaseUrl')}" th:errors="*{publicBaseUrl}">Invalid URL</div>
+                  <div class="form-text">Used to build webhook URLs and the Swagger server address. Leave empty to use the configured default.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="requestLogRetentionDays" class="form-label fw-semibold">Request log retention (days)</label>
+                  <input type="number" class="form-control" id="requestLogRetentionDays" th:field="*{requestLogRetentionDays}" min="0" max="3650"
+                    th:classappend="${#fields.hasErrors('requestLogRetentionDays')} ? 'is-invalid'">
+                  <div class="invalid-feedback" th:if="${#fields.hasErrors('requestLogRetentionDays')}" th:errors="*{requestLogRetentionDays}">Invalid value</div>
+                  <div class="form-text">Older request logs are deleted by the daily database maintenance. 0 keeps all logs.</div>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="allowRegistration" th:field="*{allowRegistration}">
+                  <label class="form-check-label" for="allowRegistration">Allow new user registration</label>
+                </div>
+              </div>
+              <div class="card-footer bg-white text-end">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Settings</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="fas fa-database me-2 text-info"></i>Database maintenance</h5>
+              <span class="badge" th:classappend="${maintenance.compacted ? 'bg-success' : (maintenance.compactPending ? 'bg-info' : 'bg-warning text-dark')}"
+                th:text="${maintenance.compacted ? 'Compacted' : (maintenance.compactPending ? 'Compaction on next restart' : 'Not compacted yet')}">Not compacted yet</span>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">Reclaims space left behind by deleted history and logs, trims the transaction log and refreshes query statistics.
+                It also runs automatically once a day.</p>
+              <div class="alert alert-warning py-2 small" th:unless="${maintenance.compacted}">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                The first run on an older database schedules a full compaction of the file for the next restart. Writes are blocked while it runs and free disk space about the size of the database is required.
+              </div>
+              <dl class="row mb-0">
+                <dt class="col-sm-4">Database size</dt>
+                <dd class="col-sm-8" th:text="${maintenance.sizeBytes >= 1048576 ? #numbers.formatDecimal(maintenance.sizeBytes / 1048576.0, 1, 1) + ' MB' : #numbers.formatDecimal(maintenance.sizeBytes / 1024.0, 1, 0) + ' KB'}">3.1 MB</dd>
+                <dt class="col-sm-4">Last run</dt>
+                <dd class="col-sm-8">
+                  <span th:if="${maintenance.lastRunAt == null}" class="text-muted">Never</span>
+                  <span th:if="${maintenance.lastRunAt != null}">
+                    <span class="badge me-1"
+                      th:classappend="${maintenance.lastStatus == 'success' ? 'bg-success' : (maintenance.lastStatus == 'warning' ? 'bg-warning text-dark' : 'bg-danger')}"
+                      th:text="${maintenance.lastStatus}">success</span>
+                    <span th:text="${#strings.replace(#strings.substringBefore(maintenance.lastRunAt, '.'), 'T', ' ') + ' UTC'}">2026-10-27 03:30:00 UTC</span>
+                  </span>
+                </dd>
+                <dt class="col-sm-4" th:if="${maintenance.lastSummary != null}">Result</dt>
+                <dd class="col-sm-8 text-break" th:if="${maintenance.lastSummary != null}" th:text="${maintenance.lastSummary}">Checkpoint, Analyze</dd>
+              </dl>
+            </div>
+            <div class="card-footer bg-white text-end">
+              <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#maintenanceModal">
+                <i class="fas fa-broom me-1"></i> Run Maintenance
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal fade" id="maintenanceModal" tabindex="-1" aria-labelledby="maintenanceTitle" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form th:action="@{/admin/settings/maintenance/run}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}">
+            <div class="modal-header">
+              <h5 class="modal-title" id="maintenanceTitle">Run database maintenance?</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" th:text="${maintenance.compacted ? 'This trims the transaction log and refreshes query statistics.' : 'This also schedules a full compaction of the database file for the next restart. Writes are blocked while it runs and free disk space about the size of the database is required.'}">Are you sure?</div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Run</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+  </body>
+
+</html>

@@ -5,6 +5,14 @@
   Nguồn gốc: templates/admin/user-detail.html (thiết kế lại). Ý đồ: đầu trang là hồ sơ (avatar, tên, vai trò, trạng thái), thao tác ở góc phải,
   thông tin chi tiết dạng lưới nhãn/giá trị và số API configuration thành ô thống kê. Người dùng mẫu: alice_dev.
 -->
+<div class="row g-4">
+<!-- Admin section menu on the left; stacks above the content on small screens -->
+<aside class="col-lg-3"><div class="card shadow-sm border-0">
+<div class="card-header bg-white py-3"><h6 class="mb-0 text-uppercase text-muted small fw-semibold"><i class="fas fa-users-cog me-2"></i>Administration</h6></div>
+<div class="list-group list-group-flush"><a href="admin-users.dc.html" class="list-group-item list-group-item-action active" aria-current="page"><i class="fas fa-users me-2"></i> Users</a><a href="admin-settings.dc.html" class="list-group-item list-group-item-action"><i class="fas fa-sliders-h me-2"></i> Settings</a></div>
+</div></aside>
+<main class="col-lg-9" style="min-width:0">
+
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb mb-2">
     <li class="breadcrumb-item"><a href="admin-users.dc.html" class="text-decoration-none">Users</a></li>
@@ -55,3 +63,5 @@
   </div>
 </div>
 <div class="mt-4"><a href="admin-users.dc.html" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Back to list</a></div>
+</main>
+</div>

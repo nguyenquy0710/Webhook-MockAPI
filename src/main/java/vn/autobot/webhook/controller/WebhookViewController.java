@@ -11,10 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import vn.autobot.webhook.config.AppConfig;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.RequestLogDto;
 import vn.autobot.webhook.service.ApiMockService;
+import vn.autobot.webhook.service.SettingsService;
 import vn.autobot.webhook.service.RequestLogService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +28,7 @@ public class WebhookViewController {
 
     private final ApiMockService apiMockService;
     private final RequestLogService requestLogService;
-    private final AppConfig appConfig;
+    private final SettingsService settingsService;
 
     @GetMapping("/")
     public String home() {
@@ -39,7 +39,7 @@ public class WebhookViewController {
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         String username = userDetails.getUsername();
         model.addAttribute("username", username);
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         // Quick stats and the latest requests shown on the dashboard
         model.addAttribute("apiConfigCount", apiMockService.getApiConfigs(username).size());
         model.addAttribute("requestsToday",
@@ -60,7 +60,7 @@ public class WebhookViewController {
         newApiConfig.setDelayMs(100);
         model.addAttribute("newApiConfig", newApiConfig);
         model.addAttribute("username", userDetails.getUsername());
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         return "api-config";
     }
 
@@ -69,7 +69,7 @@ public class WebhookViewController {
                                 @PathVariable Long id, Model model) {
         model.addAttribute("apiConfig", apiMockService.getApiConfig(userDetails.getUsername(), id));
         model.addAttribute("username", userDetails.getUsername());
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         return "api-config-edit";
     }
 
@@ -80,7 +80,7 @@ public class WebhookViewController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
             model.addAttribute("username", userDetails.getUsername());
-            model.addAttribute("domain", appConfig.getDomain());
+            model.addAttribute("domain", settingsService.getDomain());
             return "api-config";
         }
 
@@ -91,7 +91,7 @@ public class WebhookViewController {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
             model.addAttribute("username", userDetails.getUsername());
-            model.addAttribute("domain", appConfig.getDomain());
+            model.addAttribute("domain", settingsService.getDomain());
             return "api-config";
         }
     }
@@ -105,7 +105,7 @@ public class WebhookViewController {
         apiConfigDto.setId(id);
         if (bindingResult.hasErrors()) {
             model.addAttribute("username", userDetails.getUsername());
-            model.addAttribute("domain", appConfig.getDomain());
+            model.addAttribute("domain", settingsService.getDomain());
             return "api-config-edit";
         }
 
@@ -115,7 +115,7 @@ public class WebhookViewController {
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("username", userDetails.getUsername());
-            model.addAttribute("domain", appConfig.getDomain());
+            model.addAttribute("domain", settingsService.getDomain());
             return "api-config-edit";
         }
     }
@@ -153,7 +153,7 @@ public class WebhookViewController {
         model.addAttribute("currentPage", pageable.getPageNumber());
         model.addAttribute("pageSize", size);
         model.addAttribute("totalPages", logs.getTotalPages());
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         model.addAttribute("pathFilter", path != null ? path : "");
 
         return "request-logs";
