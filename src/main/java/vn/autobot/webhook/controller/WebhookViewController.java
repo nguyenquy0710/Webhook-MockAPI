@@ -87,18 +87,21 @@ public class WebhookViewController {
                                   @PathVariable Long id,
                                   @Valid @ModelAttribute("apiConfig") ApiConfigDto apiConfigDto,
                                   BindingResult bindingResult, Model model) {
+        // The form action and delete button need the id when the page is re-rendered after an error
+        apiConfigDto.setId(id);
         if (bindingResult.hasErrors()) {
             model.addAttribute("username", userDetails.getUsername());
+            model.addAttribute("domain", appConfig.getDomain());
             return "api-config-edit";
         }
 
         try {
-            apiConfigDto.setId(id);
             apiMockService.saveApiConfig(userDetails.getUsername(), apiConfigDto);
             return "redirect:/api-configs?updated";
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("username", userDetails.getUsername());
+            model.addAttribute("domain", appConfig.getDomain());
             return "api-config-edit";
         }
     }
