@@ -3,16 +3,16 @@ type: feature
 complexity: medium
 impact: medium
 related_issues: [QUYIT-962]
-related_prs: []
+related_prs: [#47]
 time_spent_hours: ~6
-status: in_progress
+status: completed
 ---
 
 # Kế hoạch: Admin > Settings (cấu hình chung, bảo trì database) và bố cục admin hai cột
 
 > **Ngày:** 2026-10-27
 > **Phạm vi:** `templates/admin/*`, `fragments/admin-sidebar.html`, `SettingsService`, `DatabaseMaintenanceService`, `StartupDatabaseCompactor`, migration V5, `docs/prototype/`
-> **Trạng thái:** 🚧 Đã làm và kiểm tra trên máy, chưa commit/PR
+> **Trạng thái:** ✅ Đã làm, kiểm tra trên máy, đã mở PR #47 vào `coding` (chờ merge)
 
 ---
 
@@ -45,13 +45,13 @@ Hai yêu cầu liên tiếp cho khu vực admin: (1) chia phần nội dung `/ad
 
 ## 4. Trạng thái hiện tại
 
-- **Chưa commit, chưa mở PR** (nhánh `claude/minipc`).
+- Đã commit và push nhánh `claude/minipc`, PR #47 vào `coding` (chờ merge).
 - 29 test pass (sau khi thêm test bảo trì/nén/controller; toàn bộ dự án hiện 43 test, tính cả mô phỏng lỗi). Đã chạy app thật (JDK 17 tạm, bản sao DB cục bộ) và kiểm tra bằng Chromium headless: lưu cấu hình, lỗi validate, chạy bảo trì, nén lúc khởi động (192 KB → 24 KB), đóng/mở đăng ký, không tràn ngang ở 390px, không lỗi JS. Đã xem preview qua localtunnel rồi tắt.
-- Jira: [QUYIT-962](https://nhquydev.atlassian.net/browse/QUYIT-962) (Task, Sprint 35, version Tháng 10/2026, ước lượng 6h, Relates QUYIT-961), trạng thái **In Progress**; chuyển Done sau khi merge. Đã comment tiến độ ngày 2026-10-27 (retention log, test, thử DB lớn). Tính năng mô phỏng lỗi nằm ở [QUYIT-963](https://nhquydev.atlassian.net/browse/QUYIT-963), cùng nhánh và cùng chưa commit.
+- Jira: [QUYIT-962](https://nhquydev.atlassian.net/browse/QUYIT-962) (Task, Sprint 35, version Tháng 10/2026, ước lượng 6h, Relates QUYIT-961), trạng thái **Done** (chuyển ngày 2026-10-27 theo yêu cầu của người dùng khi PR [#47](https://github.com/nguyenquy0710/Webhook-MockAPI/pull/47) đã mở, chưa merge). Đã comment tiến độ ngày 2026-10-27 (retention log, test, thử DB lớn). Tính năng mô phỏng lỗi nằm ở [QUYIT-963](https://nhquydev.atlassian.net/browse/QUYIT-963), cùng nhánh và cùng chưa commit.
 
 ## 5. Việc còn mở (chưa làm, để quyết định sau)
 
-- [ ] Commit, push, mở PR vào `coding`
+- [x] Commit (`850cd6d`, `725e2ca`), push và mở PR [#47](https://github.com/nguyenquy0710/Webhook-MockAPI/pull/47) vào `coding`; chờ merge
 - [x] Danh sách mục trong card General (4 mục: Site name, Public base URL, cho phép đăng ký, retention log) đã được xác nhận giữ nguyên, theo xác nhận của người dùng ngày 2026-10-27; retention giữ mặc định 0 (không tự xóa), không thêm mục mới
 - [x] Giữ log theo số ngày: thêm mục "Request log retention (days)" vào General (0 = giữ hết, mặc định 0; tối đa 3650). Lần chạy bảo trì (tay và hằng ngày) xóa log cũ hơn N ngày trước khi `CHECKPOINT`. Không dùng `app.request-log-retention-days=30` trong cấu hình làm mặc định để không tự xóa log của hệ thống đang chạy
 - [x] Thử bảo trì trên DB lớn: DB 354 MB với 80 nghìn log; đặt retention 7 ngày, chạy bảo trì xóa 69.329 log mất ~17 giây (tệp tạm phình lên 518 MB do bản ghi hoàn tác), app vẫn dùng được trong lúc chạy. Sau khi tắt app tệp còn 42 MB, lần khởi động kế tiếp nén còn ~2 MB (41.364 KB → 1.972 KB), tổng thời gian khởi động ~27 giây. Thiếu dung lượng đĩa thật chưa thử được trên máy; nhánh bỏ qua được kiểm bằng test đơn vị với hàm đo dung lượng giả (`StartupDatabaseCompactorTest`)

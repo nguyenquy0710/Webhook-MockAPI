@@ -3,7 +3,7 @@ type: feature
 complexity: medium
 status: completed
 related_issues: [QUYIT-963]
-related_prs: []
+related_prs: [#47]
 ---
 
 # 📋 Kế Hoạch: Webhook Retry Configuration
@@ -144,4 +144,4 @@ ALTER TABLE api_configs ADD COLUMN retry_on_status_codes CLOB DEFAULT '[408, 429
 - **Đã làm:** entity/DTO/migration, `FailureSimulationService`, `ApiMockService.processWebhook` (quyết định lỗi một lần mỗi call, trước khi chờ delay), lưu/đọc/backup/restore, card "Failure simulation" ở trang sửa API (công tắc, số lần, mã lỗi kèm chip, Retry-After, dòng Failures ở Summary), nhãn "Fails ×N" ở danh sách API, prototype (`api-config-edit`, `api-config`). Form tạo mới trong modal không có mục này (dùng mặc định tắt); bật ở trang sửa.
 - **Kiểm thử:** 43 test pass (mới: `FailureSimulationServiceTest` 9, `ApiMockFailureSimulationTest` 4, 2 test backup/restore). Chạy app thật: bật trên trang sửa, kiểm lỗi phía server (số lần > 10, mã 200), gọi `curl` 6 lần với `Idempotency-Key` cho ra 503 (Retry-After 4), 500, response cấu hình, rồi vòng mới; caller khác đếm riêng; không tràn ngang ở 390px; không lỗi JS; migration V6 chạy trên DB có sẵn dữ liệu.
 - **Hạn chế đã biết:** bộ đếm mất khi khởi động lại và không chia sẻ giữa nhiều instance; nhiều client sau cùng một IP (NAT) không gửi `Idempotency-Key`/`X-Request-Id` sẽ dùng chung bộ đếm; log request của lần lỗi vẫn lưu response body cấu hình thay vì body lỗi giả lập (chỉ status đúng).
-- **Việc còn lại:** commit/PR (chưa commit); Jira: [QUYIT-963](https://nhquydev.atlassian.net/browse/QUYIT-963) (Task, Sprint 35, version Tháng 10/2026, ước lượng 5h, Relates QUYIT-962), đang **In Progress**, chuyển Done sau khi merge; tùy chọn: thêm mục vào modal tạo mới, ghi header `X-Mock-Failure-Attempt` vào log, hiển thị bộ đếm hiện tại.
+- **Việc còn lại:** đã commit (`725e2ca`), PR #47 vào `coding` chờ merge; Jira: [QUYIT-963](https://nhquydev.atlassian.net/browse/QUYIT-963) (Task, Sprint 35, version Tháng 10/2026, ước lượng 5h, Relates QUYIT-962), **Done** (chuyển ngày 2026-10-27 theo yêu cầu của người dùng khi PR [#47](https://github.com/nguyenquy0710/Webhook-MockAPI/pull/47) đã mở, chưa merge); tùy chọn: thêm mục vào modal tạo mới, ghi header `X-Mock-Failure-Attempt` vào log, hiển thị bộ đếm hiện tại.
