@@ -110,6 +110,13 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+
+        <!-- Unit tests (JUnit 5 + Mockito) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

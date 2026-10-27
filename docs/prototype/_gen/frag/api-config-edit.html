@@ -1,0 +1,89 @@
+<!--title: Edit API Configuration-->
+<!--layout: app-->
+<!--active: configs-->
+<!-- Nguồn: templates/api-config-edit.html. Cấu hình mẫu: POST /orders -->
+<h2 class="mb-4">Edit API Configuration</h2>
+<div class="card">
+  <div class="card-header"><h5>Update API Configuration</h5></div>
+  <div class="card-body">
+    <form>
+<div class="row mb-3">
+  <div class="col-md-6">
+    <label for="path" class="form-label">Path*</label>
+    <div class="input-group">
+      <span class="input-group-text">/api/@demo</span>
+      <input type="text" class="form-control" id="path" required value="/orders">
+    </div>
+    <small class="text-muted">The path to your API endpoint</small>
+  </div>
+  <div class="col-md-6">
+    <label for="method" class="form-label">HTTP Method*</label>
+    <select class="form-select" id="method" required>
+      <option value="GET">GET</option>
+      <option value="POST" selected>POST</option>
+      <option value="PUT">PUT</option>
+      <option value="DELETE">DELETE</option>
+      <option value="PATCH">PATCH</option>
+      <option value="OPTIONS">OPTIONS</option>
+      <option value="HEAD">HEAD</option>
+    </select>
+  </div>
+</div>
+<div class="row mb-3">
+  <div class="col-md-6">
+    <label for="statusCode" class="form-label">Status Code*</label>
+    <input type="number" class="form-control" id="statusCode" required min="100" max="599" value="201" placeholder="200">
+    <small class="text-muted">HTTP status code for the response</small>
+  </div>
+  <div class="col-md-6">
+    <label for="contentType" class="form-label">Content Type*</label>
+    <select class="form-select" id="contentType" required>
+      <option value="application/json" selected>application/json</option>
+      <option value="text/plain">text/plain</option>
+      <option value="text/html">text/html</option>
+      <option value="application/xml">application/xml</option>
+      <option value="application/octet-stream">application/octet-stream</option>
+    </select>
+  </div>
+</div>
+<div class="mb-3">
+  <label for="responseBody" class="form-label">Response Body</label>
+  <textarea class="form-control" id="responseBody" rows="5" placeholder='{"status_code": "{{status}}", "message": "Hello World!", "utm_source": "{{queryParams.utm_source}}"}'>{"id": 42, "status": "created", "method": "{{method}}"}</textarea>
+</div>
+<!--include:request-vars-->
+<div class="mb-3">
+  <label for="responseHeaders" class="form-label">Response Headers (JSON)</label>
+  <textarea class="form-control" id="responseHeaders" rows="3" placeholder='{"X-Custom-Header": "Custom Value", "x-clientIp": "{{headers.x-forwarded-for}}"}'>{"X-Request-Source": "mock-webhook"}</textarea>
+  <small class="text-muted">Enter response headers in JSON format</small>
+</div>
+<div class="mb-3">
+  <label for="delayMs" class="form-label">Response Delay (ms)</label>
+  <input type="number" class="form-control" id="delayMs" min="0" max="60000" value="250" placeholder="100">
+  <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
+</div>
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input type="text" class="form-control" id="description" maxlength="500" placeholder="Short purpose of this endpoint, e.g. returns a mocked order" value="Returns a mocked order">
+      </div>
+      <div class="mb-3">
+        <label for="note" class="form-label">Note</label>
+        <textarea class="form-control" id="note" rows="3" maxlength="2000" placeholder="Enter a note or describe the purpose of this endpoint...">Used by the checkout flow. Expect 201 with the created order id; retry once on 500.</textarea>
+        <small class="text-muted"><span id="noteCount">0</span>/2000 characters. Shown as an info icon in the endpoint list.</small>
+      </div>
+      <div>
+        <a href="api-config.dc.html" class="btn btn-secondary me-2">Cancel</a>
+        <button type="submit" class="btn btn-primary">Update API</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  // Live character counter for the Note textarea
+  (function () {
+    var note = document.getElementById('note'), count = document.getElementById('noteCount');
+    if (!note || !count) return;
+    var update = function () { count.textContent = note.value.length; };
+    note.addEventListener('input', update);
+    update();
+  })();
+</script>

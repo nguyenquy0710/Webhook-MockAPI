@@ -22,7 +22,7 @@
   - `retryDelayMs` (Integer, default: 1000) - Khoảng cách giữa các lần retry (ms)
   - `retryOnStatusCodes` (String, CLOB) - Danh sách status codes trigger retry (JSON array)
 
-**Migration**: `src/main/resources/db/migration/V4__Add_retry_configuration.sql`
+**Migration**: `src/main/resources/db/migration/V5__Add_retry_configuration.sql` (V4 dành cho `V4__Add_description_column.sql`, xem `2026-10-27-api-config-description-planning.md`)
 
 ```sql
 ALTER TABLE api_configs ADD COLUMN retry_enabled BOOLEAN DEFAULT FALSE;
@@ -94,7 +94,7 @@ ALTER TABLE api_configs ADD COLUMN retry_on_status_codes CLOB DEFAULT '[408, 429
 | MODIFY | `ApiConfigDto.java` | Thêm retry DTO fields |
 | MODIFY | `ApiMockService.java` | Thêm retry logic |
 | MODIFY | `ApiConfigController.java` | Thêm retry endpoints |
-| NEW | `V4__Add_retry_configuration.sql` | Database migration |
+| NEW | `V5__Add_retry_configuration.sql` | Database migration |
 | MODIFY | `api-config-edit.html` | Thêm retry UI |
 | NEW | `webhook-config.js` | Thêm retry JS logic |
 

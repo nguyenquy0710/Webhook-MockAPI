@@ -1,0 +1,60 @@
+<!--title: Create User-->
+<!--layout: app-->
+<!--active: admin-->
+<!-- Nguồn: templates/admin/user-create.html -->
+<h2 class="mb-4">Create New User</h2>
+<div class="row justify-content-center"><div class="col-md-8"><div class="card"><div class="card-body">
+  <form id="userForm">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="username" class="form-label">Username *</label>
+        <input type="text" class="form-control" id="username" required>
+        <small class="text-muted">3-50 characters, letters, numbers, and underscores only</small>
+      </div>
+      <div class="col-md-6">
+        <label for="email" class="form-label">Email *</label>
+        <input type="email" class="form-control" id="email" required>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="password" class="form-label">Password *</label>
+        <input type="password" class="form-control" id="password" required minlength="6">
+        <small class="text-muted">At least 6 characters</small>
+      </div>
+      <div class="col-md-6">
+        <label for="confirmPassword" class="form-label">Confirm Password *</label>
+        <input type="password" class="form-control" id="confirmPassword" required>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="role" class="form-label">Role *</label>
+        <select class="form-select" id="role" required><option value="USER">User</option><option value="ADMIN">Admin</option></select>
+      </div>
+      <div class="col-md-6">
+        <label for="enabled" class="form-label">Status</label>
+        <div class="form-check form-switch mt-2">
+          <input class="form-check-input" type="checkbox" id="enabled" checked>
+          <label class="form-check-label" for="enabled">Account Enabled</label>
+        </div>
+      </div>
+    </div>
+    <div class="mb-3"><small class="text-muted">* Required fields</small></div>
+    <div class="d-flex justify-content-between">
+      <a href="admin-users.dc.html" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Cancel</a>
+      <button type="submit" class="btn btn-primary" id="createUser" data-proto="skip"><i class="fas fa-user-plus me-1"></i> Create User</button>
+    </div>
+  </form>
+</div></div></div></div>
+<script>
+  // Password confirmation validation như bản gốc; hợp lệ thì quay lại danh sách
+  var pw = document.getElementById('password'), cf = document.getElementById('confirmPassword');
+  function check() { cf.setCustomValidity(pw.value === cf.value ? '' : 'Passwords do not match'); }
+  cf.addEventListener('input', check); pw.addEventListener('input', check);
+  document.getElementById('createUser').addEventListener('click', function () {
+    check();
+    var f = document.getElementById('userForm');
+    if (f.reportValidity()) location.href = 'admin-users.dc.html';
+  });
+</script>

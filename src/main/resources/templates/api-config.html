@@ -138,6 +138,19 @@
                 <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
                 <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
               </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <input type="text" class="form-control" id="description" th:field="*{description}" maxlength="500"
+                  placeholder="Short purpose of this endpoint, e.g. returns a mocked order">
+                <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+              </div>
+              <div class="mb-3">
+                <label for="note" class="form-label">Note</label>
+                <textarea class="form-control" id="note" th:field="*{note}" rows="3" maxlength="2000"
+                  placeholder="Enter a note or describe the purpose of this endpoint..."></textarea>
+                <small class="text-muted"><span id="noteCount">0</span>/2000 characters. Shown as an info icon in the endpoint list.</small>
+                <div class="text-danger" th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></div>
+              </div>
               <button type="submit" class="btn btn-primary">Create API</button>
             </form>
           </div>
@@ -173,11 +186,19 @@
                   <td>
                     <div class="d-flex align-items-center">
                       <code th:text="${'/api/@' + username + config.path}"></code>
+                      <button type="button" class="btn btn-sm btn-link text-info p-0 ms-2" th:if="${config.note != null && !config.note.isEmpty()}"
+                        data-bs-toggle="popover" data-bs-trigger="focus" data-bs-placement="right" title="Note"
+                        th:attr="data-bs-content=${config.note}" aria-label="Show note">
+                        <i class="fas fa-info-circle"></i>
+                      </button>
                       <button class="btn btn-sm btn-outline-secondary ms-2 copy-endpoint-btn" th:attr="data-endpoint=${domain + '/api/@' + username + config.path},
                                                 data-method=${config.method}" data-bs-toggle="tooltip" title="Copy full endpoint URL">
                         <i class="fas fa-copy"></i>
                       </button>
                     </div>
+                    <div class="small text-muted text-truncate" style="max-width: 360px;"
+                      th:if="${config.description != null && !config.description.isEmpty()}"
+                      th:text="${config.description}" th:title="${config.description}"></div>
                   </td>
                   <td><span class="badge bg-primary" th:text="${config.method}">GET</span></td>
                   <td>
@@ -329,6 +350,16 @@
         };
         reader.readAsText(file);
       }
+    </script>
+    <script>
+      // Live character counter for the Note textarea
+      (function () {
+        var note = document.getElementById('note'), count = document.getElementById('noteCount');
+        if (!note || !count) return;
+        var update = function () { count.textContent = note.value.length; };
+        note.addEventListener('input', update);
+        update();
+      })();
     </script>
   </body>
 

@@ -37,6 +37,8 @@ public class ApiConfigService {
     dto.setResponseBody(apiConfig.getResponseBody());
     dto.setResponseHeaders(apiConfig.getResponseHeaders());
     dto.setDelayMs(apiConfig.getDelayMs());
+    dto.setDescription(apiConfig.getDescription());
+    dto.setNote(apiConfig.getNote());
     return dto;
   }
 
@@ -81,6 +83,8 @@ public class ApiConfigService {
         apiConfig.setResponseBody(dto.getResponseBody());
         apiConfig.setResponseHeaders(dto.getResponseHeaders());
         apiConfig.setDelayMs(dto.getDelayMs());
+        apiConfig.setDescription(dto.getDescription());
+        apiConfig.setNote(dto.getNote());
         apiConfigRepository.save(apiConfig);
       }
     } catch (Exception e) {

@@ -66,6 +66,7 @@ public class WebhookViewController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
             model.addAttribute("username", userDetails.getUsername());
+            model.addAttribute("domain", appConfig.getDomain());
             return "api-config";
         }
 
@@ -76,6 +77,7 @@ public class WebhookViewController {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
             model.addAttribute("username", userDetails.getUsername());
+            model.addAttribute("domain", appConfig.getDomain());
             return "api-config";
         }
     }

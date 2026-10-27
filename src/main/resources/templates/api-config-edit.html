@@ -90,6 +90,19 @@
               <small class="text-muted">Delay in milliseconds before sending the response (0-60000)</small>
               <div class="text-danger" th:if="${#fields.hasErrors('delayMs')}" th:errors="*{delayMs}"></div>
             </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <input type="text" class="form-control" id="description" th:field="*{description}" maxlength="500"
+                placeholder="Short purpose of this endpoint, e.g. returns a mocked order">
+              <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+            </div>
+            <div class="mb-3">
+              <label for="note" class="form-label">Note</label>
+              <textarea class="form-control" id="note" th:field="*{note}" rows="3" maxlength="2000"
+                placeholder="Enter a note or describe the purpose of this endpoint..."></textarea>
+              <small class="text-muted"><span id="noteCount">0</span>/2000 characters. Shown as an info icon in the endpoint list.</small>
+              <div class="text-danger" th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></div>
+            </div>
             <div>
               <a th:href="@{/api-configs}" class="btn btn-secondary me-2">Cancel</a>
               <button type="submit" class="btn btn-primary">Update API</button>
@@ -100,6 +113,16 @@
     </div>
 
     <div th:replace="fragments/footer :: footer"></div>
+    <script>
+      // Live character counter for the Note textarea
+      (function () {
+        var note = document.getElementById('note'), count = document.getElementById('noteCount');
+        if (!note || !count) return;
+        var update = function () { count.textContent = note.value.length; };
+        note.addEventListener('input', update);
+        update();
+      })();
+    </script>
   </body>
 
 </html>

@@ -48,6 +48,12 @@ public class ApiConfig {
     @Column(name = "delay_ms")
     private Integer delayMs;  // Delay in milliseconds before responding
 
+    @Column(name = "description", length = 500)
+    private String description;  // Short purpose of the endpoint
+
+    @Column(name = "note", length = 2000)
+    private String note;  // Free-form note for testers
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

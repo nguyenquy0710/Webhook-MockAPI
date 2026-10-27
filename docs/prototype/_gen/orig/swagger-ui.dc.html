@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Webhook MockAPI Docs</title>
+<!-- Nguồn: templates/swagger-ui.html. Trang gốc nạp swagger.json của user; ở đây dùng spec mẫu nhúng sẵn -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css">
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-standalone-preset.js"></script>
+<script>
+  var spec = {
+    openapi: '3.0.1',
+    info: { title: 'Mock API of @demo', version: '1.0.0' },
+    servers: [{ url: 'https://mock.example.test/api/@demo' }],
+    paths: {
+      '/hello': { get: { summary: 'GET /hello', responses: { '200': { description: 'OK', content: { 'application/json': { example: { status_code: '200', message: 'Hello World!' } } } } } } },
+      '/users/123': { get: { summary: 'GET /users/123', responses: { '200': { description: 'OK', content: { 'application/json': { example: { id: 123, name: 'Alice' } } } } } } },
+      '/orders': { post: { summary: 'POST /orders', requestBody: { content: { 'application/json': { example: { amount: 25 } } } }, responses: { '201': { description: 'Created', content: { 'application/json': { example: { id: 42, status: 'created' } } } } } } },
+      '/orders/42': {
+        put: { summary: 'PUT /orders/42', responses: { '200': { description: 'OK' } } },
+        delete: { summary: 'DELETE /orders/42', responses: { '204': { description: 'No Content' } } }
+      },
+      '/payments/callback': { post: { summary: 'POST /payments/callback', responses: { '500': { description: 'Internal Server Error' } } } }
+    }
+  };
+  window.onload = function () {
+    SwaggerUIBundle({ spec: spec, dom_id: '#swagger-ui', presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset], layout: 'StandaloneLayout' });
+  };
+</script>
+</body>
+</html>
