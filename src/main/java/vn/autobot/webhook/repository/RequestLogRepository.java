@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import vn.autobot.webhook.model.RequestLog;
 import vn.autobot.webhook.model.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -22,6 +23,8 @@ public interface RequestLogRepository extends JpaRepository<RequestLog, Long> {
   Page<RequestLog> findByUserAndPathContainingIgnoreCaseOrderByTimestampDesc(User user, String path, Pageable pageable);
 
   long countByUser(User user);
+
+  long countByUserAndTimestampGreaterThanEqual(User user, LocalDateTime since);
 
   long countByUserAndPathContainingIgnoreCase(User user, String path);
 
