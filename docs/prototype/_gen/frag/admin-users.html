@@ -1,67 +1,200 @@
 <!--title: User Management-->
 <!--layout: app-->
 <!--active: admin-->
-<!-- Nguồn: templates/admin/users.html. Nút trong bảng nhận nhãn từ title (tooltip) -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h2>Users</h2>
+<!--
+  Nguồn gốc: templates/admin/users.html (thiết kế lại). Ý đồ: người dùng nhận diện bằng avatar + tên + email trong một ô;
+  có tìm kiếm và lọc vai trò/trạng thái; các thao tác ít dùng (đổi vai trò, bật/tắt, xóa) gom vào menu "..." thay vì 5 nút liền nhau.
+-->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <h2 class="mb-0">Users <span class="badge bg-secondary align-middle fs-6" id="userCount">6</span></h2>
   <a href="admin-user-create.dc.html" class="btn btn-primary"><i class="fas fa-user-plus me-1"></i> Create User</a>
 </div>
-<div class="table-responsive">
-  <table class="table table-striped table-hover">
-    <thead class="table-dark"><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
-    <tbody>
-          <tr>
-            <td>1</td><td>demo</td><td>demo@example.test</td>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body border-bottom">
+    <div class="row g-2">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+          <input type="search" class="form-control" id="userSearch" placeholder="Search by username or email...">
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" id="roleFilter" aria-label="Role"><option value="">All roles</option><option value="ADMIN">Admin</option><option value="USER">User</option></select>
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" id="statusFilter" aria-label="Status"><option value="">All status</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive" style="min-height: 22rem;">
+    <table class="table table-hover align-middle mb-0" id="userTable">
+      <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Created</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+          <tr data-role="ADMIN" data-status="enabled" data-search="demo demo@example.test">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width:2.25rem;height:2.25rem;">D</div>
+                <div><div class="fw-semibold">demo</div><div class="text-muted small">demo@example.test</div></div>
+              </div>
+            </td>
             <td><span class="badge bg-danger">ADMIN</span></td>
             <td><span class="badge bg-success">Enabled</span></td>
-            <td>2026-01-12 08:30</td>
-            <td><div class="btn-group" role="group">
+            <td class="text-muted">2026-01-12 08:30</td>
+            <td class="text-nowrap text-end">
               <a href="admin-user-detail.dc.html" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details"><i class="fas fa-eye"></i></a>
               <a href="request-logs.dc.html" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="View Request Logs"><i class="fas fa-history"></i></a>
-              <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="tooltip" title="Demote to User"><i class="fas fa-user-minus"></i></button>
-              <button class="btn btn-sm btn-outline-warning" type="button" data-bs-toggle="tooltip" title="Disable User"><i class="fas fa-user-slash"></i></button>
-              <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="tooltip" title="Delete User"><i class="fas fa-trash"></i></button>
-            </div></td>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions"><i class="fas fa-ellipsis-h"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-minus me-2"></i>Demote to User</button></li>
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-slash me-2"></i>Disable User</button></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item text-danger" type="button"><i class="fas fa-trash me-2"></i>Delete User</button></li>
+                </ul>
+              </div>
+            </td>
           </tr>
-          <tr>
-            <td>2</td><td>alice_dev</td><td>alice@example.test</td>
+          <tr data-role="USER" data-status="enabled" data-search="alice_dev alice@example.test">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width:2.25rem;height:2.25rem;">A</div>
+                <div><div class="fw-semibold">alice_dev</div><div class="text-muted small">alice@example.test</div></div>
+              </div>
+            </td>
             <td><span class="badge bg-secondary">USER</span></td>
             <td><span class="badge bg-success">Enabled</span></td>
-            <td>2026-03-04 14:05</td>
-            <td><div class="btn-group" role="group">
+            <td class="text-muted">2026-03-04 14:05</td>
+            <td class="text-nowrap text-end">
               <a href="admin-user-detail.dc.html" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details"><i class="fas fa-eye"></i></a>
               <a href="request-logs.dc.html" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="View Request Logs"><i class="fas fa-history"></i></a>
-              <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="tooltip" title="Promote to Admin"><i class="fas fa-user-shield"></i></button>
-              <button class="btn btn-sm btn-outline-warning" type="button" data-bs-toggle="tooltip" title="Disable User"><i class="fas fa-user-slash"></i></button>
-              <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="tooltip" title="Delete User"><i class="fas fa-trash"></i></button>
-            </div></td>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions"><i class="fas fa-ellipsis-h"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-shield me-2"></i>Promote to Admin</button></li>
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-slash me-2"></i>Disable User</button></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item text-danger" type="button"><i class="fas fa-trash me-2"></i>Delete User</button></li>
+                </ul>
+              </div>
+            </td>
           </tr>
-          <tr>
-            <td>3</td><td>bob_qa</td><td>bob@example.test</td>
+          <tr data-role="USER" data-status="disabled" data-search="bob_qa bob@example.test">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width:2.25rem;height:2.25rem;">B</div>
+                <div><div class="fw-semibold">bob_qa</div><div class="text-muted small">bob@example.test</div></div>
+              </div>
+            </td>
             <td><span class="badge bg-secondary">USER</span></td>
             <td><span class="badge bg-warning">Disabled</span></td>
-            <td>2026-05-21 09:47</td>
-            <td><div class="btn-group" role="group">
+            <td class="text-muted">2026-05-21 09:47</td>
+            <td class="text-nowrap text-end">
               <a href="admin-user-detail.dc.html" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details"><i class="fas fa-eye"></i></a>
               <a href="request-logs.dc.html" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="View Request Logs"><i class="fas fa-history"></i></a>
-              <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="tooltip" title="Promote to Admin"><i class="fas fa-user-shield"></i></button>
-              <button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="tooltip" title="Enable User"><i class="fas fa-user-check"></i></button>
-              <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="tooltip" title="Delete User"><i class="fas fa-trash"></i></button>
-            </div></td>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions"><i class="fas fa-ellipsis-h"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-shield me-2"></i>Promote to Admin</button></li>
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-check me-2"></i>Enable User</button></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item text-danger" type="button"><i class="fas fa-trash me-2"></i>Delete User</button></li>
+                </ul>
+              </div>
+            </td>
           </tr>
-          <tr>
-            <td>4</td><td>carol</td><td>carol@example.test</td>
+          <tr data-role="USER" data-status="enabled" data-search="carol carol@example.test">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width:2.25rem;height:2.25rem;">C</div>
+                <div><div class="fw-semibold">carol</div><div class="text-muted small">carol@example.test</div></div>
+              </div>
+            </td>
             <td><span class="badge bg-secondary">USER</span></td>
             <td><span class="badge bg-success">Enabled</span></td>
-            <td>2026-09-02 17:20</td>
-            <td><div class="btn-group" role="group">
+            <td class="text-muted">2026-09-02 17:20</td>
+            <td class="text-nowrap text-end">
               <a href="admin-user-detail.dc.html" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details"><i class="fas fa-eye"></i></a>
               <a href="request-logs.dc.html" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="View Request Logs"><i class="fas fa-history"></i></a>
-              <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="tooltip" title="Promote to Admin"><i class="fas fa-user-shield"></i></button>
-              <button class="btn btn-sm btn-outline-warning" type="button" data-bs-toggle="tooltip" title="Disable User"><i class="fas fa-user-slash"></i></button>
-              <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="tooltip" title="Delete User"><i class="fas fa-trash"></i></button>
-            </div></td>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions"><i class="fas fa-ellipsis-h"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-shield me-2"></i>Promote to Admin</button></li>
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-slash me-2"></i>Disable User</button></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item text-danger" type="button"><i class="fas fa-trash me-2"></i>Delete User</button></li>
+                </ul>
+              </div>
+            </td>
           </tr>
-    </tbody>
-  </table>
+          <tr data-role="USER" data-status="enabled" data-search="dave_ops dave@example.test">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width:2.25rem;height:2.25rem;">D</div>
+                <div><div class="fw-semibold">dave_ops</div><div class="text-muted small">dave@example.test</div></div>
+              </div>
+            </td>
+            <td><span class="badge bg-secondary">USER</span></td>
+            <td><span class="badge bg-success">Enabled</span></td>
+            <td class="text-muted">2026-09-18 11:02</td>
+            <td class="text-nowrap text-end">
+              <a href="admin-user-detail.dc.html" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details"><i class="fas fa-eye"></i></a>
+              <a href="request-logs.dc.html" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="View Request Logs"><i class="fas fa-history"></i></a>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions"><i class="fas fa-ellipsis-h"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-shield me-2"></i>Promote to Admin</button></li>
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-slash me-2"></i>Disable User</button></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item text-danger" type="button"><i class="fas fa-trash me-2"></i>Delete User</button></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          <tr data-role="ADMIN" data-status="enabled" data-search="erin erin@example.test">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width:2.25rem;height:2.25rem;">E</div>
+                <div><div class="fw-semibold">erin</div><div class="text-muted small">erin@example.test</div></div>
+              </div>
+            </td>
+            <td><span class="badge bg-danger">ADMIN</span></td>
+            <td><span class="badge bg-success">Enabled</span></td>
+            <td class="text-muted">2026-10-05 16:44</td>
+            <td class="text-nowrap text-end">
+              <a href="admin-user-detail.dc.html" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details"><i class="fas fa-eye"></i></a>
+              <a href="request-logs.dc.html" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="View Request Logs"><i class="fas fa-history"></i></a>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions"><i class="fas fa-ellipsis-h"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-minus me-2"></i>Demote to User</button></li>
+                  <li><button class="dropdown-item" type="button"><i class="fas fa-user-slash me-2"></i>Disable User</button></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item text-danger" type="button"><i class="fas fa-trash me-2"></i>Delete User</button></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="text-center text-muted py-5" id="userEmpty" hidden>
+    <i class="fas fa-users fa-3x mb-3"></i>
+    <p class="mb-0">No users found.</p>
+  </div>
 </div>
+<script>
+  // Lọc phía client theo tìm kiếm, vai trò và trạng thái
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    function filter() {
+      var q = $('userSearch').value.trim().toLowerCase(), role = $('roleFilter').value, st = $('statusFilter').value, shown = 0;
+      document.querySelectorAll('#userTable tbody tr').forEach(function (r) {
+        var ok = (!q || r.getAttribute('data-search').indexOf(q) !== -1) && (!role || r.getAttribute('data-role') === role) && (!st || r.getAttribute('data-status') === st);
+        r.hidden = !ok; if (ok) shown++;
+      });
+      $('userCount').textContent = shown; $('userEmpty').hidden = shown !== 0; $('userTable').hidden = shown === 0;
+    }
+    ['userSearch', 'roleFilter', 'statusFilter'].forEach(function (id) { $(id).addEventListener('input', filter); });
+  })();
+</script>

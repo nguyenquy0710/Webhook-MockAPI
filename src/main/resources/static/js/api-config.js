@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add validation for JSON format
-    const form = document.querySelector('form');
+    // Only the create form is validated (the first form on the page is the header's logout form)
+    const form = document.getElementById('createForm');
     if (form) {
         form.addEventListener('submit', function(event) {
             const contentType = document.getElementById('contentType').value;
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate JSON format for response body if content type is application/json
             if (contentType === 'application/json' && responseBody) {
                 try {
-                    JSON.parse(responseBody);
+                    JSON.parse(responseBody.replace(/\{\{[^}]*\}\}/g, 'x'));
                 } catch (e) {
                     event.preventDefault();
                     alert('Response body is not valid JSON. Please check the format.');
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate JSON format for response headers if not empty
             if (responseHeaders) {
                 try {
-                    JSON.parse(responseHeaders);
+                    JSON.parse(responseHeaders.replace(/\{\{[^}]*\}\}/g, 'x'));
                 } catch (e) {
                     event.preventDefault();
                     alert('Response headers is not valid JSON. Please check the format.');
