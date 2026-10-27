@@ -54,7 +54,9 @@ ACTIONS = {
                    "confirm": "Delete", "toast": "API configuration deleted successfully!"},
     },
     "api-config-edit": {
-        "update api": {"type": "goto", "screen": "api-config"},
+        "copy url": {"type": "toast", "message": "URL copied to clipboard"},
+        "delete api": {"type": "confirm", "title": "Delete API?", "body": "This action cannot be undone.",
+                       "confirm": "Delete", "toast": "API configuration deleted successfully!"},
     },
     "request-logs": {
         "export excel": {"type": "toast", "message": "Excel file exported", "delay": 800},
