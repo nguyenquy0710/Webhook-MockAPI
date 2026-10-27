@@ -92,6 +92,7 @@
               <tr>
                 <th>Method</th>
                 <th>Path</th>
+                <th>Description</th>
                 <th>Status</th>
                 <th>Content Type</th>
                 <th>Delay</th>
@@ -114,7 +115,9 @@
                       <i class="fas fa-info-circle"></i>
                     </button>
                   </div>
-                  <div class="small text-muted text-truncate" style="max-width: 340px;"
+                </td>
+                <td>
+                  <div class="small text-muted text-truncate" style="max-width: 280px;"
                     th:if="${config.description != null && !config.description.isEmpty()}"
                     th:text="${config.description}" th:title="${config.description}"></div>
                 </td>

@@ -61,7 +61,9 @@
         transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
       }
       
-      .dropdown:hover .dropdown-menu {
+      /* Menus opened by click (e.g. row actions inside .btn-group) get .show from Bootstrap */
+      .dropdown:hover .dropdown-menu,
+      .dropdown-menu.show {
         opacity: 1;
         visibility: visible;
       }

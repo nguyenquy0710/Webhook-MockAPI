@@ -47,14 +47,14 @@
   </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0" id="apiTable">
-      <thead><tr><th>Method</th><th>Path</th><th>Status</th><th>Content Type</th><th>Delay</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Method</th><th>Path</th><th>Description</th><th>Status</th><th>Content Type</th><th>Delay</th><th>Actions</th></tr></thead>
       <tbody>
           <tr data-method="GET" data-search="/hello smoke test endpoint">
             <td><span class="badge bg-success method-badge">GET</span></td>
             <td>
               <div class="d-flex align-items-center"><code>/api/@demo/hello</code></div>
-              <div class="small text-muted text-truncate" style="max-width:340px;" title="Smoke test endpoint">Smoke test endpoint</div>
             </td>
+            <td><div class="small text-muted text-truncate" style="max-width:340px;" title="Smoke test endpoint">Smoke test endpoint</div></td>
             <td><span class="badge bg-success">200</span></td>
             <td><span class="badge bg-secondary">application/json</span></td>
             <td>100 ms</td>
@@ -69,6 +69,7 @@
             <td>
               <div class="d-flex align-items-center"><code>/api/@demo/users/123</code></div>
             </td>
+            <td></td>
             <td><span class="badge bg-success">200</span></td>
             <td><span class="badge bg-secondary">application/json</span></td>
             <td>0 ms</td>
@@ -83,8 +84,8 @@
             <td>
               <div class="d-flex align-items-center"><code>/api/@demo/orders</code>
                 <button type="button" class="btn btn-sm btn-link text-info p-0 ms-1" data-proto="skip" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-placement="right" title="Note" data-bs-content="Used by the checkout flow. Expect 201 with the created order id; retry once on 500." aria-label="Show note"><i class="fas fa-info-circle"></i></button></div>
-              <div class="small text-muted text-truncate" style="max-width:340px;" title="Returns a mocked order">Returns a mocked order</div>
             </td>
+            <td><div class="small text-muted text-truncate" style="max-width:340px;" title="Returns a mocked order">Returns a mocked order</div></td>
             <td><span class="badge bg-success">201</span></td>
             <td><span class="badge bg-secondary">application/json</span></td>
             <td>250 ms</td>
@@ -99,6 +100,7 @@
             <td>
               <div class="d-flex align-items-center"><code>/api/@demo/orders/42</code></div>
             </td>
+            <td></td>
             <td><span class="badge bg-success">200</span></td>
             <td><span class="badge bg-secondary">application/json</span></td>
             <td>100 ms</td>
@@ -127,8 +129,8 @@
             <td>
               <div class="d-flex align-items-center"><code>/api/@demo/payments/callback</code>
                 <button type="button" class="btn btn-sm btn-link text-info p-0 ms-1" data-proto="skip" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-placement="right" title="Note" data-bs-content="Returns 500 on purpose to test retry handling in the client." aria-label="Show note"><i class="fas fa-info-circle"></i></button></div>
-              <div class="small text-muted text-truncate" style="max-width:340px;" title="Simulates a failing payment provider">Simulates a failing payment provider</div>
             </td>
+            <td><div class="small text-muted text-truncate" style="max-width:340px;" title="Simulates a failing payment provider">Simulates a failing payment provider</div></td>
             <td><span class="badge bg-danger">500</span></td>
             <td><span class="badge bg-secondary">application/json</span></td>
             <td>1500 ms</td>
@@ -143,6 +145,7 @@
             <td>
               <div class="d-flex align-items-center"><code>/api/@demo/health</code></div>
             </td>
+            <td></td>
             <td><span class="badge bg-success">200</span></td>
             <td><span class="badge bg-secondary">text/plain</span></td>
             <td>0 ms</td>
