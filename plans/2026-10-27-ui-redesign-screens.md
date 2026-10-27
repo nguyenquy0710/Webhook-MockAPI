@@ -86,3 +86,11 @@ Quyết định và đánh đổi chính:
 ## 7. Tham khảo bên ngoài (Tùy chọn)
 
 - Liên quan: `plans/2026-10-27-api-config-description-planning.md` (issue #35), `plans/2026-10-27-api-config-edit-redesign.md` (nhánh `claude/minipc`).
+
+## Cập nhật 2026-10-27 (sửa sau khi gộp: menu 3 chấm và cột Description)
+
+- Sửa lỗi menu 3 chấm ở `/admin/users` không mở (commit `9a92f8f`): `fragments/header.html` có CSS toàn cục `.dropdown-menu { opacity: 0; visibility: hidden }` chỉ hiện khi hover `.dropdown`. Menu trong `.btn-group` nhận class `.show` nhưng vẫn bị ẩn. Thêm `.dropdown-menu.show` vào rule hiển thị; menu hover trên navbar giữ nguyên. Rule dùng chung nên các menu mở bằng click khác (ví dụ API Configs) cũng được sửa.
+- Thêm cột **Description** giữa Path và Status trong bảng `/api-configs` (commit `7ba6673`), tối đa 280px, cắt bằng "…" và có tooltip; ô search theo path/description giữ nguyên. Prototype (`_gen/frag/api-config.html`) được cập nhật tương ứng, `interact.py --all --strict` sạch.
+- Cả hai commit nằm trên `claude/minipc`, đã push, chưa mở PR vào `coding`.
+- **Chưa kiểm tra:** hai thay đổi này chưa chạy trên app thật hoặc trình duyệt; chưa có test tự động.
+- Việc còn lại: mở PR vào `coding`; kiểm tra thủ công menu 3 chấm và cột Description trên trình duyệt.
