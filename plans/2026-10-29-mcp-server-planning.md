@@ -3,7 +3,7 @@ type: feature
 complexity: high
 status: in_progress
 related_issues: [QUYIT-989]
-related_prs: []
+related_prs: [#48]
 estimated_hours: ~340-575 (43-72 person-days, gồm QA và PM; đã tính thêm UI ở mục "Thiết kế UI")
 ---
 
@@ -206,7 +206,7 @@ Timeline: 1 dev khoảng 11–18 tuần, 2 dev khoảng 5,5–9 tuần; riêng p
   - [ ] Thử với client MCP thật (MCP Inspector, Claude Code, Cursor); chỉ mới thử bằng `curl` và test tự động
   - [ ] Kiểm tra cú pháp lệnh/JSON trong tab Connect với tài liệu hiện hành của từng client
   - [ ] Spike SDK chính thức: không còn cần vì đã chọn và hoàn thành phương án A
-  - [ ] Commit, push và mở PR vào `coding`
+  - [x] Commit (`39cd4c1`, `cddab5d`), push và mở PR [#48](https://github.com/nguyenquy0710/Webhook-MockAPI/pull/48) vào `coding`; chờ merge
   - [ ] Tùy chọn: quyền đọc/ghi theo token, quản trị viên xem activity của mọi user, OAuth nếu client yêu cầu
 
 ## Cập nhật 2026-10-29 (Jira)
