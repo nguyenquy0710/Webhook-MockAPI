@@ -8,6 +8,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Data
@@ -44,4 +45,21 @@ public class ApiConfigDto {
 
     @Size(max = 2000, message = "Note must be at most 2000 characters")
     private String note;
+
+    private Boolean failureEnabled;
+
+    @Min(value = 1, message = "Failures must be at least 1")
+    @Max(value = 10, message = "Failures must be at most 10")
+    private Integer failureCount;
+
+    @Size(max = 100, message = "Failure status codes must be at most 100 characters")
+    @Pattern(regexp = "^$|^[45]\\d\\d(\\s*,\\s*[45]\\d\\d)*$", message = "Use comma-separated status codes between 400 and 599")
+    private String failureStatusCodes;
+
+    @Min(value = 0, message = "Retry-After cannot be negative")
+    @Max(value = 60, message = "Retry-After must be at most 60 seconds")
+    private Integer retryAfterSeconds;
+
+    // Read-only: ISO timestamp of the last change, used by MCP clients to avoid overwriting newer edits
+    private String updatedAt;
 }

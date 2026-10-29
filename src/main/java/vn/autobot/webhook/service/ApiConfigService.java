@@ -39,6 +39,10 @@ public class ApiConfigService {
     dto.setDelayMs(apiConfig.getDelayMs());
     dto.setDescription(apiConfig.getDescription());
     dto.setNote(apiConfig.getNote());
+    dto.setFailureEnabled(Boolean.TRUE.equals(apiConfig.getFailureEnabled()));
+    dto.setFailureCount(apiConfig.getFailureCount());
+    dto.setFailureStatusCodes(apiConfig.getFailureStatusCodes());
+    dto.setRetryAfterSeconds(apiConfig.getRetryAfterSeconds());
     return dto;
   }
 
@@ -85,6 +89,10 @@ public class ApiConfigService {
         apiConfig.setDelayMs(dto.getDelayMs());
         apiConfig.setDescription(dto.getDescription());
         apiConfig.setNote(dto.getNote());
+        apiConfig.setFailureEnabled(Boolean.TRUE.equals(dto.getFailureEnabled()));
+        apiConfig.setFailureCount(dto.getFailureCount() != null ? dto.getFailureCount() : 3);
+        apiConfig.setFailureStatusCodes(dto.getFailureStatusCodes() != null && !dto.getFailureStatusCodes().trim().isEmpty() ? dto.getFailureStatusCodes().replaceAll("\\s", "") : "503");
+        apiConfig.setRetryAfterSeconds(dto.getRetryAfterSeconds() != null ? dto.getRetryAfterSeconds() : 1);
         apiConfigRepository.save(apiConfig);
       }
     } catch (Exception e) {

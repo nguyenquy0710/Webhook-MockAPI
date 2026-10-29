@@ -58,4 +58,18 @@ class RequestLogSearchTest {
 
     verify(repository).search(eq(user), eq("/hello"), eq("GET"), eq(0), eq(Integer.MAX_VALUE), eq(pageable));
   }
+
+  @Test
+  void purgeDeletesLogsOlderThanTheCutoff() {
+    when(repository.deleteOlderThan(any())).thenReturn(5);
+    java.time.LocalDateTime before = java.time.LocalDateTime.now();
+
+    int deleted = service.purgeOlderThan(30);
+
+    org.mockito.ArgumentCaptor<java.time.LocalDateTime> cutoff = org.mockito.ArgumentCaptor.forClass(java.time.LocalDateTime.class);
+    verify(repository).deleteOlderThan(cutoff.capture());
+    org.junit.jupiter.api.Assertions.assertEquals(5, deleted);
+    org.junit.jupiter.api.Assertions.assertFalse(cutoff.getValue().isBefore(before.minusDays(30)));
+    org.junit.jupiter.api.Assertions.assertFalse(cutoff.getValue().isAfter(java.time.LocalDateTime.now().minusDays(30)));
+  }
 }

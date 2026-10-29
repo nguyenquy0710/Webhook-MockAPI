@@ -80,6 +80,58 @@
   </div>
 
   <div class="col-lg-4">
+    <!-- MCP: URL cho AI client, Bearer token, hướng dẫn kết nối. Token đầy đủ chỉ hiện ngay sau Generate/Renew; sau đó chỉ còn 4 ký tự cuối.
+         Trạng thái: chưa có token / đã có token / vừa tạo (hiện đầy đủ, mở sẵn phần Connect) / MCP bị quản trị viên tắt (#mcpOff). -->
+    <div class="card shadow-sm border-0 mb-4" id="mcpCard">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-plug me-2 text-primary"></i>MCP Server</h5>
+        <a href="mcp-activity.dc.html" class="small text-decoration-none">Activity</a>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-secondary py-2 small" id="mcpOff" hidden><i class="fas fa-ban me-1"></i>MCP is turned off by an administrator.</div>
+        <label for="mcpUrl" class="form-label fw-semibold small">MCP URL</label>
+        <div class="input-group input-group-sm mb-3">
+          <input type="text" class="form-control font-monospace" id="mcpUrl" readonly value="https://mock-api.example.test/mcp/@demo/mcp">
+          <button class="btn btn-outline-primary copy-mcp-btn" type="button" data-proto="skip" aria-label="Copy MCP URL"><i class="fas fa-copy"></i></button>
+        </div>
+        <label for="mcpTokenValue" class="form-label fw-semibold small">Bearer token</label>
+        <div id="mcpTokenNew" hidden>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control font-monospace" id="mcpTokenValue" readonly value="">
+            <button class="btn btn-outline-primary copy-mcp-btn" type="button" data-proto="skip" aria-label="Copy token"><i class="fas fa-copy"></i></button>
+          </div>
+          <div class="form-text text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Copy it now. It will not be shown again.</div>
+        </div>
+        <div id="mcpTokenMasked">
+          <div id="mcpTokenNone" class="text-muted small">No token yet.</div>
+          <div id="mcpTokenInfo" hidden>
+            <code id="mcpMasked">mcp_••••••••k3Fz</code>
+            <div class="form-text">Created <span id="mcpCreated">2026-10-29 10:00</span> UTC · Last used <span>never</span></div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-3" id="mcpRenewBtn"><i class="fas fa-sync-alt me-1"></i><span>Generate Token</span></button>
+
+        <!-- Hướng dẫn kết nối theo client; ví dụ dùng token thật khi vừa tạo, còn lại dùng <your-token> -->
+        <button type="button" class="btn btn-link btn-sm text-decoration-none px-0 mt-2" data-bs-toggle="collapse" data-bs-target="#mcpConnect" aria-expanded="false" aria-controls="mcpConnect" data-proto="skip">
+          <i class="fas fa-chevron-down me-1" id="mcpConnectIcon"></i>Connect a client
+        </button>
+        <div class="collapse" id="mcpConnect">
+          <ul class="nav nav-tabs nav-fill small mb-2" role="tablist">
+            <li class="nav-item" role="presentation"><button class="nav-link active py-1" data-bs-toggle="tab" data-bs-target="#mcpTabCode" type="button" role="tab" data-proto="skip">Claude Code</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mcpTabCursor" type="button" role="tab" data-proto="skip">Cursor</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mcpTabCurl" type="button" role="tab" data-proto="skip">cURL</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mcpTabSse" type="button" role="tab" data-proto="skip">SSE</button></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="mcpTabCode" role="tabpanel"><pre class="small bg-light border rounded p-2 mb-0 text-break" style="white-space: pre-wrap;"><code class="mcp-snippet" data-kind="code"></code></pre></div>
+            <div class="tab-pane fade" id="mcpTabCursor" role="tabpanel"><pre class="small bg-light border rounded p-2 mb-0 text-break" style="white-space: pre-wrap;"><code class="mcp-snippet" data-kind="cursor"></code></pre></div>
+            <div class="tab-pane fade" id="mcpTabCurl" role="tabpanel"><pre class="small bg-light border rounded p-2 mb-0 text-break" style="white-space: pre-wrap;"><code class="mcp-snippet" data-kind="curl"></code></pre></div>
+            <div class="tab-pane fade" id="mcpTabSse" role="tabpanel"><div class="small text-muted mb-1">For older clients that only speak HTTP+SSE.</div><pre class="small bg-light border rounded p-2 mb-0 text-break" style="white-space: pre-wrap;"><code class="mcp-snippet" data-kind="sse"></code></pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="card shadow-sm border-0 mb-4">
       <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
         <h5 class="mb-0 d-flex align-items-center"><i class="fas fa-rocket me-2 text-primary"></i>Quick Start Guide</h5>
@@ -116,6 +168,53 @@
 </div>
 
 <script>
+  // MCP card: Generate/Renew Token confirm, then the full token appears once (simulated); copy buttons confirm with a check
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var token = '<your-token>';
+    function snippets() {
+      var url = $('mcpUrl').value;
+      var map = {
+        code: 'claude mcp add --transport http webhook-mockapi ' + url + ' \\\n  --header "Authorization: Bearer ' + token + '"',
+        sse: '{\n  "mcpServers": {\n    "webhook-mockapi": {\n      "url": "' + url.replace(/\/mcp$/, '/sse') + '",\n      "headers": { "Authorization": "Bearer ' + token + '" }\n    }\n  }\n}',
+        cursor: '{\n  "mcpServers": {\n    "webhook-mockapi": {\n      "url": "' + url + '",\n      "headers": { "Authorization": "Bearer ' + token + '" }\n    }\n  }\n}',
+        curl: 'curl -X POST ' + url + ' \\\n  -H "Authorization: Bearer ' + token + '" \\\n  -H "Content-Type: application/json" \\\n  -H "Accept: application/json, text/event-stream" \\\n  -d \'{"jsonrpc":"2.0","id":1,"method":"tools/list"}\''
+      };
+      document.querySelectorAll('.mcp-snippet').forEach(function (c) { c.textContent = map[c.getAttribute('data-kind')]; });
+    }
+    function randomToken() {
+      var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-', t = 'mcp_';
+      for (var i = 0; i < 43; i++) t += chars.charAt(Math.floor(Math.random() * chars.length));
+      return t;
+    }
+    function reveal() {
+      token = randomToken();
+      $('mcpTokenValue').value = token;
+      $('mcpTokenNew').hidden = false; $('mcpTokenMasked').hidden = true;
+      $('mcpMasked').textContent = 'mcp_••••••••' + token.slice(-4);
+      $('mcpCreated').textContent = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      $('mcpTokenNone').hidden = true; $('mcpTokenInfo').hidden = false;
+      $('mcpRenewBtn').querySelector('span').textContent = 'Renew Token';
+      snippets();
+      bootstrap.Collapse.getOrCreateInstance($('mcpConnect'), { toggle: false }).show(); // snippets now carry the real token
+    }
+    // The shared dialog ends with a toast; reveal the token when it appears
+    new MutationObserver(function (muts) {
+      muts.forEach(function (m) { m.addedNodes.forEach(function (n) {
+        if (n.textContent === 'Token renewed') reveal();
+      }); });
+    }).observe(document.body, { childList: true, subtree: true });
+    document.querySelectorAll('.copy-mcp-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var icon = btn.querySelector('i'); icon.className = 'fas fa-check';
+        setTimeout(function () { icon.className = 'fas fa-copy'; }, 1500);
+      });
+    });
+    $('mcpConnect').addEventListener('show.bs.collapse', function () { $('mcpConnectIcon').className = 'fas fa-chevron-up me-1'; });
+    $('mcpConnect').addEventListener('hide.bs.collapse', function () { $('mcpConnectIcon').className = 'fas fa-chevron-down me-1'; });
+    snippets();
+  })();
+
   // Hàng trong bảng yêu cầu gần đây mở trang Request Logs
   document.querySelectorAll('.row-link').forEach(function (r) {
     r.addEventListener('click', function () { location.href = r.getAttribute('data-href'); });

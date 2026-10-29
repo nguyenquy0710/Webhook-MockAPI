@@ -41,7 +41,7 @@ class ApiConfigDescriptionNoteTest {
     user.setId(1L);
     when(userService.findByUsername("demo")).thenReturn(user);
     when(repository.save(any(ApiConfig.class))).thenAnswer(inv -> inv.getArgument(0));
-    apiMockService = new ApiMockService(repository, userService, new ObjectMapper());
+    apiMockService = new ApiMockService(repository, userService, new ObjectMapper(), new FailureSimulationService());
   }
 
   private ApiConfigDto dto(String description, String note) {
@@ -92,7 +92,7 @@ class ApiConfigDescriptionNoteTest {
     when(mocked.getApiConfigs("demo")).thenReturn(List.of(withDescription, without));
     AppConfig appConfig = new AppConfig();
 
-    Map<String, Object> spec = new SwaggerService(mocked, new ObjectMapper(), appConfig).generateSwaggerSpec("demo");
+    Map<String, Object> spec = new SwaggerService(mocked, new ObjectMapper(), new SettingsService(mock(vn.autobot.webhook.repository.AppSettingRepository.class), appConfig)).generateSwaggerSpec("demo");
     Map<String, Object> paths = (Map<String, Object>) spec.get("paths");
 
     Map<String, Object> orders = (Map<String, Object>) ((Map<String, Object>) paths.get("/api/@demo/orders")).get("get");

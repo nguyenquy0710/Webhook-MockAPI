@@ -20,6 +20,10 @@
                         <i class="fas fa-check-circle me-2"></i>
                         <div>Registration successful! You can now login.</div>
                     </div>
+                    <div class="alert alert-warning d-flex align-items-center py-2" th:if="${param.registrationClosed}">
+                        <i class="fas fa-lock me-2"></i>
+                        <div>New registrations are currently closed.</div>
+                    </div>
                     <div class="alert alert-danger d-flex align-items-center py-2" th:if="${param.error}">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         <div>Invalid username or password.</div>
@@ -49,7 +53,7 @@
                                 <i class="fas fa-sign-in-alt me-2"></i>Sign In
                             </button>
                         </div>
-                        <div class="text-center">
+                        <div class="text-center" th:if="${registrationEnabled}">
                             <p class="mb-0">Don't have an account?
                                 <a th:href="@{/register}" class="text-decoration-none fw-bold">Create Account</a>
                             </p>

@@ -13,12 +13,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import vn.autobot.webhook.config.AppConfig;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.CreateUserRequestDto;
+import vn.autobot.webhook.dto.GeneralSettingsDto;
+import vn.autobot.webhook.dto.McpSettingsDto;
 import vn.autobot.webhook.dto.RequestLogDto;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.service.ApiMockService;
+import vn.autobot.webhook.service.DatabaseMaintenanceService;
+import vn.autobot.webhook.service.McpCallService;
+import vn.autobot.webhook.service.McpTokenService;
+import vn.autobot.webhook.service.SettingsService;
 import vn.autobot.webhook.service.RequestLogService;
 import vn.autobot.webhook.service.UserService;
 
@@ -33,7 +38,77 @@ public class AdminController {
 
     private final UserService userService;
     private final RequestLogService requestLogService;
-    private final AppConfig appConfig;
+    private final SettingsService settingsService;
+    private final DatabaseMaintenanceService maintenanceService;
+    private final McpTokenService mcpTokenService;
+    private final McpCallService mcpCallService;
+
+    @GetMapping("/settings")
+    public String settings(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        fillSettingsModel(userDetails, model);
+        return "admin/settings";
+    }
+
+    @PostMapping("/settings/general")
+    public String saveGeneralSettings(@Valid @ModelAttribute("general") GeneralSettingsDto general,
+            BindingResult bindingResult, @AuthenticationPrincipal UserDetails userDetails, Model model,
+            RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            fillSettingsModel(userDetails, model);
+            return "admin/settings";
+        }
+        settingsService.saveGeneral(general);
+        redirectAttributes.addFlashAttribute("successMessage", "General settings saved.");
+        return "redirect:/admin/settings";
+    }
+
+    @PostMapping("/settings/mcp")
+    public String saveMcpSettings(@Valid @ModelAttribute("mcp") McpSettingsDto mcp, BindingResult bindingResult,
+            @AuthenticationPrincipal UserDetails userDetails, Model model, RedirectAttributes redirectAttributes) {
+        if (mcp.getExtraOrigins() != null) {
+            for (String line : mcp.getExtraOrigins().split("\\R")) {
+                if (!line.trim().isEmpty() && !line.trim().matches("^https?://[^\\s/]+$")) {
+                    bindingResult.rejectValue("extraOrigins", "invalid",
+                            "Each origin must look like http://localhost:6274 (scheme and host, no path)");
+                    break;
+                }
+            }
+        }
+        if (bindingResult.hasErrors()) {
+            fillSettingsModel(userDetails, model);
+            return "admin/settings";
+        }
+        settingsService.saveMcp(mcp);
+        redirectAttributes.addFlashAttribute("successMessage", "MCP settings saved.");
+        return "redirect:/admin/settings";
+    }
+
+    /** Everything the settings page shows; values already in the model (a form with errors) are kept. */
+    private void fillSettingsModel(UserDetails userDetails, Model model) {
+        if (!model.containsAttribute("general")) {
+            model.addAttribute("general", settingsService.getGeneral());
+        }
+        if (!model.containsAttribute("mcp")) {
+            model.addAttribute("mcp", settingsService.getMcp());
+        }
+        model.addAttribute("mcpTokens", mcpTokenService.countTokens());
+        model.addAttribute("mcpCalls24h", mcpCallService.callsLast24h());
+        model.addAttribute("mcpErrors24h", mcpCallService.errorsLast24h());
+        model.addAttribute("maintenance", maintenanceService.getStatus());
+        model.addAttribute("username", userDetails.getUsername());
+    }
+
+    @PostMapping("/settings/maintenance/run")
+    public String runMaintenance(RedirectAttributes redirectAttributes) {
+        if (!maintenanceService.run()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Maintenance is already running.");
+        } else {
+            DatabaseMaintenanceService.Status status = maintenanceService.getStatus();
+            redirectAttributes.addFlashAttribute("error".equals(status.getLastStatus()) ? "errorMessage" : "successMessage",
+                    "Database maintenance finished: " + status.getLastSummary());
+        }
+        return "redirect:/admin/settings";
+    }
 
     @GetMapping("/users")
     public String listUsers(@AuthenticationPrincipal UserDetails userDetails, Model model) {
@@ -128,7 +203,7 @@ public class AdminController {
         model.addAttribute("currentPage", pageable.getPageNumber());
         model.addAttribute("pageSize", size);
         model.addAttribute("totalPages", logs.getTotalPages());
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         model.addAttribute("isAdminView", true);
         model.addAttribute("pathFilter", path != null ? path : "");
 

@@ -11,10 +11,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import vn.autobot.webhook.config.AppConfig;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.RequestLogDto;
 import vn.autobot.webhook.service.ApiMockService;
+import vn.autobot.webhook.service.McpCallService;
+import vn.autobot.webhook.service.McpTokenService;
+import vn.autobot.webhook.service.SettingsService;
 import vn.autobot.webhook.service.RequestLogService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +31,9 @@ public class WebhookViewController {
 
     private final ApiMockService apiMockService;
     private final RequestLogService requestLogService;
-    private final AppConfig appConfig;
+    private final SettingsService settingsService;
+    private final McpTokenService mcpTokenService;
+    private final McpCallService mcpCallService;
 
     @GetMapping("/")
     public String home() {
@@ -39,14 +44,43 @@ public class WebhookViewController {
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         String username = userDetails.getUsername();
         model.addAttribute("username", username);
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         // Quick stats and the latest requests shown on the dashboard
         model.addAttribute("apiConfigCount", apiMockService.getApiConfigs(username).size());
         model.addAttribute("requestsToday",
             requestLogService.countRequestLogsSince(username, LocalDate.now().atStartOfDay()));
         Page<RequestLogDto> recent = requestLogService.getRequestLogs(username, PageRequest.of(0, 5));
         model.addAttribute("recentLogs", recent.getContent());
+        // MCP card: endpoint URL and token status; the token itself is only in the model right after Generate/Renew
+        model.addAttribute("mcpUrl", settingsService.getDomain() + "/mcp/@" + username + "/mcp");
+        model.addAttribute("mcpToken", mcpTokenService.find(username).orElse(null));
+        model.addAttribute("mcpSseUrl", settingsService.getDomain() + "/mcp/@" + username + "/sse");
+        model.addAttribute("mcpEnabled", settingsService.isMcpEnabled());
         return "dashboard";
+    }
+
+    @GetMapping("/mcp-activity")
+    public String mcpActivity(@AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "") String tool, @RequestParam(defaultValue = "") String result,
+            @RequestParam(defaultValue = "") String q, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size, Model model) {
+        String username = userDetails.getUsername();
+        int pageSize = size == 25 ? 25 : 10;
+        model.addAttribute("calls", mcpCallService.search(username, tool, result, q, PageRequest.of(Math.max(0, page), pageSize)));
+        model.addAttribute("stats", mcpCallService.statsToday(username));
+        model.addAttribute("tool", tool);
+        model.addAttribute("result", result);
+        model.addAttribute("q", q);
+        model.addAttribute("size", pageSize);
+        model.addAttribute("writeTools", McpCallService.WRITE_TOOLS);
+        model.addAttribute("username", username);
+        return "mcp-activity";
+    }
+
+    @PostMapping("/mcp-token/renew")
+    public String renewMcpToken(@AuthenticationPrincipal UserDetails userDetails, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("newMcpToken", mcpTokenService.renew(userDetails.getUsername()));
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/api-configs")
@@ -58,9 +92,13 @@ public class WebhookViewController {
         newApiConfig.setStatusCode(200);
         newApiConfig.setContentType("application/json");
         newApiConfig.setDelayMs(100);
+        newApiConfig.setFailureEnabled(false);
+        newApiConfig.setFailureCount(3);
+        newApiConfig.setFailureStatusCodes("503");
+        newApiConfig.setRetryAfterSeconds(1);
         model.addAttribute("newApiConfig", newApiConfig);
         model.addAttribute("username", userDetails.getUsername());
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         return "api-config";
     }
 
@@ -69,7 +107,7 @@ public class WebhookViewController {
                                 @PathVariable Long id, Model model) {
         model.addAttribute("apiConfig", apiMockService.getApiConfig(userDetails.getUsername(), id));
         model.addAttribute("username", userDetails.getUsername());
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         return "api-config-edit";
     }
 
@@ -80,7 +118,7 @@ public class WebhookViewController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
             model.addAttribute("username", userDetails.getUsername());
-            model.addAttribute("domain", appConfig.getDomain());
+            model.addAttribute("domain", settingsService.getDomain());
             return "api-config";
         }
 
@@ -91,7 +129,7 @@ public class WebhookViewController {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("apiConfigs", apiMockService.getApiConfigs(userDetails.getUsername()));
             model.addAttribute("username", userDetails.getUsername());
-            model.addAttribute("domain", appConfig.getDomain());
+            model.addAttribute("domain", settingsService.getDomain());
             return "api-config";
         }
     }
@@ -105,7 +143,7 @@ public class WebhookViewController {
         apiConfigDto.setId(id);
         if (bindingResult.hasErrors()) {
             model.addAttribute("username", userDetails.getUsername());
-            model.addAttribute("domain", appConfig.getDomain());
+            model.addAttribute("domain", settingsService.getDomain());
             return "api-config-edit";
         }
 
@@ -115,7 +153,7 @@ public class WebhookViewController {
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("username", userDetails.getUsername());
-            model.addAttribute("domain", appConfig.getDomain());
+            model.addAttribute("domain", settingsService.getDomain());
             return "api-config-edit";
         }
     }
@@ -153,7 +191,7 @@ public class WebhookViewController {
         model.addAttribute("currentPage", pageable.getPageNumber());
         model.addAttribute("pageSize", size);
         model.addAttribute("totalPages", logs.getTotalPages());
-        model.addAttribute("domain", appConfig.getDomain());
+        model.addAttribute("domain", settingsService.getDomain());
         model.addAttribute("pathFilter", path != null ? path : "");
 
         return "request-logs";

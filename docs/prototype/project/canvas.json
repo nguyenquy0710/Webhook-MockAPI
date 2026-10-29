@@ -126,6 +126,24 @@
       "title": "blank",
       "expand": "fill",
       "is_interactive": false
+    },
+    "admin-settings.dc.html": {
+      "x": 1280,
+      "y": 4344,
+      "w": 1200,
+      "h": 1100,
+      "title": "admin-settings",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "mcp-activity.dc.html": {
+      "x": 2560,
+      "y": 4344,
+      "w": 1200,
+      "h": 1100,
+      "title": "mcp-activity",
+      "expand": "fill",
+      "is_interactive": true
     }
   },
   "order": [

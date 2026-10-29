@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP Activity - Mock Webhook</title>
+<!-- Theme: bootstrap (https://getbootstrap.com/) 5.3.3, giống UI gốc src/main/resources/templates/fragments/header.html -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+<style>
+  /* Từ static/css/styles.css và copy-wrapper.css của UI gốc */
+  html { position: relative; min-height: 100%; }
+  body { padding-bottom: 160px; margin-bottom: 0; min-height: 100vh; background-color: #f8f9fa; }
+  footer { width: 100%; min-height: 160px; background-color: #f5f5f5; }
+  pre { white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; font-family: monospace;
+        background: #f8f9fa; border: 1px solid #e9ecef; border-radius: .25rem; padding: .5rem; font-size: .875rem; }
+  .copy-wrapper { position: relative; }
+  .copy-wrapper .copy-btn { display: none; position: absolute; top: 5px; right: 5px; padding: 2px 8px; font-size: 12px; cursor: pointer;
+        background: #007bff; border: none; color: #fff; border-radius: 3px; }
+  .copy-wrapper:hover .copy-btn { display: block; }
+  /* Dropdown mở khi rê chuột, như header gốc */
+  .dropdown:hover .dropdown-menu { display: block; opacity: 1; visibility: visible; }
+  .dropdown-menu { transition: opacity .15s ease-in-out, visibility .15s ease-in-out; }
+</style>
+</head>
+<body>
+<header class="bg-dark text-white py-4 mb-4 shadow">
+  <div class="container">
+    <div class="d-flex flex-wrap align-items-center justify-content-between">
+      <a href="index.dc.html" class="d-flex align-items-center text-white text-decoration-none">
+        <i class="fas fa-webhook fa-2x me-3 text-primary"></i>
+        <span class="fs-3 fw-bold">Mock Webhook</span>
+      </a>
+      <div class="text-end">
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle rounded-pill px-3" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user me-2"></i><span>demo</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="dashboard.dc.html"><i class="fas fa-home me-2 text-primary"></i> Dashboard</a></li>
+            <li><a class="dropdown-item" href="api-config.dc.html"><i class="fas fa-cogs me-2 text-success"></i> API Configs</a></li>
+            <li><a class="dropdown-item" href="request-logs.dc.html"><i class="fas fa-history me-2 text-info"></i> Request Logs</a></li>
+            <li><a class="dropdown-item" href="swagger-ui.dc.html"><i class="fas fa-book me-2 text-warning"></i> Swagger</a></li>
+            <li><a class="dropdown-item" href="change-password.dc.html"><i class="fas fa-key me-2 text-info"></i> Change Password</a></li>
+            <li><a class="dropdown-item" href="admin-users.dc.html"><i class="fas fa-users-cog me-2 text-danger"></i> Admin</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item text-danger" type="button" data-act="a1"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+    <div class="bg-white border rounded-3 p-3 mb-4 shadow-sm">
+      <nav class="nav nav-pills nav-justified">
+        <a class="nav-link rounded-pill active" href="dashboard.dc.html"><i class="fas fa-home me-2"></i> Dashboard</a>
+        <a class="nav-link rounded-pill" href="api-config.dc.html"><i class="fas fa-cogs me-2"></i> API Configs</a>
+        <a class="nav-link rounded-pill" href="request-logs.dc.html"><i class="fas fa-history me-2"></i> Request Logs</a>
+        <a class="nav-link rounded-pill" href="admin-users.dc.html"><i class="fas fa-users-cog me-2"></i> Admin</a>
+      </nav>
+    </div>
+<!--
+  Nguồn gốc: màn mới cho M8 trong plans/2026-10-29-mcp-server-planning.md. Ý đồ: người dùng thấy AI đã làm gì thay mình: tool nào, tham số,
+  kết quả, client nào; tool ghi (tạo/sửa API) có nhãn riêng để lọc nhanh. Bấm hàng mở chi tiết request/response ở panel bên phải.
+  Dữ liệu mẫu hư cấu; lọc, phân trang và chi tiết chạy phía client.
+-->
+<style>
+  .row-link { cursor: pointer; }
+  .args { max-width: 340px; }
+  .detail-pre { max-height: 40vh; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; font-size: .85rem; white-space: pre-wrap; word-break: break-word; margin-bottom: 0; }
+</style>
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item"><a href="dashboard.dc.html" class="text-decoration-none">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">MCP Activity</li>
+  </ol>
+</nav>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <h2 class="mb-0">MCP Activity</h2>
+  <a href="dashboard.dc.html" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Back to dashboard</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-4"><div class="card h-100 shadow-sm border-0"><div class="card-body d-flex align-items-center gap-3">
+    <div class="rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width:2.75rem;height:2.75rem;"><i class="fas fa-plug"></i></div>
+    <div><div class="fs-4 fw-bold lh-1" id="statCalls">0</div><div class="text-muted small">Calls today</div></div></div></div></div>
+  <div class="col-sm-4"><div class="card h-100 shadow-sm border-0"><div class="card-body d-flex align-items-center gap-3">
+    <div class="rounded-3 bg-danger-subtle text-danger d-flex align-items-center justify-content-center" style="width:2.75rem;height:2.75rem;"><i class="fas fa-exclamation-triangle"></i></div>
+    <div><div class="fs-4 fw-bold lh-1" id="statErrors">0</div><div class="text-muted small">Errors today</div></div></div></div></div>
+  <div class="col-sm-4"><div class="card h-100 shadow-sm border-0"><div class="card-body d-flex align-items-center gap-3">
+    <div class="rounded-3 bg-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-center" style="width:2.75rem;height:2.75rem;"><i class="fas fa-pen"></i></div>
+    <div><div class="fs-4 fw-bold lh-1" id="statWrites">0</div><div class="text-muted small">Changes made today</div></div></div></div></div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body border-bottom">
+    <div class="row g-2">
+      <div class="col-md-5">
+        <div class="input-group"><span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+          <input type="search" class="form-control" id="search" placeholder="Search arguments or client..."></div>
+      </div>
+      <div class="col-6 col-md-4">
+        <select class="form-select" id="toolFilter" aria-label="Tool">
+          <option value="">All tools</option><option>list_api_configs</option><option>get_api_config</option><option>create_api_config</option><option>update_api_config</option><option>get_request_log_stats</option><option>list_request_logs</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" id="resultFilter" aria-label="Result"><option value="">All results</option><option value="ok">OK</option><option value="error">Error</option></select>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Time (UTC)</th><th>Tool</th><th>Arguments</th><th>Client</th><th class="text-end">Duration</th><th>Result</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="text-center text-muted py-5" id="empty" hidden><i class="fas fa-inbox fa-3x mb-3"></i><p class="mb-0">No MCP calls match your filters.</p></div>
+  <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2 small text-muted">
+      <span>Show</span>
+      <select id="pageSize" class="form-select form-select-sm" style="width:auto;" aria-label="Page size"><option>10</option><option>25</option></select>
+      <span id="range"></span>
+    </div>
+    <nav aria-label="Page navigation"><ul class="pagination pagination-sm mb-0" id="pageNav"></ul></nav>
+  </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="detailsPanel" aria-labelledby="detailsLabel" style="width:min(640px,100vw);">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title" id="detailsLabel"><span class="badge me-2" id="dBadge"></span><span id="dTitle">tool</span></h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <table class="table table-sm mb-3"><tbody>
+      <tr><th style="width:9rem;">Time (UTC)</th><td id="dTime"></td></tr>
+      <tr><th>Client</th><td id="dClient"></td></tr>
+      <tr><th>Token</th><td id="dToken" class="font-monospace"></td></tr>
+      <tr><th>Duration</th><td id="dDuration"></td></tr>
+    </tbody></table>
+    <h6>Request</h6><pre class="detail-pre mb-3" id="dReq"></pre>
+    <h6>Response</h6><pre class="detail-pre" id="dRes"></pre>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var tools = [
+      { name: 'list_api_configs', write: false, args: '{"page":0,"size":20}', res: '{"totalElements":14,"items":[…]}' },
+      { name: 'get_api_config', write: false, args: '{"id":12}', res: '{"id":12,"method":"POST","path":"/orders"}' },
+      { name: 'create_api_config', write: true, args: '{"method":"GET","path":"/health","statusCode":200}', res: '{"id":31,"path":"/health"}' },
+      { name: 'update_api_config', write: true, args: '{"id":12,"statusCode":201,"expectedUpdatedAt":"2026-10-28T09:12:00Z"}', res: '{"id":12,"statusCode":201}' },
+      { name: 'get_request_log_stats', write: false, args: '{"from":"2026-10-22","to":"2026-10-29"}', res: '{"total":1284,"byStatus":{"2xx":1190,"4xx":82,"5xx":12}}' },
+      { name: 'list_request_logs', write: false, args: '{"path":"/orders","method":"POST","page":0,"size":20}', res: '{"totalElements":340,"items":[…]}' }
+    ];
+    var clients = ['claude-code 2.1', 'cursor 0.50', 'curl 8.5'];
+    var errors = ['{"isError":true,"text":"Status code must be at most 599"}', '{"isError":true,"text":"API configuration not found"}', '{"isError":true,"text":"Changed since you read it; fetch it again"}'];
+    var calls = [], now = new Date('2026-10-29T10:20:00Z').getTime();
+    for (var i = 0; i < 37; i++) {
+      var t = tools[(i * 5 + (i % 3)) % tools.length], bad = i % 7 === 3 || (t.write && i % 5 === 1);
+      calls.push({ time: new Date(now - i * 17 * 60000 - (i % 4) * 9000), tool: t, client: clients[i % 3], ms: 30 + (i * 37) % 420,
+        ok: !bad, args: t.args, res: bad ? errors[i % 3] : t.res, token: 'mcp_••••••••k3Fz' });
+    }
+    var state = { page: 0, size: 10, q: '', tool: '', result: '' };
+    function fmt(d) { return d.toISOString().slice(0, 19).replace('T', ' '); }
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function filtered() {
+      var q = state.q.toLowerCase();
+      return calls.filter(function (c) {
+        return (!q || (c.args + c.client).toLowerCase().indexOf(q) !== -1) && (!state.tool || c.tool.name === state.tool) &&
+          (!state.result || (state.result === 'ok') === c.ok);
+      });
+    }
+    function render() {
+      var list = filtered(), pages = Math.max(1, Math.ceil(list.length / state.size));
+      state.page = Math.min(state.page, pages - 1);
+      var from = state.page * state.size, slice = list.slice(from, from + state.size);
+      $('rows').innerHTML = slice.map(function (c) {
+        return '<tr class="row-link" data-i="' + calls.indexOf(c) + '"><td class="text-nowrap">' + fmt(c.time) + '</td>' +
+          '<td><code>' + c.tool.name + '</code>' + (c.tool.write ? ' <span class="badge bg-warning text-dark">write</span>' : '') + '</td>' +
+          '<td class="args text-truncate"><code class="small">' + esc(c.args) + '</code></td><td>' + c.client + '</td>' +
+          '<td class="text-end">' + c.ms + ' ms</td><td><span class="badge ' + (c.ok ? 'bg-success' : 'bg-danger') + '">' + (c.ok ? 'OK' : 'Error') + '</span></td></tr>';
+      }).join('');
+      $('empty').hidden = list.length !== 0;
+      $('range').textContent = list.length ? (from + 1) + '-' + (from + slice.length) + ' of ' + list.length : '0 results';
+      var nav = '';
+      for (var p = 0; p < pages; p++) nav += '<li class="page-item' + (p === state.page ? ' active' : '') + '"><a class="page-link" href="#" data-p="' + p + '">' + (p + 1) + '</a></li>';
+      $('pageNav').innerHTML = nav;
+      $('statCalls').textContent = calls.filter(function (c) { return c.time.toISOString().slice(0, 10) === '2026-10-29'; }).length;
+      $('statErrors').textContent = calls.filter(function (c) { return !c.ok && c.time.toISOString().slice(0, 10) === '2026-10-29'; }).length;
+      $('statWrites').textContent = calls.filter(function (c) { return c.ok && c.tool.write && c.time.toISOString().slice(0, 10) === '2026-10-29'; }).length;
+    }
+    $('search').addEventListener('input', function () { state.q = this.value; state.page = 0; render(); });
+    $('toolFilter').addEventListener('change', function () { state.tool = this.value; state.page = 0; render(); });
+    $('resultFilter').addEventListener('change', function () { state.result = this.value; state.page = 0; render(); });
+    $('pageSize').addEventListener('change', function () { state.size = Number(this.value); state.page = 0; render(); });
+    $('pageNav').addEventListener('click', function (e) { var a = e.target.closest('[data-p]'); if (!a) return; e.preventDefault(); state.page = Number(a.getAttribute('data-p')); render(); });
+    $('rows').addEventListener('click', function (e) {
+      var tr = e.target.closest('tr[data-i]'); if (!tr) return;
+      var c = calls[Number(tr.getAttribute('data-i'))];
+      $('dTitle').textContent = c.tool.name;
+      $('dBadge').className = 'badge me-2 ' + (c.ok ? 'bg-success' : 'bg-danger'); $('dBadge').textContent = c.ok ? 'OK' : 'Error';
+      $('dTime').textContent = fmt(c.time); $('dClient').textContent = c.client; $('dToken').textContent = c.token; $('dDuration').textContent = c.ms + ' ms';
+      $('dReq').textContent = JSON.stringify(JSON.parse(c.args), null, 2); $('dRes').textContent = JSON.stringify(JSON.parse(c.res.replace('…', '"…"')), null, 2);
+      bootstrap.Offcanvas.getOrCreateInstance($('detailsPanel')).show();
+    });
+    render();
+  })();
+</script>
+
+</div>
+
+<footer class="bg-light text-center text-lg-start mt-4 border-top">
+  <div class="container p-4 mt-2" style="padding-top: 0 !important;">
+    <h5 class="text-uppercase fw-bold text-primary"><i class="fas fa-webhook me-2"></i>Mock Webhook</h5>
+    <p class="text-muted mb-3">A simple application to create, manage, and test webhook APIs. Create custom endpoints, view incoming requests, and configure responses.</p>
+    <p class="mt-3 mb-0"><strong>Part of <a href="#" class="text-primary text-decoration-none fw-bold">QuyIT Platform</a> tools suite</strong></p>
+  </div>
+  <div class="text-center p-3 bg-white border-top">
+    <small class="text-muted">© 2026 <a href="#" class="text-primary text-decoration-none mx-2">QuyIT Platform</a> | Mock Webhook Tool</small>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script>
+  // Tooltip như footer gốc; form không gửi đi đâu, hành vi do nút (actions.py) mô phỏng
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new bootstrap.Tooltip(el); });
+  document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) { new bootstrap.Popover(el); });
+  document.addEventListener('submit', function (e) { e.preventDefault(); });
+  // Nút hiện/ẩn mật khẩu dùng chung: <button data-toggle-password="<id ô nhập>">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle-password]'); if (!b) return;
+    var input = document.getElementById(b.getAttribute('data-toggle-password')), icon = b.querySelector('i');
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = 'fas ' + (show ? 'fa-eye-slash' : 'fa-eye');
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
+  // Mở modal Bootstrap có sẵn sau khi hiện thông báo
+  window.protoHideModal = function (id) { var m = bootstrap.Modal.getInstance(document.getElementById(id)); if (m) m.hide(); };
+</script>
+<!--proto:begin-->
+<!-- Được sinh bởi _gen/interact.py. Đừng sửa tay: sửa nguồn trong _gen/ rồi dựng lại. -->
+<style>
+[hidden]{display:none!important}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;padding:4px;line-height:1;cursor:pointer}
+.icon-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.proto-layer{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:2147483000}
+.proto-dialog{background:var(--proto-surface,Canvas);color:var(--proto-text,CanvasText);border-radius:12px;padding:20px;width:min(440px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3);font:inherit}
+.proto-title{margin:0 0 8px;font-size:1.1em}
+.proto-body{margin:0 0 12px;opacity:.8}
+.proto-field{margin:0 0 12px;display:flex;flex-direction:column;gap:4px}
+.proto-field input,.proto-field select,.proto-field textarea{font:inherit;padding:8px;border:1px solid rgba(128,128,128,.5);border-radius:8px;background:transparent;color:inherit}
+.proto-field [aria-invalid=true]{border-color:#dc2626}
+.proto-error{color:#dc2626;font-size:.9em}
+.proto-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.proto-btn{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid rgba(128,128,128,.5);background:transparent;color:inherit;cursor:pointer}
+.proto-btn-primary{background:var(--proto-accent,#2563eb);border-color:var(--proto-accent,#2563eb);color:#fff}
+.proto-btn-danger{background:#dc2626;border-color:#dc2626}
+.proto-btn:disabled{opacity:.6;cursor:default}
+.proto-toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:2147483001}
+.proto-toast{background:#111827;color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.proto-toast-error{background:#b91c1c}
+</style>
+<script>window.__PROTO_ACTIONS={"a1": {"type": "goto", "screen": "login"}};window.__PROTO_STRINGS={"required": "Please enter {label}", "processing": "Processing…", "saved": "Saved", "cancel": "Cancel", "confirm": "Save", "confirm_danger": "Delete", "error": "Something went wrong. Please try again."};</script>
+<script>
+(function () {
+  var A = window.__PROTO_ACTIONS || {};
+  var S = window.__PROTO_STRINGS || {};
+  var layer = null, opener = null;
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function toast(msg, kind) {
+    var box = document.querySelector('.proto-toasts');
+    if (!box) {
+      box = el('div', 'proto-toasts');
+      box.setAttribute('role', 'status');
+      box.setAttribute('aria-live', 'polite');
+      document.body.appendChild(box);
+    }
+    var t = el('div', 'proto-toast' + (kind === 'error' ? ' proto-toast-error' : ''), msg);
+    box.appendChild(t);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3200);
+  }
+  function closeModal() {
+    if (layer && layer.parentNode) layer.parentNode.removeChild(layer);
+    layer = null;
+    if (opener && opener.focus) opener.focus();
+    opener = null;
+  }
+  function openModal(spec, danger) {
+    closeModal();
+    opener = document.activeElement;
+    layer = el('div', 'proto-layer');
+    var dlg = el('div', 'proto-dialog');
+    dlg.setAttribute('role', 'dialog');
+    dlg.setAttribute('aria-modal', 'true');
+    dlg.setAttribute('aria-labelledby', 'proto-title');
+    var title = el('h2', 'proto-title', spec.title || '');
+    title.id = 'proto-title';
+    dlg.appendChild(title);
+    if (spec.body) dlg.appendChild(el('p', 'proto-body', spec.body));
+    var inputs = [];
+    (spec.fields || []).forEach(function (f, i) {
+      var row = el('div', 'proto-field');
+      var id = 'proto-f' + i;
+      var lab = el('label', null, f.label || '');
+      lab.setAttribute('for', id);
+      var ctl;
+      if (f.type === 'select') {
+        ctl = el('select');
+        (f.options || []).forEach(function (o) { var op = el('option', null, o); op.value = o; ctl.appendChild(op); });
+      } else if (f.type === 'textarea') {
+        ctl = el('textarea');
+        ctl.rows = 3;
+      } else {
+        ctl = el('input');
+        ctl.type = f.type || 'text';
+      }
+      ctl.id = id;
+      if (f.placeholder) ctl.placeholder = f.placeholder;
+      if (f.value != null) ctl.value = f.value;
+      var err = el('div', 'proto-error');
+      err.hidden = true;
+      row.appendChild(lab); row.appendChild(ctl); row.appendChild(err);
+      dlg.appendChild(row);
+      inputs.push({ f: f, ctl: ctl, err: err });
+    });
+    var bar = el('div', 'proto-actions');
+    var cancel = el('button', 'proto-btn', spec.cancel || S.cancel);
+    cancel.type = 'button';
+    var ok = el('button', 'proto-btn proto-btn-primary' + (danger ? ' proto-btn-danger' : ''),
+                spec.confirm || (danger ? S.confirm_danger : S.confirm));
+    ok.type = 'button';
+    bar.appendChild(cancel); bar.appendChild(ok); dlg.appendChild(bar);
+    layer.appendChild(dlg);
+    document.body.appendChild(layer);
+    cancel.addEventListener('click', closeModal);
+    layer.addEventListener('mousedown', function (e) { if (e.target === layer) closeModal(); });
+    ok.addEventListener('click', function () {
+      var valid = true, first = null;
+      inputs.forEach(function (x) {
+        var empty = !String(x.ctl.value).trim();
+        if (x.f.required && empty) {
+          x.err.textContent = (S.required || '').replace('{label}', String(x.f.label || '').toLowerCase());
+          x.err.hidden = false;
+          x.ctl.setAttribute('aria-invalid', 'true');
+          valid = false;
+          if (!first) first = x.ctl;
+        } else {
+          x.err.hidden = true;
+          x.ctl.removeAttribute('aria-invalid');
+        }
+      });
+      if (!valid) { first.focus(); return; }
+      var label = ok.textContent;
+      ok.disabled = true; cancel.disabled = true; ok.textContent = S.processing;
+      setTimeout(function () {
+        if (spec.outcome === 'error') {
+          ok.disabled = false; cancel.disabled = false; ok.textContent = label;
+          toast(spec.error || S.error, 'error');
+          return;
+        }
+        closeModal();
+        toast(spec.toast || S.saved);
+      }, spec.delay == null ? 600 : spec.delay);
+    });
+    (inputs.length ? inputs[0].ctl : ok).focus();
+  }
+  function toggle(name, trigger) {
+    var r = document.querySelector('[data-region="' + name + '"]');
+    if (!r) return;
+    r.hidden = !r.hidden;
+    if (trigger && trigger.setAttribute) trigger.setAttribute('aria-expanded', String(!r.hidden));
+  }
+  function run(spec, trigger) {
+    switch (spec.type) {
+      case 'modal': openModal(spec, false); break;
+      case 'confirm': openModal(spec, true); break;
+      case 'toggle': toggle(spec.region, trigger); break;
+      case 'toast':
+        if (spec.delay) {
+          var old = trigger.innerHTML;
+          trigger.disabled = true;
+          trigger.textContent = S.processing;
+          setTimeout(function () {
+            trigger.disabled = false;
+            trigger.innerHTML = old;
+            toast(spec.message, spec.outcome === 'error' ? 'error' : null);
+          }, spec.delay);
+        } else {
+          toast(spec.message, spec.outcome === 'error' ? 'error' : null);
+        }
+        break;
+      case 'goto':
+        var ev = new CustomEvent('proto:goto', { detail: { screen: spec.screen }, cancelable: true });
+        if (window.dispatchEvent(ev)) location.href = spec.screen + '.dc.html';
+        break;
+      case 'close': closeModal(); break;
+    }
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!t || t.disabled) return;
+    var spec = A[t.getAttribute('data-act')];
+    if (!spec) return;
+    e.preventDefault();
+    run(spec, t);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+})();
+</script>
+<!--proto:end-->
+</body>
+</html>

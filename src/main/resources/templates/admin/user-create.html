@@ -8,6 +8,10 @@
 <div class="container">
     <div th:replace="fragments/navigation :: navigation"></div>
 
+<div class="row g-4">
+<aside th:replace="fragments/admin-sidebar :: sidebar('users')"></aside>
+<main class="col-lg-9" style="min-width:0">
+
     <!-- Layout: fields grouped into Account / Security / Permissions; the sticky summary keeps Create User and Cancel in view. -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-2">
@@ -115,6 +119,8 @@
             </div>
         </div>
     </form>
+</main>
+</div>
 </div>
 <div th:replace="fragments/footer :: footer"></div>
 
