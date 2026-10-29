@@ -65,4 +65,37 @@ class SettingsServiceTest {
     s.saveGeneral(new GeneralSettingsDto("Site", "", true, 0));
     assertEquals("https://default.test", s.getDomain());
   }
+
+  @Test
+  void mcpSettingsHaveDefaultsAndAreClamped() {
+    AppSettingRepository repo = mock(AppSettingRepository.class);
+    when(repo.findById(anyString())).thenReturn(Optional.empty());
+    SettingsService s = service(repo);
+    assertTrue(s.isMcpEnabled());
+    assertEquals(60, s.getMcpRateLimitPerMinute());
+    assertEquals(50, s.getMcpMaxPageSize());
+    assertTrue(s.getMcpExtraOrigins().isEmpty());
+
+    when(repo.findById("mcp.rateLimitPerMinute")).thenReturn(Optional.of(new AppSetting("mcp.rateLimitPerMinute", "99999")));
+    when(repo.findById("mcp.maxPageSize")).thenReturn(Optional.of(new AppSetting("mcp.maxPageSize", "abc")));
+    SettingsService clamped = service(repo);
+    assertEquals(600, clamped.getMcpRateLimitPerMinute());
+    assertEquals(50, clamped.getMcpMaxPageSize());
+  }
+
+  @Test
+  void savingMcpSettingsNormalisesTheOriginList() {
+    AppSettingRepository repo = mock(AppSettingRepository.class);
+    when(repo.findById(anyString())).thenReturn(Optional.empty());
+    when(repo.save(org.mockito.ArgumentMatchers.any(AppSetting.class))).thenAnswer(i -> i.getArgument(0));
+    SettingsService s = service(repo);
+
+    s.saveMcp(new vn.autobot.webhook.dto.McpSettingsDto(false, 10, 25, "  http://localhost:6274 \r\n\r\n http://a.test\n"));
+
+    assertFalse(s.isMcpEnabled());
+    assertEquals(10, s.getMcpRateLimitPerMinute());
+    assertEquals(25, s.getMcpMaxPageSize());
+    assertEquals(java.util.Arrays.asList("http://localhost:6274", "http://a.test"), s.getMcpExtraOrigins());
+    assertEquals("http://localhost:6274\nhttp://a.test", s.getMcp().getExtraOrigins());
+  }
 }

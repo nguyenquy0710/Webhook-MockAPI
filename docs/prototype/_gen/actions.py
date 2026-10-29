@@ -43,6 +43,9 @@ ACTIONS = {
     },
     "dashboard": {
         "copy url": {"type": "toast", "message": "URL copied to clipboard"},
+        "generate token": {"type": "confirm", "title": "Renew token?",
+                           "body": "Any current token stops working immediately. Update every MCP client that uses it.",
+                           "confirm": "Renew", "toast": "Token renewed"},
     },
     "api-config": {
         "backup": {"type": "toast", "message": "API configurations backed up successfully!", "delay": 800},
@@ -70,6 +73,7 @@ ACTIONS = {
                         "confirm": "Delete", "toast": "User deleted successfully!"},
     },
     "admin-settings": {
+        "save mcp settings": {"type": "toast", "message": "MCP settings saved.", "delay": 600},
         "save settings": {"type": "toast", "message": "General settings saved.", "delay": 600},
         "run maintenance": {"type": "confirm", "title": "Run database maintenance?",
                             "body": "This also schedules a full compaction of the database file for the next restart. Writes are blocked while it runs and free disk space about the size of the database is required.",

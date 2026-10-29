@@ -11,9 +11,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.RequestLogDto;
 import vn.autobot.webhook.service.ApiMockService;
+import vn.autobot.webhook.service.McpCallService;
+import vn.autobot.webhook.service.McpTokenService;
 import vn.autobot.webhook.service.SettingsService;
 import vn.autobot.webhook.service.RequestLogService;
 
@@ -29,6 +32,8 @@ public class WebhookViewController {
     private final ApiMockService apiMockService;
     private final RequestLogService requestLogService;
     private final SettingsService settingsService;
+    private final McpTokenService mcpTokenService;
+    private final McpCallService mcpCallService;
 
     @GetMapping("/")
     public String home() {
@@ -46,7 +51,36 @@ public class WebhookViewController {
             requestLogService.countRequestLogsSince(username, LocalDate.now().atStartOfDay()));
         Page<RequestLogDto> recent = requestLogService.getRequestLogs(username, PageRequest.of(0, 5));
         model.addAttribute("recentLogs", recent.getContent());
+        // MCP card: endpoint URL and token status; the token itself is only in the model right after Generate/Renew
+        model.addAttribute("mcpUrl", settingsService.getDomain() + "/mcp/@" + username + "/mcp");
+        model.addAttribute("mcpToken", mcpTokenService.find(username).orElse(null));
+        model.addAttribute("mcpSseUrl", settingsService.getDomain() + "/mcp/@" + username + "/sse");
+        model.addAttribute("mcpEnabled", settingsService.isMcpEnabled());
         return "dashboard";
+    }
+
+    @GetMapping("/mcp-activity")
+    public String mcpActivity(@AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "") String tool, @RequestParam(defaultValue = "") String result,
+            @RequestParam(defaultValue = "") String q, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size, Model model) {
+        String username = userDetails.getUsername();
+        int pageSize = size == 25 ? 25 : 10;
+        model.addAttribute("calls", mcpCallService.search(username, tool, result, q, PageRequest.of(Math.max(0, page), pageSize)));
+        model.addAttribute("stats", mcpCallService.statsToday(username));
+        model.addAttribute("tool", tool);
+        model.addAttribute("result", result);
+        model.addAttribute("q", q);
+        model.addAttribute("size", pageSize);
+        model.addAttribute("writeTools", McpCallService.WRITE_TOOLS);
+        model.addAttribute("username", username);
+        return "mcp-activity";
+    }
+
+    @PostMapping("/mcp-token/renew")
+    public String renewMcpToken(@AuthenticationPrincipal UserDetails userDetails, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("newMcpToken", mcpTokenService.renew(userDetails.getUsername()));
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/api-configs")

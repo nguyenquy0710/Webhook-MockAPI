@@ -193,6 +193,50 @@ public class RequestLogService {
     return requestLogRepository.search(user, path, m, min, max, pageable).map(this::convertToDto);
   }
 
+  /** Logs of one exact request path (full URI such as /api/@user/orders), optional method and status class. */
+  public Page<RequestLogDto> searchByExactPath(String username, String path, String method, String statusClass,
+                                               Pageable pageable) {
+    User user = userService.findByUsername(username);
+    int min = 0;
+    int max = Integer.MAX_VALUE;
+    if (statusClass != null && statusClass.matches("[1-5]")) {
+      min = Integer.parseInt(statusClass) * 100;
+      max = min + 100;
+    }
+    String m = method == null ? "" : method.trim().toUpperCase();
+    return requestLogRepository.searchByPath(user, path, m, min, max, pageable).map(this::convertToDto);
+  }
+
+  public static class RangeStats {
+    public long total;
+    public final java.util.Map<String, Long> byMethod = new java.util.LinkedHashMap<>();
+    public final java.util.Map<String, Long> byStatusClass = new java.util.LinkedHashMap<>();
+    public final java.util.Map<String, Long> byDay = new java.util.LinkedHashMap<>();
+    public final java.util.Map<String, Long> topPaths = new java.util.LinkedHashMap<>();
+  }
+
+  /** Counts over [from, to) for the user; exactPath (full URI) narrows it to one endpoint, empty means all. */
+  public RangeStats statsBetween(String username, java.time.LocalDateTime from, java.time.LocalDateTime to, String exactPath) {
+    User user = userService.findByUsername(username);
+    String path = exactPath == null ? "" : exactPath;
+    RangeStats stats = new RangeStats();
+    stats.total = requestLogRepository.countInRange(user, from, to, path);
+    for (Object[] row : requestLogRepository.countByMethodInRange(user, from, to, path)) {
+      stats.byMethod.put(String.valueOf(row[0]), ((Number) row[1]).longValue());
+    }
+    for (Object[] row : requestLogRepository.countByStatusClassInRange(user, from, to, path)) {
+      stats.byStatusClass.put(((Number) row[0]).intValue() + "xx", ((Number) row[1]).longValue());
+    }
+    for (Object[] row : requestLogRepository.countByDayInRange(user, from, to, path)) {
+      stats.byDay.put(String.format("%04d-%02d-%02d", ((Number) row[0]).intValue(), ((Number) row[1]).intValue(),
+          ((Number) row[2]).intValue()), ((Number) row[3]).longValue());
+    }
+    for (Object[] row : requestLogRepository.topPathsInRange(user, from, to, path, org.springframework.data.domain.PageRequest.of(0, 10))) {
+      stats.topPaths.put(String.valueOf(row[0]), ((Number) row[1]).longValue());
+    }
+    return stats;
+  }
+
   public long countRequestLogs(String username, String pathFilter) {
     User user = userService.findByUsername(username);
     

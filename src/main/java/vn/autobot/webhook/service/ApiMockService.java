@@ -290,6 +290,9 @@ public class ApiMockService {
     dto.setFailureCount(apiConfig.getFailureCount());
     dto.setFailureStatusCodes(apiConfig.getFailureStatusCodes());
     dto.setRetryAfterSeconds(apiConfig.getRetryAfterSeconds());
+    // Microseconds, the precision the database keeps: a value read back later must equal the one returned right after saving
+    dto.setUpdatedAt(apiConfig.getUpdatedAt() == null ? null
+        : apiConfig.getUpdatedAt().truncatedTo(java.time.temporal.ChronoUnit.MICROS).toString());
     return dto;
   }
 

@@ -38,7 +38,8 @@ class AdminSettingsControllerTest {
   void setUp() {
     settings = mock(SettingsService.class);
     maintenance = mock(DatabaseMaintenanceService.class);
-    controller = new AdminController(mock(UserService.class), mock(RequestLogService.class), settings, maintenance);
+    controller = new AdminController(mock(UserService.class), mock(RequestLogService.class), settings, maintenance,
+        mock(vn.autobot.webhook.service.McpTokenService.class), mock(vn.autobot.webhook.service.McpCallService.class));
     validator = new LocalValidatorFactoryBean();
     validator.afterPropertiesSet();
   }
@@ -118,5 +119,36 @@ class AdminSettingsControllerTest {
     flash = new RedirectAttributesModelMap();
     controller.runMaintenance(flash);
     assertEquals("Database maintenance finished: boom", flash.getFlashAttributes().get("errorMessage"));
+  }
+
+  @Test
+  void validMcpSettingsAreSaved() {
+    vn.autobot.webhook.dto.McpSettingsDto dto = new vn.autobot.webhook.dto.McpSettingsDto(true, 60, 50, "http://localhost:6274");
+    BeanPropertyBindingResult result = new BeanPropertyBindingResult(dto, "mcp");
+    validator.validate(dto, result);
+    RedirectAttributesModelMap flash = new RedirectAttributesModelMap();
+
+    String view = controller.saveMcpSettings(dto, result, admin, new ConcurrentModel(), flash);
+
+    assertEquals("redirect:/admin/settings", view);
+    verify(settings).saveMcp(dto);
+    assertEquals("MCP settings saved.", flash.getFlashAttributes().get("successMessage"));
+  }
+
+  @Test
+  void invalidMcpSettingsRerenderWithoutSaving() {
+    when(settings.getGeneral()).thenReturn(new GeneralSettingsDto("Site", "", true, 0));
+    when(maintenance.getStatus()).thenReturn(mock(DatabaseMaintenanceService.Status.class));
+    vn.autobot.webhook.dto.McpSettingsDto dto = new vn.autobot.webhook.dto.McpSettingsDto(true, 0, 500, "ftp://x\nhttp://ok.test");
+    BeanPropertyBindingResult result = new BeanPropertyBindingResult(dto, "mcp");
+    validator.validate(dto, result);
+
+    String view = controller.saveMcpSettings(dto, result, admin, new ConcurrentModel(), new RedirectAttributesModelMap());
+
+    assertEquals("admin/settings", view);
+    assertTrue(result.hasFieldErrors("rateLimitPerMinute"));
+    assertTrue(result.hasFieldErrors("maxPageSize"));
+    assertTrue(result.hasFieldErrors("extraOrigins"));
+    verify(settings, never()).saveMcp(any());
   }
 }

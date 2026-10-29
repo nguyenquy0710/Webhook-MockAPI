@@ -109,6 +109,68 @@
         </div>
 
         <div class="col-lg-4">
+            <!-- MCP: URL for AI clients, Bearer token and connection help. The full token is only in the page right after
+                 Generate/Renew; the snippets below use it then, and <your-token> otherwise. -->
+            <div class="card shadow-sm border-0 mb-4" id="mcpCard">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-plug me-2 text-primary"></i>MCP Server</h5>
+                    <a th:href="@{/mcp-activity}" class="small text-decoration-none">Activity</a>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-secondary py-2 small" th:unless="${mcpEnabled}"><i class="fas fa-ban me-1"></i>MCP is turned off by an administrator.</div>
+                    <label for="mcpUrl" class="form-label fw-semibold small">MCP URL</label>
+                    <div class="input-group input-group-sm mb-3">
+                        <input type="text" class="form-control font-monospace" id="mcpUrl" readonly th:value="${mcpUrl}" th:data-sse-url="${mcpSseUrl}" value="https://domain/mcp/@username/mcp">
+                        <button class="btn btn-outline-primary copy-mcp-btn" type="button" th:data-clipboard-text="${mcpUrl}" aria-label="Copy MCP URL"><i class="fas fa-copy"></i></button>
+                    </div>
+
+                    <label for="mcpTokenValue" class="form-label fw-semibold small">Bearer token</label>
+                    <div th:if="${newMcpToken}">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control font-monospace" id="mcpTokenValue" readonly th:value="${newMcpToken}">
+                            <button class="btn btn-outline-primary copy-mcp-btn" type="button" th:data-clipboard-text="${newMcpToken}" aria-label="Copy token"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <div class="form-text text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Copy it now. It will not be shown again.</div>
+                    </div>
+                    <div th:unless="${newMcpToken}">
+                        <div th:if="${mcpToken != null}">
+                            <code th:text="${'mcp_••••••••' + mcpToken.tokenSuffix}">mcp_••••••••abcd</code>
+                            <div class="form-text">
+                                Created <span th:text="${#temporals.format(mcpToken.createdAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 10:00</span> UTC ·
+                                Last used <span th:text="${mcpToken.lastUsedAt != null ? #temporals.format(mcpToken.lastUsedAt, 'yyyy-MM-dd HH:mm') + ' UTC' : 'never'}">never</span>
+                            </div>
+                        </div>
+                        <div th:if="${mcpToken == null}" class="text-muted small">No token yet.</div>
+                    </div>
+
+                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#renewMcpModal">
+                        <i class="fas fa-sync-alt me-1"></i><span th:text="${mcpToken == null ? 'Generate Token' : 'Renew Token'}">Renew Token</span>
+                    </button>
+
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none px-0 mt-2" data-bs-toggle="collapse" data-bs-target="#mcpConnect"
+                            th:attr="aria-expanded=${newMcpToken != null}" aria-controls="mcpConnect">
+                        <i class="fas fa-chevron-down me-1" id="mcpConnectIcon"></i>Connect a client
+                    </button>
+                    <div class="collapse" id="mcpConnect" th:classappend="${newMcpToken != null} ? 'show'">
+                        <ul class="nav nav-tabs nav-fill small mb-2" role="tablist">
+                            <li class="nav-item" role="presentation"><button class="nav-link active py-1" data-bs-toggle="tab" data-bs-target="#mcpTabCode" type="button" role="tab">Claude Code</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mcpTabCursor" type="button" role="tab">Cursor</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mcpTabCurl" type="button" role="tab">cURL</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mcpTabSse" type="button" role="tab">SSE</button></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="mcpTabCode" role="tabpanel"><pre class="small bg-light border rounded p-2 mb-0 text-break" style="white-space: pre-wrap;"><code class="mcp-snippet" data-kind="code"></code></pre></div>
+                            <div class="tab-pane fade" id="mcpTabCursor" role="tabpanel"><pre class="small bg-light border rounded p-2 mb-0 text-break" style="white-space: pre-wrap;"><code class="mcp-snippet" data-kind="cursor"></code></pre></div>
+                            <div class="tab-pane fade" id="mcpTabCurl" role="tabpanel"><pre class="small bg-light border rounded p-2 mb-0 text-break" style="white-space: pre-wrap;"><code class="mcp-snippet" data-kind="curl"></code></pre></div>
+                            <div class="tab-pane fade" id="mcpTabSse" role="tabpanel">
+                                <div class="small text-muted mb-1">For older clients that only speak HTTP+SSE.</div>
+                                <pre class="small bg-light border rounded p-2 mb-0 text-break" style="white-space: pre-wrap;"><code class="mcp-snippet" data-kind="sse"></code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 d-flex align-items-center"><i class="fas fa-rocket me-2 text-primary"></i>Quick Start Guide</h5>
@@ -148,6 +210,26 @@
     </div>
 </div>
 
+<!-- Renewing replaces the token, so the previous one stops working immediately -->
+<div class="modal fade" id="renewMcpModal" tabindex="-1" aria-labelledby="renewMcpTitle" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/mcp-token/renew}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renewMcpTitle" th:text="${mcpToken == null ? 'Generate token?' : 'Renew token?'}">Renew token?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" th:text="${mcpToken == null ? 'A new token will be created for your MCP clients.' : 'The current token stops working immediately. Update every MCP client that uses it.'}">The current token stops working immediately.</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" th:text="${mcpToken == null ? 'Generate' : 'Renew'}">Renew</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div th:replace="fragments/footer :: footer"></div>
 <script th:src="@{/js/dashboard.js}"></script>
 <script>
@@ -169,6 +251,37 @@
             });
         });
     });
+
+    // MCP card: copy buttons, and the connection snippets (they carry the real token only while it is on screen)
+    (function () {
+        const tokenInput = document.getElementById('mcpTokenValue');
+        const token = tokenInput ? tokenInput.value : '<your-token>';
+        const urlInput = document.getElementById('mcpUrl');
+        const url = urlInput.value, sse = urlInput.getAttribute('data-sse-url');
+        const auth = 'Bearer ' + token;
+        const snippets = {
+            code: 'claude mcp add --transport http webhook-mockapi ' + url + ' \\\n  --header "Authorization: ' + auth + '"',
+            cursor: JSON.stringify({ mcpServers: { 'webhook-mockapi': { url: url, headers: { Authorization: auth } } } }, null, 2),
+            curl: 'curl -X POST ' + url + ' \\\n  -H "Authorization: ' + auth + '" \\\n  -H "Content-Type: application/json" \\\n  -H "Accept: application/json, text/event-stream" \\\n  -d \'{"jsonrpc":"2.0","id":1,"method":"tools/list"}\'',
+            sse: JSON.stringify({ mcpServers: { 'webhook-mockapi': { url: sse, headers: { Authorization: auth } } } }, null, 2)
+        };
+        document.querySelectorAll('.mcp-snippet').forEach(c => { c.textContent = snippets[c.getAttribute('data-kind')]; });
+
+        document.querySelectorAll('.copy-mcp-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                navigator.clipboard.writeText(this.getAttribute('data-clipboard-text')).then(() => {
+                    const icon = this.querySelector('i');
+                    icon.className = 'fas fa-check';
+                    setTimeout(() => { icon.className = 'fas fa-copy'; }, 1500);
+                });
+            });
+        });
+        const connect = document.getElementById('mcpConnect'), icon = document.getElementById('mcpConnectIcon');
+        const sync = () => { icon.className = 'fas me-1 ' + (connect.classList.contains('show') ? 'fa-chevron-up' : 'fa-chevron-down'); };
+        connect.addEventListener('show.bs.collapse', () => { icon.className = 'fas fa-chevron-up me-1'; });
+        connect.addEventListener('hide.bs.collapse', () => { icon.className = 'fas fa-chevron-down me-1'; });
+        sync();
+    })();
 
     // Rows in the recent requests table open the Request Logs page
     document.querySelectorAll('.row-link').forEach(row => {

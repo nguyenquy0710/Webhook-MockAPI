@@ -49,7 +49,7 @@ class DatabaseMaintenanceServiceTest {
     when(repo.findById(anyString())).thenReturn(Optional.empty());
     when(repo.save(any(AppSetting.class))).thenAnswer(i -> i.getArgument(0));
     settings = new SettingsService(repo, new AppConfig());
-    service = new DatabaseMaintenanceService(jdbc, settings, logs);
+    service = new DatabaseMaintenanceService(jdbc, settings, logs, mock(McpCallService.class));
     ReflectionTestUtils.setField(service, "datasourceUrl", "jdbc:h2:file:" + dir.resolve("db") + ";DB_CLOSE_DELAY=-1");
   }
 

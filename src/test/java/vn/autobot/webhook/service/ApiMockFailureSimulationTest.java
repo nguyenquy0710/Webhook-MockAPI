@@ -137,4 +137,16 @@ class ApiMockFailureSimulationTest {
     ok.setRetryAfterSeconds(-1);
     assertEquals(3, validator.validate(ok).size());
   }
+
+  @Test
+  void updatedAtIsExposedAtDatabasePrecision() {
+    config.setUser(new User());
+    config.getUser().setId(1L);
+    config.setUpdatedAt(java.time.LocalDateTime.of(2026, 10, 29, 2, 20, 5, 768_749_257));
+    when(repository.findById(7L)).thenReturn(java.util.Optional.of(config));
+
+    String updatedAt = service.getApiConfig("demo", 7L).getUpdatedAt();
+
+    assertEquals("2026-10-29T02:20:05.768749", updatedAt);
+  }
 }
