@@ -30,6 +30,7 @@ public class DatabaseMaintenanceService {
     private final JdbcTemplate jdbcTemplate;
     private final SettingsService settings;
     private final RequestLogService requestLogService;
+    private final McpCallService mcpCallService;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     @Value("${spring.datasource.url}")
@@ -94,6 +95,10 @@ public class DatabaseMaintenanceService {
             if (retentionDays > 0) {
                 done.append("Deleted ").append(requestLogService.purgeOlderThan(retentionDays))
                         .append(" request log(s) older than ").append(retentionDays).append(" days, ");
+            }
+            int oldCalls = mcpCallService.purgeOld();
+            if (oldCalls > 0) {
+                done.append("Deleted ").append(oldCalls).append(" MCP call(s) older than ").append(McpCallService.RETENTION_DAYS).append(" days, ");
             }
             jdbcTemplate.execute("CHECKPOINT");
             done.append("Checkpoint");

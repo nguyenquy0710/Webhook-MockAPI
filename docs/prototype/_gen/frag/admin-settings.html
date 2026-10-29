@@ -44,6 +44,49 @@
     <div class="card-footer bg-white text-end"><button type="button" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Settings</button></div>
   </div>
 
+  <!-- MCP: bật/tắt toàn hệ thống, giới hạn tốc độ theo token, origin trình duyệt được phép gọi; số liệu để quản trị viên biết có đang dùng không -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-plug me-2 text-primary"></i>MCP Server</h5>
+      <span class="badge bg-success" id="mcpBadge">Enabled</span>
+    </div>
+    <div class="card-body">
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="mcpEnabled" checked>
+        <label class="form-check-label" for="mcpEnabled">Enable MCP server</label>
+        <div class="form-text">When off, every MCP request is rejected and the dashboard card shows that MCP is turned off.</div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="mcpRate" class="form-label fw-semibold">Rate limit</label>
+          <div class="input-group">
+            <input type="number" class="form-control" id="mcpRate" value="60" min="1" max="600">
+            <span class="input-group-text">requests / min / token</span>
+          </div>
+          <div class="invalid-feedback">Rate limit must be between 1 and 600</div>
+        </div>
+        <div class="col-md-6">
+          <label for="mcpPageMax" class="form-label fw-semibold">Max page size</label>
+          <div class="input-group">
+            <input type="number" class="form-control" id="mcpPageMax" value="50" min="1" max="200">
+            <span class="input-group-text">items</span>
+          </div>
+          <div class="invalid-feedback">Page size must be between 1 and 200</div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="mcpOrigins" class="form-label fw-semibold">Extra allowed origins</label>
+        <textarea class="form-control font-monospace" id="mcpOrigins" rows="2" placeholder="http://localhost:6274"></textarea>
+        <div class="form-text">One per line. Only needed for MCP clients that run in a browser; this site and the public base URL are always allowed.</div>
+      </div>
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Tokens issued</dt><dd class="col-sm-8">7</dd>
+        <dt class="col-sm-4">Calls in the last 24 hours</dt><dd class="col-sm-8">1,284 <span class="text-muted">(12 errors)</span></dd>
+      </dl>
+    </div>
+    <div class="card-footer bg-white text-end"><button type="button" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save MCP Settings</button></div>
+  </div>
+
   <div class="card shadow-sm border-0">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
       <h5 class="mb-0"><i class="fas fa-database me-2 text-info"></i>Database maintenance</h5>
@@ -69,6 +112,12 @@
     $('siteName').addEventListener('input', function () { this.classList.toggle('is-invalid', !this.value.trim()); });
     $('publicBaseUrl').addEventListener('input', function () { this.classList.toggle('is-invalid', !!this.value && !/^https?:\/\/\S+$/.test(this.value)); });
     $('requestLogRetentionDays').addEventListener('input', function () { var v = Number(this.value); this.classList.toggle('is-invalid', this.value === '' || v < 0 || v > 3650); });
+    $('mcpEnabled').addEventListener('change', function () {
+      $('mcpBadge').className = 'badge ' + (this.checked ? 'bg-success' : 'bg-secondary');
+      $('mcpBadge').textContent = this.checked ? 'Enabled' : 'Disabled';
+    });
+    $('mcpRate').addEventListener('input', function () { var v = Number(this.value); this.classList.toggle('is-invalid', this.value === '' || v < 1 || v > 600); });
+    $('mcpPageMax').addEventListener('input', function () { var v = Number(this.value); this.classList.toggle('is-invalid', this.value === '' || v < 1 || v > 200); });
     // Run Maintenance: the confirm dialog ends with a toast; update the status card when that toast appears
     function showResult() {
       var d = new Date().toISOString().slice(0, 19).replace('T', ' ');

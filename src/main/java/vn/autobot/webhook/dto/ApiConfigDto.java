@@ -59,4 +59,7 @@ public class ApiConfigDto {
     @Min(value = 0, message = "Retry-After cannot be negative")
     @Max(value = 60, message = "Retry-After must be at most 60 seconds")
     private Integer retryAfterSeconds;
+
+    // Read-only: ISO timestamp of the last change, used by MCP clients to avoid overwriting newer edits
+    private String updatedAt;
 }

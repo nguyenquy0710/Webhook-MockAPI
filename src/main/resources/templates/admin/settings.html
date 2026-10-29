@@ -65,6 +65,57 @@
             </form>
           </div>
 
+          <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="fas fa-plug me-2 text-primary"></i>MCP Server</h5>
+              <span class="badge" th:classappend="${mcp.enabled ? 'bg-success' : 'bg-secondary'}" th:text="${mcp.enabled ? 'Enabled' : 'Disabled'}">Enabled</span>
+            </div>
+            <form th:action="@{/admin/settings/mcp}" th:object="${mcp}" method="post" novalidate>
+              <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                  <input class="form-check-input" type="checkbox" role="switch" id="mcpEnabled" th:field="*{enabled}">
+                  <label class="form-check-label" for="mcpEnabled">Enable MCP server</label>
+                  <div class="form-text">When off, every MCP request is rejected and the dashboard card shows that MCP is turned off.</div>
+                </div>
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label for="mcpRate" class="form-label fw-semibold">Rate limit</label>
+                    <div class="input-group">
+                      <input type="number" class="form-control" id="mcpRate" th:field="*{rateLimitPerMinute}" min="1" max="600"
+                        th:classappend="${#fields.hasErrors('rateLimitPerMinute')} ? 'is-invalid'">
+                      <span class="input-group-text">requests / min / token</span>
+                    </div>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('rateLimitPerMinute')}" th:errors="*{rateLimitPerMinute}">Invalid</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="mcpPageMax" class="form-label fw-semibold">Max page size</label>
+                    <div class="input-group">
+                      <input type="number" class="form-control" id="mcpPageMax" th:field="*{maxPageSize}" min="1" max="200"
+                        th:classappend="${#fields.hasErrors('maxPageSize')} ? 'is-invalid'">
+                      <span class="input-group-text">items</span>
+                    </div>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('maxPageSize')}" th:errors="*{maxPageSize}">Invalid</div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="mcpOrigins" class="form-label fw-semibold">Extra allowed origins</label>
+                  <textarea class="form-control font-monospace" id="mcpOrigins" th:field="*{extraOrigins}" rows="2" placeholder="http://localhost:6274"
+                    th:classappend="${#fields.hasErrors('extraOrigins')} ? 'is-invalid'"></textarea>
+                  <div class="text-danger small" th:if="${#fields.hasErrors('extraOrigins')}" th:errors="*{extraOrigins}">Invalid</div>
+                  <div class="form-text">One per line. Only needed for MCP clients that run in a browser; this site and the public base URL are always allowed.</div>
+                </div>
+                <dl class="row mb-0">
+                  <dt class="col-sm-4">Tokens issued</dt><dd class="col-sm-8" th:text="${mcpTokens}">0</dd>
+                  <dt class="col-sm-4">Calls in the last 24 hours</dt>
+                  <dd class="col-sm-8"><span th:text="${mcpCalls24h}">0</span> <span class="text-muted">(<span th:text="${mcpErrors24h}">0</span> errors)</span></dd>
+                </dl>
+              </div>
+              <div class="card-footer bg-white text-end">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save MCP Settings</button>
+              </div>
+            </form>
+          </div>
+
           <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
               <h5 class="mb-0"><i class="fas fa-database me-2 text-info"></i>Database maintenance</h5>

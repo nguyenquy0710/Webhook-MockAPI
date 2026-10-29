@@ -16,10 +16,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.CreateUserRequestDto;
 import vn.autobot.webhook.dto.GeneralSettingsDto;
+import vn.autobot.webhook.dto.McpSettingsDto;
 import vn.autobot.webhook.dto.RequestLogDto;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.service.ApiMockService;
 import vn.autobot.webhook.service.DatabaseMaintenanceService;
+import vn.autobot.webhook.service.McpCallService;
+import vn.autobot.webhook.service.McpTokenService;
 import vn.autobot.webhook.service.SettingsService;
 import vn.autobot.webhook.service.RequestLogService;
 import vn.autobot.webhook.service.UserService;
@@ -37,14 +40,12 @@ public class AdminController {
     private final RequestLogService requestLogService;
     private final SettingsService settingsService;
     private final DatabaseMaintenanceService maintenanceService;
+    private final McpTokenService mcpTokenService;
+    private final McpCallService mcpCallService;
 
     @GetMapping("/settings")
     public String settings(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        if (!model.containsAttribute("general")) {
-            model.addAttribute("general", settingsService.getGeneral());
-        }
-        model.addAttribute("maintenance", maintenanceService.getStatus());
-        model.addAttribute("username", userDetails.getUsername());
+        fillSettingsModel(userDetails, model);
         return "admin/settings";
     }
 
@@ -53,13 +54,48 @@ public class AdminController {
             BindingResult bindingResult, @AuthenticationPrincipal UserDetails userDetails, Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("maintenance", maintenanceService.getStatus());
-            model.addAttribute("username", userDetails.getUsername());
+            fillSettingsModel(userDetails, model);
             return "admin/settings";
         }
         settingsService.saveGeneral(general);
         redirectAttributes.addFlashAttribute("successMessage", "General settings saved.");
         return "redirect:/admin/settings";
+    }
+
+    @PostMapping("/settings/mcp")
+    public String saveMcpSettings(@Valid @ModelAttribute("mcp") McpSettingsDto mcp, BindingResult bindingResult,
+            @AuthenticationPrincipal UserDetails userDetails, Model model, RedirectAttributes redirectAttributes) {
+        if (mcp.getExtraOrigins() != null) {
+            for (String line : mcp.getExtraOrigins().split("\\R")) {
+                if (!line.trim().isEmpty() && !line.trim().matches("^https?://[^\\s/]+$")) {
+                    bindingResult.rejectValue("extraOrigins", "invalid",
+                            "Each origin must look like http://localhost:6274 (scheme and host, no path)");
+                    break;
+                }
+            }
+        }
+        if (bindingResult.hasErrors()) {
+            fillSettingsModel(userDetails, model);
+            return "admin/settings";
+        }
+        settingsService.saveMcp(mcp);
+        redirectAttributes.addFlashAttribute("successMessage", "MCP settings saved.");
+        return "redirect:/admin/settings";
+    }
+
+    /** Everything the settings page shows; values already in the model (a form with errors) are kept. */
+    private void fillSettingsModel(UserDetails userDetails, Model model) {
+        if (!model.containsAttribute("general")) {
+            model.addAttribute("general", settingsService.getGeneral());
+        }
+        if (!model.containsAttribute("mcp")) {
+            model.addAttribute("mcp", settingsService.getMcp());
+        }
+        model.addAttribute("mcpTokens", mcpTokenService.countTokens());
+        model.addAttribute("mcpCalls24h", mcpCallService.callsLast24h());
+        model.addAttribute("mcpErrors24h", mcpCallService.errorsLast24h());
+        model.addAttribute("maintenance", maintenanceService.getStatus());
+        model.addAttribute("username", userDetails.getUsername());
     }
 
     @PostMapping("/settings/maintenance/run")
