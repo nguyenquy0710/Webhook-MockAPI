@@ -211,7 +211,7 @@ Timeline: 1 dev khoảng 11–18 tuần, 2 dev khoảng 5,5–9 tuần; riêng p
 
 ## Cập nhật 2026-10-29 (Jira)
 
-- Jira: [QUYIT-989](https://nhquydev.atlassian.net/browse/QUYIT-989) (Task, Sprint 35, version Tháng 10/2026, ước lượng gốc 344h, tức cận dưới 43 person-days của plan; Relates QUYIT-963), trạng thái **In Progress**; đã comment tiến độ và việc còn lại. Chưa chuyển Done vì code chưa commit/PR và chưa thử với client MCP thật; chuyển Done khi người dùng yêu cầu hoặc sau khi PR được merge.
+- Jira: [QUYIT-989](https://nhquydev.atlassian.net/browse/QUYIT-989) (Task, Sprint 35, version Tháng 10/2026, ước lượng gốc 344h, tức cận dưới 43 person-days của plan; Relates QUYIT-963), trạng thái **Done** (chuyển ngày 2026-10-29 theo yêu cầu của người dùng khi PR [#48](https://github.com/nguyenquy0710/Webhook-MockAPI/pull/48) đã mở, chưa merge); đã comment kết quả thử MCP Inspector. Còn mở: thử Claude Code và Cursor, đối chiếu cú pháp tab Connect.
 - Trạng thái plan đổi về `in_progress` cho khớp: phần triển khai xong nhưng còn các việc cần người ở mục trước.
 
 ## Cập nhật 2026-10-29 (thử với MCP Inspector)

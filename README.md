@@ -2,119 +2,78 @@
 
 # WebHookMock
 
-A powerful and user-friendly webhook testing tool that allows developers to create, manage, and test webhook APIs with ease.
+A mock server for webhooks and REST APIs. Create endpoints with the response you want, point your application (or a third-party service) at them, and watch every request arrive in real time. AI clients can manage the same endpoints through a built-in [MCP server](#mcp-server).
 
-## 📖 Overview
+Every user gets a namespace: `https://<your-domain>/api/@<username>/<path>`.
 
-WebHookMock is a Spring Boot application designed to simplify webhook development and testing. It provides a seamless way to:
+## Contents
 
-- Create custom API endpoints with configurable responses
-- Monitor and log incoming webhook requests in real-time
-- Configure various response parameters including status codes, headers, and response bodies
-- Add intentional delays to simulate real-world API behavior
-- Export request logs for documentation and analysis
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Using WebHookMock](#using-webhookmock)
+- [MCP server](#mcp-server)
+- [Configuration](#configuration)
+- [Administration](#administration)
+- [Deployment](#deployment)
+- [Development](#development)
+- [Project structure](#project-structure)
+- [Security](#security)
+- [Documentation](#documentation)
 
-## ✨ Features
+## Features
 
-### ✅ API Configuration
+### API configuration
 
-- Create custom endpoints with personalized paths
-- Configure HTTP response status codes (200, 201, 400, 404, etc.)
-- Set response content types (JSON, XML, HTML, etc.)
-- Customize response headers
-- Add response delays to simulate latency
-- Dynamic response templates with request variables (e.g. `{{headers.User-Agent}}`)
+- Endpoints per user, defined by **method + path**, with status code, content type, response body and response headers.
+- **Response templates**: use request values in the body or headers, for example `{{headers.User-Agent}}`, `{{queryParams.utm_source}}`, `{{status}}`.
+- **Response delay** (0–60000 ms) to simulate latency.
+- **Description and note** per endpoint; the description becomes the summary in the generated Swagger spec.
+- **Failure simulation** (for testing a client's retry logic): the first N calls of each caller (identified by the `Idempotency-Key` header, else `X-Request-Id`, else the client IP) get an error status, used in turn from your list (400–599), then the configured response; 429 and 503 carry `Retry-After`. Counters live in memory and reset after 10 idle minutes.
+- **Backup and restore** of all your configurations as JSON.
+- **Swagger**: per-user OpenAPI spec at `/swagger/@<username>` and Swagger UI at `/swagger-ui`.
 
-### 📡 Request Monitoring
+### Request monitoring
 
-- Real-time logging of all incoming requests
-- Detailed view of request headers, body, and parameters
-- WebSocket support for live updates
-- Export logs to Excel for further analysis
-- Each log entry includes a ready-to-use `curl` command
-- REST endpoints documented in `static /swagger.json`
-- Swagger UI available at `/swagger-ui` and per-user specs at `/swagger/@{username}`
+- Every request to your endpoints is logged: method, path, query, headers, body, source IP, response status and body, plus a ready-to-run `curl` command.
+- **Live updates** over WebSocket (STOMP).
+- Filter by path, method and status class; paging; details panel; export to Excel.
+- Dashboard with today's request count, the latest requests and your webhook URL.
 
-### 🔐 User Management
+### MCP server
 
-- Secure registration and authentication
-- User-specific webhook URLs (e.g., `https://domain/api/@username/path`)
-- Isolated environments for each user
+An [MCP](https://modelcontextprotocol.io) server on the same port lets AI clients create and update endpoints and read statistics and request logs on your behalf. See [MCP server](#mcp-server).
 
-## 🧰 Technology Stack
+### Accounts and administration
 
-- **Backend**: Spring Boot 2.7.9
-- **Security**: Spring Security
-- **Database**: H2 Database (file-based persistence)
-- **Frontend**: Thymeleaf, Bootstrap 5, Font Awesome
-- **Real-time Updates**: WebSocket (STOMP)
-- **Export Functionality**: Apache POI (Excel)
+- Registration (can be switched off), login, password change; BCrypt password hashing.
+- Roles `USER` and `ADMIN`; each user only sees their own endpoints and logs.
+- Admin area: user management and **Settings** (site name, public base URL, log retention, registration, MCP options, database maintenance).
 
-## 🚀 Getting Started
+## Quick start
 
-### Prerequisites
+### Requirements
 
 - Java 17
-- Maven 3.6+ (or use the included Maven wrapper)
+- Maven 3.6+ (or the included `./mvnw` wrapper)
 
-### Running the Application
-
-1. Clone the repository
-2. Navigate to the project directory
-3. Run the application using Maven:
+### Run from source
 
 ```bash
-# Cấu hình môi trường Java 17
-export JAVA_HOME=/home/codespace/java/17.0.15-ms
-export PATH=$JAVA_HOME/bin:$PATH
-
-java -version
-javac -version
-
-# Xóa thư mục target (build cũ)
-./mvnw clean
-
-# Build và cài đặt vào local repo
-./mvnw install
-
-# Build ra file JAR hoặc WAR trong target/
-./mvnw package
-
-# Chạy lệnh flyway repair để sửa lại lịch sử migration
-./mvnw flyway:repair -Dflyway.url=jdbc:h2:file:./data/mockwebhook -Dflyway.user=sa -Dflyway.password=
-
-# Chạy ứng dụng Spring Boot
-./mvnw spring-boot:run
-# hoặc
-java -jar ./app.jar
-java -jar ./target/WebHookMock-0.0.1-SNAPSHOT.jar
-
-# Chạy test unit
-./mvnw test
-
-# Xem cây dependency
-./mvnw dependency:tree
+git clone https://github.com/nguyenquy0710/Webhook-MockAPI.git
+cd Webhook-MockAPI
+./mvnw spring-boot:run          # Windows: mvnw.cmd spring-boot:run
 ```
 
-Or on Windows:
+Open <http://localhost:8081>. On the first start an administrator is created: user `admin`, password `admin123`. **Change it immediately** (user menu → Change Password) and read [SECURITY.md](SECURITY.md) before exposing the app.
+
+### Run the JAR
 
 ```bash
-mvnw.cmd spring-boot:run
+./mvnw clean package
+java -jar target/WebHookMock-0.0.1-SNAPSHOT.jar
 ```
 
-4. Access the application at `http://localhost:8081`
-
-### 🐳 Docker Deployment
-
-#### Pull from GHCR
-
-```bash
-docker pull ghcr.io/nguyenquy0710/mockapi:latest
-```
-
-#### Docker Compose
-
-Use the included Docker Compose file to run the app quickly: [docker-compose.yml](/docker-compose.yml)
+### Run with Docker
 
 ```bash
 git clone https://github.com/nguyenquy0710/Webhook-MockAPI.git
@@ -122,199 +81,178 @@ cd Webhook-MockAPI
 docker-compose up -d
 ```
 
-Default URL: `http://localhost:8081`
+The image is published as `ghcr.io/nguyenquy0710/mockapi:latest`. `docker-compose.yml` maps port 8081 and mounts `./data` (database) and `./logs`. Set `APP_DOMAIN` to the public URL of your deployment.
 
-### 📦 Release Info
+## Using WebHookMock
 
-- Version: [1.0.2](https://github.com/nguyenquy0710/Webhook-MockAPI/releases/tag/1.0.2)
-- Release Date: 2025-06-05
-- Stability: Release Candidate (RC)
+1. **Register** (or sign in as `admin`). The dashboard shows your webhook base URL, `https://<domain>/api/@<username>`.
+2. Open **API Configs**, click **New API**, enter a path (for example `/orders`), choose the method, status and body.
+3. **Call it**: `curl -X POST https://<domain>/api/@<username>/orders -d '{"id":1}'`. No authentication is needed to call your endpoints; that is what makes them usable as webhook targets.
+4. Open **Request Logs** to see the request arrive; click a row for the full details and the `curl` command.
 
-### 🔄 What's New
+| Area | URL |
+|---|---|
+| Your mock endpoints | `/api/@<username>/<path>` |
+| Dashboard | `/dashboard` |
+| API configurations | `/api-configs` |
+| Request logs | `/view/@<username>` |
+| Swagger UI / per-user spec | `/swagger-ui`, `/swagger/@<username>` |
+| MCP (Streamable HTTP / SSE) | `/mcp/@<username>/mcp`, `/mcp/@<username>/sse` |
+| MCP activity | `/mcp-activity` |
+| Admin | `/admin/users`, `/admin/settings` |
 
-- Docker & Docker Compose support
-- Live WebSocket-based request logs
-- Export to Excel via Apache POI
-- Modern UI with Bootstrap 5
-- Isolated user environments via URL namespace
+Times are shown in UTC.
 
-### Configuration
+## MCP server
 
-The application uses an H2 database by default, with the database file stored in the `./data/mockwebhook` directory. You can modify the configuration in `application.properties`.
-You can set the base domain for generated webhook URLs via `app.domain` or the `APP_DOMAIN` environment variable. The H2 console is available at `/h2-console` during development.
+The MCP server runs inside the app; it needs no extra port or process.
 
-### Database Migration
+**Connect a client**
 
-**Important**: If you're upgrading from a previous version, your existing database will be automatically migrated to support new features.
+1. On the dashboard, find the **MCP Server** card and click **Generate Token**. The token (`mcp_...`) is shown once; only its hash is stored. **Renew Token** replaces it and the old token stops working immediately.
+2. Point your client at `https://<domain>/mcp/@<username>/mcp` with the header `Authorization: Bearer <token>`. The card's **Connect a client** section has ready-made snippets (Claude Code, Cursor, cURL, SSE); check them against your client's documentation, as client configuration formats change.
 
-The application now includes:
+Older clients that only speak HTTP+SSE can use `https://<domain>/mcp/@<username>/sse` with the same header.
 
-- **Flyway** for automatic database migration
-- **Response delay functionality** - configure delays (0-60000ms) for API responses
-- **Improved database versioning** and migration tracking
+**Tools**
 
-For detailed migration information, see [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md).
+| Tool | What it does |
+|---|---|
+| `list_api_configs` | Your endpoints, paged |
+| `get_api_config` | One endpoint with its full configuration and `updatedAt` |
+| `create_api_config` | Create an endpoint (validated; the same method and path cannot exist twice) |
+| `update_api_config` | Change fields; pass `expectedUpdatedAt` to avoid overwriting newer edits |
+| `list_request_logs` | Logs of one endpoint, paged, filterable by status class; sensitive headers masked |
+| `get_request_log_stats` | Totals by method, status class and day, and top paths for a date range |
 
-To validate your migration was successful, run:
+**Good to know**
 
-```bash
-./validate_migration.sh
-```
+- A token acts as its owner and can use every tool; keep it secret and renew it if it leaks.
+- Every tool call is recorded (arguments redacted) and shown at **Dashboard → Activity**; entries are kept 90 days.
+- Admins control MCP in **Admin → Settings**: on/off, rate limit per token (default 60 requests/minute), maximum page size and extra allowed browser origins.
+- Clients that only support OAuth cannot connect; only Bearer tokens are supported.
+- Tested with MCP Inspector 2.13.0 over both transports.
+- Behind a reverse proxy, disable response buffering for `/mcp/` so the SSE transport works (see [Deployment](#deployment)).
 
-### Troubleshooting Database Issues
+## Configuration
 
-If you encounter Flyway migration validation errors, use the repair script:
+Defaults are in `src/main/resources/application.properties`. Any property can be overridden with an environment variable (Spring relaxed binding), for example `app.domain` → `APP_DOMAIN`.
 
-```bash
-./repair_database.sh
-```
+| Property | Environment variable | Default | Purpose |
+|---|---|---|---|
+| `server.port` | `SERVER_PORT` | `8081` | HTTP port |
+| `app.domain` | `APP_DOMAIN` | `https://mock-api.quyit.id.vn` | Public base URL used to build webhook URLs (also editable in Admin → Settings) |
+| `spring.datasource.url` | `SPRING_DATASOURCE_URL` | `jdbc:h2:file:./data/mockwebhook` | Database location |
+| `spring.datasource.username` / `password` | `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | `sa` / `password` | Database credentials (see [SECURITY.md](SECURITY.md) before changing) |
+| `spring.h2.console.enabled` | `SPRING_H2_CONSOLE_ENABLED` | `true` | H2 web console at `/h2-console`; **turn off in production** |
+| `logging.file.name` | `LOGGING_FILE_NAME` | `logs/app.log` | Log file |
+| `JAVA_OPTS` | `JAVA_OPTS` | `-Xms256m -Xmx512m ...` (Docker) | JVM options |
 
-This script will attempt to repair failed migrations automatically. If issues persist, you may need to delete the `data/` directory to start with a fresh database.
+Settings that can change at runtime live in **Admin → Settings** and are stored in the database, so they survive restarts and upgrades. They override the defaults above where both exist (site name, public base URL, registration, request-log retention, MCP).
 
-## Usage
+The database is an H2 file under `./data`. Schema changes are applied automatically at startup; see [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md) for upgrades, backups and maintenance.
 
-1. **Register an account**: Create a personal account to get your unique webhook URL
-2. **Create API configurations**: Define custom endpoints with your desired response data
-3. **Use your webhook**: Send requests to your personalized webhook URL
-4. **Monitor requests**: View detailed logs of all incoming requests
-5. **Export data**: Export request logs to Excel for further analysis
+## Administration
 
-## Project Structure
+The first administrator is created on first start (`admin` / `admin123`). Admins can:
 
-- `src/main/java/vn/autobot/webhook/` - Java source code
-  - `config/` - Application configuration classes
-  - `controller/` - REST and MVC controllers
-  - `dto/` - Data transfer objects
-  - `model/` - Entity classes
-  - `repository/` - Data access layer
-  - `service/` - Business logic
-- `src/main/resources/` - Application resources
-  - `static/` - CSS, JavaScript, and other static assets
-  - `templates/` - Thymeleaf templates
-  - `application.properties` - Application configuration
+- create, enable/disable, promote/demote and delete users (**Admin → Users**);
+- change general settings, MCP options and run database maintenance (**Admin → Settings**).
 
-## Security
+**Request log retention** (Settings → General) deletes request logs older than N days during the daily maintenance run (0 keeps everything, the default).
 
-The application implements standard Spring Security features:
+## Deployment
 
-- Password encryption using BCrypt
-- Form-based authentication
-- Request path authorization
-- CSRF protection (disabled for webhook APIs for easier integration)
+- Run behind a reverse proxy that terminates HTTPS, forwards `X-Forwarded-*` headers (the source IP in the logs comes from `X-Forwarded-For`) and allows WebSocket upgrades.
+- Set the public base URL (`APP_DOMAIN` or Admin → Settings).
+- Mount `./data` and `./logs` as volumes; back up `./data` (see [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md)).
 
-## Nginx Config
+Minimal Nginx example (replace the host and certificate paths):
 
-```
+```nginx
 server {
-    server_name mock-api.autobot.site www.mock-api.autobot.site;
+    server_name mock-api.example.com;
+    listen 443 ssl;
+    ssl_certificate     /etc/letsencrypt/live/mock-api.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mock-api.example.com/privkey.pem;
+
+    client_max_body_size 10m;
+
     location / {
         proxy_pass http://localhost:8081;
         proxy_set_header Host $host;
-        proxy_headers_hash_max_size 512;
-        proxy_headers_hash_bucket_size 128;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Server $host;
-        proxy_set_header X-Forwarded-Port $server_port;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Upgrade $http_upgrade;  # Forward the Upgrade header
-        proxy_set_header Connection 'upgrade';  # Forward the Connection header
-        proxy_set_header Referer $http_referer;
-        proxy_hide_header Access-Control-Allow-Origin;
-        add_header Access-Control-Allow-Origin * always;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        client_max_body_size 10m;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;   # define with a `map` block, see Nginx docs
     }
 
+    # MCP over SSE: do not buffer, keep the stream open
+    location /mcp/ {
+        proxy_pass http://localhost:8081;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Connection '';
+        proxy_buffering off;
+        proxy_read_timeout 3600s;
+    }
 
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/mock-api.autobot.site/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/mock-api.autobot.site/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
-}
-server {
-    if ($host = mock-api.autobot.site) {
-        return 301 https://$host$request_uri;
-    } # managed by Certbot
-
-
-    server_name mock-api.autobot.site www.mock-api.autobot.site;
-    listen 80;
-    return 404; # managed by Certbot
+    # Do not expose the database console
+    location /h2-console { return 404; }
 }
 ```
 
-## Github Codespaces
+## Development
 
-- Nếu bạn dùng **SDKMAN**
+| Command | Purpose |
+|---|---|
+| `./mvnw spring-boot:run` | Run the app |
+| `./mvnw test` | Run the tests |
+| `./mvnw test -Dtest=ClassName#method` | Run one test |
+| `./mvnw clean package` | Build `target/WebHookMock-0.0.1-SNAPSHOT.jar` |
+| `./validate_migration.sh` | Check the migration state (app must be stopped) |
+| `./repair_database.sh` | Help with failed migrations (see [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md)) |
 
-  ```bash
-  sdk list java
+Build and test with **Java 17**. If you use SDKMAN: `sdk use java 17.0.14-ms`; otherwise set `JAVA_HOME` to a JDK 17 and put its `bin` first in `PATH`.
 
-  sdk use java 17.0.14-ms
-  ```
+Conventions: new work goes on a `feature/*` branch created from `coding`, pull before you start, and pull requests target `coding`. UI design standards are in [docs/specs/ui-ux.md](docs/specs/ui-ux.md); a clickable prototype of the UI lives in `docs/prototype/`. Plans and work logs are in `plans/`. See also [AGENTS.md](AGENTS.md).
 
-- Kiểm tra phiên bản hiện tại
-  ```bash
-  java -version
-  javac -version
-  ```
-- Kiểm tra danh sách phiên bản đang có:
-  ```bash
-  ls -la /home/codespace/java/
-  ```
-- Export thủ công
-  ```bash
-  export JAVA_HOME=/home/codespace/java/17.0.15-ms
-  export PATH=$JAVA_HOME/bin:$PATH
-  ```
-- Tự động dùng JDK 17 mỗi lần mở Codespace
+## Project structure
 
-  ```bash
-  echo 'export JAVA_HOME=/home/codespace/java/17.0.15-ms' >> ~/.bashrc
-  echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.bashrc
+```
+src/main/java/vn/autobot/webhook/
+  config/       Security, web, WebSocket, global model, startup compaction
+  controller/   MVC pages, REST endpoints, mock API, MCP
+  dto/          Request/response objects
+  model/        JPA entities
+  repository/   Spring Data repositories
+  service/      Business logic (mock responses, logs, settings, MCP, maintenance)
+src/main/resources/
+  db/migration/ Flyway migrations (V1 ...)
+  templates/    Thymeleaf pages
+  static/       CSS, JavaScript, images
+docs/           Guides, specs and the UI prototype
+plans/          Plans and work logs
+```
 
-  # Rồi chạy:
-  source ~/.bashrc
-  ```
+## Security
+
+Read [SECURITY.md](SECURITY.md) before exposing an instance: it lists how to report a vulnerability, the security model, a hardening checklist (default admin password, H2 console, database password, HTTPS) and the known limitations.
+
+## Documentation
+
+- [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md): schema history, upgrades, backup and restore, maintenance
+- [SECURITY.md](SECURITY.md): policy, model and hardening
+- [CHANGELOG.md](CHANGELOG.md): release notes
+- Guides in `docs/` ([installation](docs/INSTALLATION.md), [user guide](docs/USER-GUIDE.md), [architecture](docs/ARCHITECTURE.md), [deployment](docs/DEPLOYMENT.md), [testing](docs/TESTING.md), [contributing](docs/CONTRIBUTING.md)); some of them predate the latest features, so prefer this README where they differ.
 
 ## Author
 
-- Developed by: nchuyen128@gmail.com FROM https://autobot.site
-- Developed by: quyit.job@gmail.com FROM https://blogs.nhquydev.net
+- Developed by nchuyen128@gmail.com from <https://autobot.site>
+- Developed by quyit.job@gmail.com from <https://blogs.nhquydev.net>
 
-## 📚 Documentation
-
-### For Users
-- **[Installation Guide](./docs/INSTALLATION.md)** - How to install and set up WebHookMock
-- **[User Guide](./docs/USER-GUIDE.md)** - Complete guide for using WebHookMock features
-- **[API Documentation](./docs/API-DOCUMENTATION.md)** - REST API endpoints and usage
-
-### For Developers
-- **[Architecture](./docs/ARCHITECTURE.md)** - System architecture and design patterns
-- **[Development Guide](./docs/DEVELOPMENT.md)** - Setting up development environment
-- **[Testing Guide](./docs/TESTING.md)** - Running and writing tests
-- **[Database Migration](./docs/DATABASE-MIGRATION.md)** - Database schema and migrations
-
-### For DevOps
-- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Deploying to production
-- **[Docker Deployment](./docs/DOCKER-DEPLOYMENT.md)** - Running with Docker
-- **[CI/CD Pipeline](./docs/CI-CD.md)** - Continuous integration and deployment
-
-### Additional Resources
-- **[Security](./docs/SECURITY.md)** - Security best practices
-- **[Contributing](./docs/CONTRIBUTING.md)** - How to contribute
-
-## Changelog
-
-All notable changes to this project will be recorded in the [CHANGELOG.md](/CHANGELOG.md) file.
-
----
-
-**👉 Đóng góp hoặc liên hệ:**
-Hãy mở issue hoặc pull request nếu bạn có đề xuất nâng cấp hoặc phát hiện lỗi.
-
-<p style="text-align: center;"> © 2025 WebHookMock. All rights reserved. </p>
+Issues and pull requests are welcome.
