@@ -5,7 +5,7 @@
     <div th:fragment="navigation" class="bg-white border rounded-3 p-3 mb-4 shadow-sm">
       <nav class="nav nav-pills nav-justified">
         <a class="nav-link rounded-pill"
-          th:classappend="${#httpServletRequest.getRequestURI() == '/dashboard' ? 'active' : ''}" th:href="@{/dashboard}">
+          th:classappend="${#httpServletRequest.getRequestURI() == '/dashboard' || #httpServletRequest.getRequestURI().startsWith('/mcp-activity') ? 'active' : ''}" th:href="@{/dashboard}">
           <i class="fas fa-home me-2"></i> Dashboard
         </a>
         <a class="nav-link rounded-pill"

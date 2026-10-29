@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('MCP Activity')">
+    <title>MCP Activity - Mock Webhook</title>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+    <div th:replace="fragments/navigation :: navigation"></div>
+
+    <style>
+        .row-link { cursor: pointer; }
+        .args { max-width: 340px; }
+        .detail-pre { max-height: 40vh; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; font-size: .85rem; white-space: pre-wrap; word-break: break-word; margin-bottom: 0; }
+    </style>
+
+    <!-- What AI clients did with this user's token: stats of today, filters, paging; a row opens request/response in a side panel. -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2">
+            <li class="breadcrumb-item"><a th:href="@{/dashboard}" class="text-decoration-none">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">MCP Activity</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <h2 class="mb-0">MCP Activity</h2>
+        <a th:href="@{/dashboard}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Back to dashboard</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4"><div class="card h-100 shadow-sm border-0"><div class="card-body d-flex align-items-center gap-3">
+            <div class="rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width:2.75rem;height:2.75rem;"><i class="fas fa-plug"></i></div>
+            <div><div class="fs-4 fw-bold lh-1" th:text="${stats.callsToday}">0</div><div class="text-muted small">Calls today</div></div></div></div></div>
+        <div class="col-sm-4"><div class="card h-100 shadow-sm border-0"><div class="card-body d-flex align-items-center gap-3">
+            <div class="rounded-3 bg-danger-subtle text-danger d-flex align-items-center justify-content-center" style="width:2.75rem;height:2.75rem;"><i class="fas fa-exclamation-triangle"></i></div>
+            <div><div class="fs-4 fw-bold lh-1" th:text="${stats.errorsToday}">0</div><div class="text-muted small">Errors today</div></div></div></div></div>
+        <div class="col-sm-4"><div class="card h-100 shadow-sm border-0"><div class="card-body d-flex align-items-center gap-3">
+            <div class="rounded-3 bg-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-center" style="width:2.75rem;height:2.75rem;"><i class="fas fa-pen"></i></div>
+            <div><div class="fs-4 fw-bold lh-1" th:text="${stats.changesToday}">0</div><div class="text-muted small">Changes made today</div></div></div></div></div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <form class="card-body border-bottom" method="get" th:action="@{/mcp-activity}" id="filterForm">
+            <input type="hidden" name="size" th:value="${size}">
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <div class="input-group"><span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                        <input type="search" class="form-control" name="q" th:value="${q}" placeholder="Search arguments or client..."></div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <select class="form-select" name="tool" aria-label="Tool" data-autosubmit>
+                        <option value="">All tools</option>
+                        <option th:each="t : ${T(java.util.Arrays).asList('list_api_configs','get_api_config','create_api_config','update_api_config','get_request_log_stats','list_request_logs')}"
+                                th:value="${t}" th:text="${t}" th:selected="${t == tool}">tool</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3">
+                    <select class="form-select" name="result" aria-label="Result" data-autosubmit>
+                        <option value="" th:selected="${result == ''}">All results</option>
+                        <option value="ok" th:selected="${result == 'ok'}">OK</option>
+                        <option value="error" th:selected="${result == 'error'}">Error</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+        <div class="table-responsive" th:unless="${calls.empty}">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Time (UTC)</th><th>Tool</th><th>Arguments</th><th>Client</th><th class="text-end">Duration</th><th>Result</th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${calls.content}" class="row-link"
+                    th:data-tool="${c.tool}" th:data-ok="${c.resultOk}" th:data-time="${#temporals.format(c.createdAt, 'yyyy-MM-dd HH:mm:ss')}"
+                    th:data-client="${c.clientName}" th:data-token="${c.tokenSuffix != null ? 'mcp_••••••••' + c.tokenSuffix : ''}"
+                    th:data-duration="${c.durationMs}" th:data-args="${c.arguments}" th:data-res="${c.responseExcerpt}">
+                    <td class="text-nowrap" th:text="${#temporals.format(c.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2026-10-29 10:20:00</td>
+                    <td><code th:text="${c.tool}">list_api_configs</code> <span class="badge bg-warning text-dark" th:if="${writeTools.contains(c.tool)}">write</span></td>
+                    <td class="args text-truncate"><code class="small" th:text="${c.arguments}">{}</code></td>
+                    <td th:text="${c.clientName}">client</td>
+                    <td class="text-end" th:text="${c.durationMs + ' ms'}">30 ms</td>
+                    <td><span class="badge" th:classappend="${c.resultOk ? 'bg-success' : 'bg-danger'}" th:text="${c.resultOk ? 'OK' : 'Error'}">OK</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center text-muted py-5" th:if="${calls.empty}">
+            <i class="fas fa-inbox fa-3x mb-3"></i>
+            <p class="mb-0" th:text="${q != '' || tool != '' || result != ''} ? 'No MCP calls match your filters.' : 'No MCP calls yet.'">No MCP calls yet.</p>
+        </div>
+        <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 small text-muted">
+                <span>Show</span>
+                <select id="pageSize" class="form-select form-select-sm" style="width:auto;" aria-label="Page size">
+                    <option value="10" th:selected="${size == 10}">10</option>
+                    <option value="25" th:selected="${size == 25}">25</option>
+                </select>
+                <span th:text="${calls.totalElements == 0 ? '0 results' : (calls.number * calls.size + 1) + '-' + (calls.number * calls.size + calls.numberOfElements) + ' of ' + calls.totalElements}">1-10 of 37</span>
+            </div>
+            <nav aria-label="Page navigation" th:if="${calls.totalPages > 1}">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:each="p : ${#numbers.sequence(0, calls.totalPages - 1)}" th:classappend="${p == calls.number} ? 'active'">
+                        <a class="page-link" th:text="${p + 1}"
+                           th:href="@{/mcp-activity(tool=${tool}, result=${result}, q=${q}, size=${size}, page=${p})}">1</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="detailsPanel" aria-labelledby="detailsLabel" style="width:min(640px,100vw);">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="detailsLabel"><span class="badge me-2" id="dBadge"></span><span id="dTitle">tool</span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <table class="table table-sm mb-3"><tbody>
+            <tr><th style="width:9rem;">Time (UTC)</th><td id="dTime"></td></tr>
+            <tr><th>Client</th><td id="dClient"></td></tr>
+            <tr><th>Token</th><td id="dToken" class="font-monospace"></td></tr>
+            <tr><th>Duration</th><td id="dDuration"></td></tr>
+        </tbody></table>
+        <h6>Request</h6><pre class="detail-pre mb-3" id="dReq"></pre>
+        <h6>Response</h6><pre class="detail-pre" id="dRes"></pre>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<script>
+    // Filters apply as soon as a select changes; the page size keeps the other filters
+    document.querySelectorAll('[data-autosubmit]').forEach(s => s.addEventListener('change', () => document.getElementById('filterForm').submit()));
+    document.getElementById('pageSize').addEventListener('change', function () {
+        document.querySelector('#filterForm [name=size]').value = this.value;
+        document.getElementById('filterForm').submit();
+    });
+
+    // A row opens the call in the side panel (stored values are redacted and may be cut, so JSON can be incomplete)
+    const pretty = text => { try { return JSON.stringify(JSON.parse(text), null, 2); } catch (e) { return text || ''; } };
+    document.querySelectorAll('tr.row-link').forEach(tr => {
+        tr.addEventListener('click', () => {
+            const d = tr.dataset, ok = d.ok === 'true';
+            document.getElementById('dTitle').textContent = d.tool;
+            const badge = document.getElementById('dBadge');
+            badge.className = 'badge me-2 ' + (ok ? 'bg-success' : 'bg-danger');
+            badge.textContent = ok ? 'OK' : 'Error';
+            document.getElementById('dTime').textContent = d.time;
+            document.getElementById('dClient').textContent = d.client || '';
+            document.getElementById('dToken').textContent = d.token || '';
+            document.getElementById('dDuration').textContent = d.duration + ' ms';
+            document.getElementById('dReq').textContent = pretty(d.args);
+            document.getElementById('dRes').textContent = pretty(d.res);
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('detailsPanel')).show();
+        });
+    });
+</script>
+</body>
+</html>
