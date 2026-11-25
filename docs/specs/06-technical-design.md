@@ -451,7 +451,7 @@ CREATE INDEX idx_request_logs_timestamp ON request_logs(timestamp);
 ### 7.1 Development
 - **Database**: H2 file-based at `./data/mockwebhook`
 - **Port**: 8081
-- **H2 Console**: `/h2-console`
+- **H2 Console**: `/h2-console` (off by default; set `SPRING_H2_CONSOLE_ENABLED=true` and sign in as ADMIN)
 
 ### 7.2 Production
 - **Database**: H2 file-based or external database

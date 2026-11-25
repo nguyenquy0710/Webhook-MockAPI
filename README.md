@@ -144,7 +144,7 @@ Defaults are in `src/main/resources/application.properties`. Any property can be
 | `app.domain` | `APP_DOMAIN` | `https://mock-api.quyit.id.vn` | Public base URL used to build webhook URLs (also editable in Admin → Settings) |
 | `spring.datasource.url` | `SPRING_DATASOURCE_URL` | `jdbc:h2:file:./data/mockwebhook` | Database location |
 | `spring.datasource.username` / `password` | `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | `sa` / `password` | Database credentials (see [SECURITY.md](SECURITY.md) before changing) |
-| `spring.h2.console.enabled` | `SPRING_H2_CONSOLE_ENABLED` | `true` | H2 web console at `/h2-console`; **turn off in production** |
+| `spring.h2.console.enabled` | `SPRING_H2_CONSOLE_ENABLED` | `false` | H2 web console at `/h2-console` (ADMIN login required); **keep off in production** |
 | `logging.file.name` | `LOGGING_FILE_NAME` | `logs/app.log` | Log file |
 | `JAVA_OPTS` | `JAVA_OPTS` | `-Xms256m -Xmx512m ...` (Docker) | JVM options |
 

@@ -79,7 +79,7 @@ docker run -d -p 8081:8081 \
 
 ### Access Application
 - **URL**: http://localhost:8081
-- **H2 Console**: http://localhost:8081/h2-console
+- **H2 Console**: http://localhost:8081/h2-console (off by default; set `SPRING_H2_CONSOLE_ENABLED=true` and sign in as ADMIN)
   - JDBC URL: `jdbc:h2:file:/app/data/mockwebhook`
   - Username: `sa`
   - Password: `password`

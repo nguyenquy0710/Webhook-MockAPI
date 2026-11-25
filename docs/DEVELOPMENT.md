@@ -66,7 +66,7 @@ java -jar target/WebHookMock-0.0.1-SNAPSHOT.jar
 
 ### Access Application
 - **Main URL**: http://localhost:8081
-- **H2 Console**: http://localhost:8081/h2-console
+- **H2 Console**: http://localhost:8081/h2-console (off by default; set `SPRING_H2_CONSOLE_ENABLED=true` and sign in as ADMIN)
   - JDBC URL: `jdbc:h2:file:./data/mockwebhook`
   - Username: `sa`
   - Password: `password`
@@ -228,7 +228,7 @@ spring.h2.console.enabled=true
 spring.h2.console.path=/h2-console
 ```
 
-Access at: http://localhost:8081/h2-console
+Access at: http://localhost:8081/h2-console (sign in to the app as ADMIN first)
 
 ---
 

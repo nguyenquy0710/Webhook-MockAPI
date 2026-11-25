@@ -25,8 +25,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
                 .antMatchers("/api/**").permitAll() // Allow all webhook API requests
                 .antMatchers("/mcp/**").permitAll() // MCP clients authenticate with their own Bearer token
-                .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/swagger/**", "/h2-console/**").permitAll()
-                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/swagger/**").permitAll()
+                .antMatchers("/admin/**", "/h2-console/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
             .formLogin()

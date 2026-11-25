@@ -16,7 +16,7 @@
 - **Build Tool**: Maven 3.8.8+
 - **Database**: H2 (file-based at `./data/mockwebhook`)
 - **Port**: 8081 (configurable via `server.port`)
-- **H2 Console**: Available at `/h2-console` (development only)
+- **H2 Console**: Off by default; when enabled, `/h2-console` for ADMIN only (development only)
 
 ### 1.2 Production Environment
 - **Operating System**: Linux (Alpine-based Docker image)

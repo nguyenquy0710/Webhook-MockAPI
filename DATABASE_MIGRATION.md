@@ -147,9 +147,9 @@ Do not run an older version against a database that a newer version has already 
 
 ## Using the H2 console
 
-For inspection and manual fixes. It is **enabled by default** and is a security risk on a public server (see [SECURITY.md](SECURITY.md)); turn it off in production with `SPRING_H2_CONSOLE_ENABLED=false`.
+For inspection and manual fixes. It is **off by default** because it is a security risk on a public server (see [SECURITY.md](SECURITY.md)); switch it on only while you need it with `SPRING_H2_CONSOLE_ENABLED=true`.
 
-1. Start the application and open `http://localhost:8081/h2-console`.
+1. Start the application with that variable, sign in as an administrator and open `http://localhost:8081/h2-console`.
 2. JDBC URL `jdbc:h2:file:./data/mockwebhook`, user `sa`, password `password` (or the one you set).
 3. Take a backup before running any statement that changes data.
 

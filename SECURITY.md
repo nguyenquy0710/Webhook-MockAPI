@@ -37,7 +37,7 @@ If a report is declined (for example it is a known limitation listed below, or n
 | `/mcp/@<username>/**` (MCP server) | Holders of that user's MCP token | `Authorization: Bearer mcp_...`; the token must belong to the `@username` in the path; the server can be switched off in Admin → Settings; per-token rate limit; browser `Origin` allow-list; every tool call is audited. |
 | `/swagger-ui`, `/swagger/**`, `/swagger.json` | Anyone | Documentation of the mock endpoints only. |
 | `/register`, `/login`, static files | Anyone | Registration can be switched off in Admin → Settings. |
-| `/h2-console/**` | Anyone who can reach it | **Enabled by default and reachable without logging in to the app.** The console has its own login, but the default database credentials are public. See the hardening checklist. |
+| `/h2-console/**` | Role `ADMIN` | **Off by default.** When switched on it needs an administrator session as well as the console's own login, whose default database credentials are public. See the hardening checklist. |
 | `/admin/**` | Role `ADMIN` | Spring Security role check. |
 | Everything else (dashboard, API configs, logs, MCP activity) | Signed-in users | Form login and a server-side session; each user only sees their own data. |
 
@@ -53,7 +53,7 @@ Authentication and storage:
 Do these before the instance is reachable from the Internet:
 
 1. **Change the default administrator password.** On first start the app creates `admin` / `admin123` and writes that password to the log (`logs/app.log`) as a warning. Change it at once, then remove or rotate old log files that contain it.
-2. **Disable the H2 console**: set `SPRING_H2_CONSOLE_ENABLED=false` (or `spring.h2.console.enabled=false`). With the default settings the console is allowed through the application's security rules, and behind a reverse proxy its "localhost only" restriction does not protect it because the proxy connects from localhost. If you keep it, block `/h2-console` at the proxy.
+2. **Keep the H2 console off** (the default; do not set `SPRING_H2_CONSOLE_ENABLED=true`). Its "localhost only" restriction does not protect it behind a reverse proxy, because the proxy may connect from localhost and forwarded addresses can be spoofed. Block `/h2-console` at the proxy as well.
 3. **Change the database password.** The default (`sa` / `password`) is in the repository. H2 stores the password in the database file, so changing the property alone is not enough: connect with the old credentials and run `ALTER USER SA SET PASSWORD '<new>';` while the app is stopped, then set `SPRING_DATASOURCE_PASSWORD`. Take a backup first.
 4. **Serve over HTTPS** only (terminate TLS at a reverse proxy) and set the public base URL (`APP_DOMAIN` or Admin → Settings) to the `https://` address.
 5. **Restrict registration** if the instance is not meant to be open: switch off "Allow new user registration" in Admin → Settings.
@@ -68,7 +68,6 @@ Do these before the instance is reachable from the Internet:
 These are known and listed so you can decide whether they matter for your deployment. They are not secret; fixing them is welcome as a pull request.
 
 - **Default credentials:** the default admin user and database password described above.
-- **H2 console exposed by default** (see the checklist).
 - **CSRF protection is disabled** for the whole application, including the form-based pages. Browsers' default `SameSite=Lax` cookie handling limits the practical risk, but the app does not enforce it.
 - **CORS allows any origin with credentials** (`allowedOriginPatterns("*")`, `allowCredentials(true)`), and the WebSocket endpoint accepts any origin. Do not rely on CORS to protect the signed-in pages.
 - **No brute-force protection:** no login rate limiting or lockout, and no rate limit on the public mock endpoints (only MCP has one). Use the proxy or a firewall.
