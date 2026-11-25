@@ -30,7 +30,7 @@ Every user gets a namespace: `https://<your-domain>/api/@<username>/<path>`.
 - **Description and note** per endpoint; the description becomes the summary in the generated Swagger spec.
 - **Failure simulation** (for testing a client's retry logic): the first N calls of each caller (identified by the `Idempotency-Key` header, else `X-Request-Id`, else the client IP) get an error status, used in turn from your list (400–599), then the configured response; 429 and 503 carry `Retry-After`. Counters live in memory and reset after 10 idle minutes.
 - **Backup and restore** of all your configurations as JSON.
-- **Swagger**: per-user OpenAPI spec at `/swagger/@<username>` and Swagger UI at `/swagger-ui`.
+- **Swagger**: per-user OpenAPI spec at `/swagger/@<username>` (visible to its owner only) and Swagger UI at `/swagger-ui`.
 
 ### Request monitoring
 

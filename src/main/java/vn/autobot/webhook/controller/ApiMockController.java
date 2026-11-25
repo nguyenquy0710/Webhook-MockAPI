@@ -23,6 +23,9 @@ import java.util.Optional;
 @Slf4j
 public class ApiMockController {
 
+  // One message for unknown users and unknown paths, so callers cannot probe for usernames
+  private static final String NOT_CONFIGURED = "API endpoint not configured for this path and method";
+
   private final ApiMockService apiMockService;
   private final UserService userService;
   private final RequestLogService requestLogService;
@@ -33,7 +36,7 @@ public class ApiMockController {
   public DeferredResult<ResponseEntity<Object>> handleApiRequest(@PathVariable String username,
       HttpServletRequest request) {
     if (!userService.existsByUsername(username)) {
-      return createErrorResult(404, "User not found");
+      return createErrorResult(404, NOT_CONFIGURED);
     }
 
     String method = request.getMethod();
@@ -48,12 +51,12 @@ public class ApiMockController {
     try {
       user = userService.findByUsername(username);
     } catch (Exception e) {
-      return createErrorResult(404, "User not found");
+      return createErrorResult(404, NOT_CONFIGURED);
     }
 
     Optional<ApiConfig> apiConfig = apiMockService.findApiConfig(username, apiPath, method);
     if (apiConfig.isEmpty()) {
-      return createErrorResult(404, "API endpoint not configured for this path and method");
+      return createErrorResult(404, NOT_CONFIGURED);
     }
 
     // Read the request body
