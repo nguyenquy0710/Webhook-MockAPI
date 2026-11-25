@@ -8,12 +8,15 @@ import vn.autobot.webhook.model.ApiConfig;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.repository.ApiConfigRepository;
 
+import javax.validation.Validation;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,7 +36,8 @@ class ApiConfigBackupRestoreTest {
     user.setId(1L);
     when(userService.findByUsername("demo")).thenReturn(user);
     when(repository.save(any(ApiConfig.class))).thenAnswer(inv -> inv.getArgument(0));
-    service = new ApiConfigService(repository, userService, new ObjectMapper());
+    service = new ApiConfigService(repository, userService, new ObjectMapper(),
+        Validation.buildDefaultValidatorFactory().getValidator());
   }
 
   private ApiConfig config(String description, String note) {
@@ -78,6 +82,25 @@ class ApiConfigBackupRestoreTest {
     assertEquals(3, saved.getValue().getFailureCount());
     assertEquals("503", saved.getValue().getFailureStatusCodes());
     assertEquals(1, saved.getValue().getRetryAfterSeconds());
+  }
+
+  @Test
+  void oneInvalidItemRestoresNothing() {
+    String valid = "{\"path\":\"/ok\",\"method\":\"GET\",\"contentType\":\"text/plain\",\"statusCode\":200,\"delayMs\":60000}";
+
+    for (String bad : new String[] {valid.replace("60000", "60001"), valid.replace("60000", "-1"), valid.replace("200", "999"),
+        valid.replace("/ok", ""), "null"}) {
+      assertThrows(RuntimeException.class, () -> service.restoreApiConfigs("demo", "[" + valid + "," + bad + "]"), bad);
+    }
+    verify(repository, never()).save(any(ApiConfig.class));
+  }
+
+  @Test
+  void invalidItemIsNamedInTheError() {
+    RuntimeException error = assertThrows(RuntimeException.class, () -> service.restoreApiConfigs("demo",
+        "[{\"path\":\"/a\",\"method\":\"GET\",\"contentType\":\"text/plain\",\"statusCode\":200,\"delayMs\":999999}]"));
+
+    assertEquals("Item 1, delayMs: Delay cannot be more than 60 seconds", error.getMessage());
   }
 
   @Test
