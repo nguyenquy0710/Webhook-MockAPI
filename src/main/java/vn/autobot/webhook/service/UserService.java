@@ -8,6 +8,7 @@ import vn.autobot.webhook.dto.CreateUserRequestDto;
 import vn.autobot.webhook.dto.RegisterRequestDto;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.repository.UserRepository;
+import vn.autobot.webhook.utils.NotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -65,7 +66,7 @@ public class UserService {
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     public boolean existsByUsername(String username) {
@@ -77,7 +78,7 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     @Transactional

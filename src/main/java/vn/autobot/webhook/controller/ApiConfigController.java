@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.service.ApiMockService;
 import vn.autobot.webhook.service.ApiConfigService;
+import vn.autobot.webhook.utils.RequestUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,9 +37,10 @@ public class ApiConfigController {
       return ResponseEntity.status(403).build();
     }
 
-    int page = start / length;
+    int size = RequestUtils.pageRequest(0, length).getPageSize();
+    int page = Math.max(0, start) / size;
 
-    Page<ApiConfigDto> configs = apiConfigService.getApiConfigsPageable(username, page, length, searchValue);
+    Page<ApiConfigDto> configs = apiConfigService.getApiConfigsPageable(username, page, size, searchValue);
 
     Map<String, Object> response = new HashMap<>();
     response.put("draw", draw);

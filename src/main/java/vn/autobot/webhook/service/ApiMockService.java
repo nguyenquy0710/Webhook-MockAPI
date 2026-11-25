@@ -13,6 +13,7 @@ import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.model.ApiConfig;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.repository.ApiConfigRepository;
+import vn.autobot.webhook.utils.NotFoundException;
 import vn.autobot.webhook.utils.RequestUtils;
 
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class ApiMockService {
     ApiConfig apiConfig;
     if (apiConfigDto.getId() != null) {
       apiConfig = apiConfigRepository.findById(apiConfigDto.getId())
-          .orElseThrow(() -> new RuntimeException("API configuration not found"));
+          .orElseThrow(() -> new NotFoundException("API configuration not found"));
 
       if (!apiConfig.getUser().getId().equals(user.getId())) {
         throw new RuntimeException("You don't have permission to update this API configuration");
@@ -92,10 +93,10 @@ public class ApiMockService {
   public ApiConfigDto getApiConfig(String username, Long id) {
     User user = userService.findByUsername(username);
     ApiConfig apiConfig = apiConfigRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("API configuration not found"));
+        .orElseThrow(() -> new NotFoundException("API configuration not found"));
 
     if (!apiConfig.getUser().getId().equals(user.getId())) {
-      throw new RuntimeException("You don't have permission to view this API configuration");
+      throw new NotFoundException("API configuration not found");
     }
 
     return convertToDto(apiConfig);
@@ -105,7 +106,7 @@ public class ApiMockService {
   public void deleteApiConfig(String username, Long id) {
     User user = userService.findByUsername(username);
     ApiConfig apiConfig = apiConfigRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("API configuration not found"));
+        .orElseThrow(() -> new NotFoundException("API configuration not found"));
 
     if (!apiConfig.getUser().getId().equals(user.getId())) {
       throw new RuntimeException("You don't have permission to delete this API configuration");

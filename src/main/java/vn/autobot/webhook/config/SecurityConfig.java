@@ -3,6 +3,7 @@ package vn.autobot.webhook.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -10,13 +11,23 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import java.util.LinkedHashMap;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    // JSON endpoints of the signed-in user; the rest of /api/** is mock endpoints
+    private static final String[] SESSION_APIS = {"/api/logs/**", "/api/configs/**"};
 
     private final UserDetailsService userDetailsService;
 
@@ -27,11 +38,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .csrf().ignoringAntMatchers("/api/@*/**", "/mcp/**", "/ws/**")
                 .and()
             .authorizeRequests()
+                .antMatchers(SESSION_APIS).authenticated()
                 .antMatchers("/api/**").permitAll() // Allow all webhook API requests
                 .antMatchers("/mcp/**").permitAll() // MCP clients authenticate with their own Bearer token
                 .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/error").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
+                .and()
+            .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
                 .and()
             .formLogin()
                 .loginPage("/login")
@@ -56,6 +70,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                             }
                         }))
                 .frameOptions().sameOrigin(); // SockJS fallback transports use iframes
+    }
+
+    /** 401 for JSON endpoints, the login page for everything else. */
+    private static AuthenticationEntryPoint authenticationEntryPoint() {
+        LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints = new LinkedHashMap<>();
+        for (String path : SESSION_APIS) {
+            entryPoints.put(new AntPathRequestMatcher(path), new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+        }
+        DelegatingAuthenticationEntryPoint entryPoint = new DelegatingAuthenticationEntryPoint(entryPoints);
+        entryPoint.setDefaultEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
+        return entryPoint;
     }
 
     @Override

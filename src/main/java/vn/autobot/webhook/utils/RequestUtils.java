@@ -1,5 +1,6 @@
 package vn.autobot.webhook.utils;
 
+import org.springframework.data.domain.PageRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URLDecoder;
@@ -23,6 +24,11 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class RequestUtils {
+
+  /** Page request from query parameters, brought into range: size 1-200, page from 0. */
+  public static PageRequest pageRequest(int page, int size) {
+    return PageRequest.of(Math.max(0, Math.min(page, 1_000_000)), Math.max(1, Math.min(size, 200)));
+  }
 
   /**
    * Extracts relevant information from the HttpServletRequest and returns it as a
