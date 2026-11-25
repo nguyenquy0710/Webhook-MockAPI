@@ -69,7 +69,7 @@ These are known and listed so you can decide whether they matter for your deploy
 
 - **Default credentials:** the default admin user and database password described above.
 - **CSRF protection is disabled** for the whole application, including the form-based pages. Browsers' default `SameSite=Lax` cookie handling limits the practical risk, but the app does not enforce it.
-- **CORS allows any origin with credentials** (`allowedOriginPatterns("*")`, `allowCredentials(true)`), and the WebSocket endpoint accepts any origin. Do not rely on CORS to protect the signed-in pages.
+- **WebSocket origin** is read from the public base URL at startup; restart after changing it in Admin → Settings.
 - **No brute-force protection:** no login rate limiting or lockout, and no rate limit on the public mock endpoints (only MCP has one). Use the proxy or a firewall.
 - **Logout is a GET request** (`/logout`), so a page can sign a user out.
 - **Session cookie and headers** use the framework defaults: no explicit `Secure`/`SameSite` configuration (set `Secure` through the proxy or `server.servlet.session.cookie.*`), no Content-Security-Policy, and pages may be framed by the same origin (needed by the H2 console).

@@ -9,11 +9,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOriginPatterns("*") // Use allowedOriginPatterns instead of allowedOrigins
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true) // If you need to allow credentials
-                .maxAge(3600);
+        // Public endpoints only, without credentials; every other path uses the session cookie and gets no CORS headers.
+        // "/api/@*/**" does not match /api/logs/** and /api/configs/**. MCP checks Origin itself.
+        for (String path : new String[] {"/api/@*/**", "/mcp/**"}) {
+            registry.addMapping(path)
+                    .allowedOrigins("*")
+                    .allowedMethods("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                    .allowedHeaders("*")
+                    .maxAge(3600);
+        }
     }
 }
