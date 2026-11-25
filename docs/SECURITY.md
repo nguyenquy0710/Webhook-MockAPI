@@ -30,7 +30,7 @@
 ### Password Hashing
 - **Algorithm**: BCrypt
 - **Cost Factor**: 12
-- **Minimum Length**: 6 characters
+- **Minimum Length**: 8 characters
 
 ### Session Management
 - **Cookie Name**: JSESSIONID
@@ -76,7 +76,7 @@
 ## Password Security
 
 ### Password Requirements
-- Minimum 6 characters
+- Minimum 8 characters
 - No maximum length
 - No special character requirements (user-friendly)
 
@@ -101,7 +101,7 @@
 |-------|-------|
 | **Username** | 3-20 chars, alphanumeric + underscore/hyphen |
 | **Email** | Valid RFC 5322 format |
-| **Password** | Minimum 6 characters |
+| **Password** | Minimum 8 characters |
 | **HTTP Method** | GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD |
 | **Status Code** | 100-599 |
 | **Delay** | 0-60000ms |

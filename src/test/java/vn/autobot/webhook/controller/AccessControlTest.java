@@ -11,6 +11,7 @@ import vn.autobot.webhook.dto.RegisterRequestDto;
 import vn.autobot.webhook.service.UserService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Who can open request logs and the H2 console, through the real security filter chain
 class AccessControlTest {
@@ -28,6 +29,16 @@ class AccessControlTest {
     @Test
     void otherUserCannotReadLogs() {
       assertEquals(403, get("/view/@owner", login("other", "secret123")));
+    }
+
+    @Test
+    void newPasswordMustBeConfirmed() {
+      TestBrowser other = login("other", "secret123");
+      String form = "currentPassword=secret123&newPassword=tram-cam-92&confirmPassword=";
+
+      assertTrue(other.send("POST", "/change-password", form + "different1" + other.csrfField("/change-password")).body()
+          .contains("Passwords do not match"));
+      assertEquals(200, get("/dashboard", login("other", "secret123"))); // unchanged
     }
 
     @Test

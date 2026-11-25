@@ -10,9 +10,19 @@ import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.repository.UserRepository;
 import vn.autobot.webhook.utils.NotFoundException;
 
+import java.util.Locale;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    // The most used passwords that pass the length rule
+    private static final Set<String> COMMON_PASSWORDS = Set.of("12345678", "123456789", "1234567890", "87654321",
+            "11111111", "00000000", "88888888", "12341234", "11223344", "password", "password1", "password123", "passw0rd",
+            "p@ssw0rd", "p@ssword", "qwertyuiop", "qwerty123", "1q2w3e4r", "1qaz2wsx", "q1w2e3r4", "asdfghjkl", "abc12345",
+            "abcd1234", "a1234567", "aa123456", "iloveyou", "sunshine", "princess", "football", "baseball", "superman",
+            "trustno1", "welcome1", "admin123", "admin1234", "administrator", "letmein1", "changeme", "matkhau123");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -30,6 +40,7 @@ public class UserService {
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
             throw new RuntimeException("Passwords do not match");
         }
+        requireUncommonPassword(registerRequest.getPassword(), registerRequest.getUsername());
 
         User user = new User();
         user.setUsername(registerRequest.getUsername());
@@ -53,6 +64,7 @@ public class UserService {
         if (!createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
             throw new RuntimeException("Passwords do not match");
         }
+        requireUncommonPassword(createUserRequest.getPassword(), createUserRequest.getUsername());
 
         User user = new User();
         user.setUsername(createUserRequest.getUsername());
@@ -130,8 +142,16 @@ public class UserService {
             throw new RuntimeException("Current password is incorrect");
         }
         
+        requireUncommonPassword(newPassword, user.getUsername());
+
         // Update password
         user.setPassword(passwordEncoder.encode(newPassword));
         return userRepository.save(user);
+    }
+
+    private static void requireUncommonPassword(String password, String username) {
+        if (COMMON_PASSWORDS.contains(password.toLowerCase(Locale.ROOT)) || password.equalsIgnoreCase(username)) {
+            throw new RuntimeException("This password is too easy to guess");
+        }
     }
 }

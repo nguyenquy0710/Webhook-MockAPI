@@ -59,7 +59,7 @@
                                     <input type="password" class="form-control" id="password" th:field="*{password}" autocomplete="new-password" required>
                                     <button class="btn btn-outline-secondary" type="button" data-toggle-password="password" aria-label="Show password"><i class="fas fa-eye"></i></button>
                                 </div>
-                                <small class="text-muted">At least 6 characters</small>
+                                <small class="text-muted">At least 8 characters</small>
                                 <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
                             </div>
                             <div class="col-md-6">

@@ -9,7 +9,7 @@ public class ChangePasswordRequestDto {
     private String currentPassword;
 
     @NotEmpty(message = "New password cannot be empty")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Size(min = 8, message = "Password must be at least 8 characters")
     private String newPassword;
 
     @NotEmpty(message = "Confirm new password cannot be empty")

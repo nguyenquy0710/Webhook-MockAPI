@@ -87,6 +87,11 @@ public class AuthController {
       return "change-password";
     }
 
+    if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmPassword())) {
+      model.addAttribute("errorMessage", "Passwords do not match");
+      return "change-password";
+    }
+
     try {
       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
       UserDetails userDetails = (UserDetails) auth.getPrincipal();

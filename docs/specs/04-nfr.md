@@ -40,7 +40,7 @@
 
 ### 2.1 Authentication
 - **NFR-SEC-001**: System shall use BCrypt password hashing with cost factor 12
-- **NFR-SEC-002**: System shall enforce minimum password length of 6 characters
+- **NFR-SEC-002**: System shall enforce minimum password length of 8 characters
 - **NFR-SEC-003**: System shall validate username format (3-20 chars, alphanumeric + underscore/hyphen)
 - **NFR-SEC-004**: System shall validate email format using RFC 5322 compliant regex
 - **NFR-SEC-005**: System shall use secure session cookies with HttpOnly flag

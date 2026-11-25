@@ -168,7 +168,7 @@ WebHookMock provides a self-hosted, open-source webhook testing platform that:
 ### 5.1 User Management Rules
 - **BR-RULE-001**: Username must be unique across all users
 - **BR-RULE-002**: Email must be unique across all users
-- **BR-RULE-003**: Password must be at least 6 characters
+- **BR-RULE-003**: Password must be at least 8 characters
 - **BR-RULE-004**: Username must be 3-20 characters
 - **BR-RULE-005**: Username can only contain letters, numbers, underscores, and hyphens
 - **BR-RULE-006**: At least one admin user must exist at all times
