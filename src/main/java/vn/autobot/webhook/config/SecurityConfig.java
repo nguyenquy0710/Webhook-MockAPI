@@ -23,11 +23,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            .csrf().disable()
+            // Only paths that do not act on the session: mock endpoints, MCP (Bearer token), SockJS (checks Origin)
+            // and the H2 console (own session token)
+            .csrf().ignoringAntMatchers("/api/@*/**", "/mcp/**", "/ws/**", "/h2-console/**")
+                .and()
             .authorizeRequests()
                 .antMatchers("/api/**").permitAll() // Allow all webhook API requests
                 .antMatchers("/mcp/**").permitAll() // MCP clients authenticate with their own Bearer token
-                .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/swagger/**").permitAll()
+                .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/swagger/**", "/error").permitAll()
                 .antMatchers("/admin/**", "/h2-console/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
@@ -38,7 +41,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
             .logout()
                 .logoutUrl("/logout")
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .logoutSuccessUrl("/login?logout")

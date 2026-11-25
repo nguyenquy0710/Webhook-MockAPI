@@ -5,18 +5,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.boot.web.server.LocalServerPort;
+import vn.autobot.webhook.TestBrowser;
 import vn.autobot.webhook.dto.RegisterRequestDto;
 import vn.autobot.webhook.service.UserService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Who can open request logs and the H2 console, through the real security filter chain
 class AccessControlTest {
@@ -38,7 +32,7 @@ class AccessControlTest {
 
     @Test
     void adminReadsOtherUsersLogsOnlyThroughAdminPage() {
-      HttpHeaders admin = login("admin", "admin123");
+      TestBrowser admin = login("admin", "admin123");
 
       assertEquals(200, get("/admin/user/@owner/logs", admin));
       assertEquals(403, get("/view/@owner", admin));
@@ -57,8 +51,7 @@ class AccessControlTest {
 
     @Test
     void h2ConsoleNeedsAdmin() {
-      ResponseEntity<String> anonymous = rest.getForEntity("/h2-console/", String.class);
-      assertTrue(anonymous.getBody().contains("loginForm")); // redirected to the app's login page
+      assertEquals(302, get("/h2-console/", new TestBrowser(port))); // to the app's login page
       assertEquals(403, get("/h2-console/", login("other", "secret123")));
       assertEquals(200, get("/h2-console/", login("admin", "admin123")));
     }
@@ -66,8 +59,8 @@ class AccessControlTest {
 
   abstract static class Base {
 
-    @Autowired
-    TestRestTemplate rest;
+    @LocalServerPort
+    int port;
     @Autowired
     UserService users;
 
@@ -80,18 +73,12 @@ class AccessControlTest {
       }
     }
 
-    HttpHeaders login(String username, String password) {
-      MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-      form.add("username", username);
-      form.add("password", password);
-      ResponseEntity<String> response = rest.postForEntity("/login", form, String.class);
-      HttpHeaders headers = new HttpHeaders();
-      headers.add(HttpHeaders.COOKIE, response.getHeaders().getFirst(HttpHeaders.SET_COOKIE).split(";")[0]);
-      return headers;
+    TestBrowser login(String username, String password) {
+      return new TestBrowser(port).login(username, password);
     }
 
-    int get(String path, HttpHeaders headers) {
-      return rest.exchange(path, HttpMethod.GET, new HttpEntity<>(headers), String.class).getStatusCodeValue();
+    int get(String path, TestBrowser browser) {
+      return browser.get(path).statusCode();
     }
   }
 }

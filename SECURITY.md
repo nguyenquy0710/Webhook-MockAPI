@@ -39,7 +39,7 @@ If a report is declined (for example it is a known limitation listed below, or n
 | `/register`, `/login`, static files | Anyone | Registration can be switched off in Admin → Settings. |
 | `/h2-console/**` | Role `ADMIN` | **Off by default.** When switched on it needs an administrator session as well as the console's own login, whose default database credentials are public. See the hardening checklist. |
 | `/admin/**` | Role `ADMIN` | Spring Security role check. |
-| Everything else (dashboard, API configs, logs, MCP activity) | Signed-in users | Form login and a server-side session; each user only sees their own data. |
+| Everything else (dashboard, API configs, logs, MCP activity) | Signed-in users | Form login, a server-side session and CSRF tokens; each user only sees their own data. |
 
 Authentication and storage:
 
@@ -68,10 +68,8 @@ Do these before the instance is reachable from the Internet:
 These are known and listed so you can decide whether they matter for your deployment. They are not secret; fixing them is welcome as a pull request.
 
 - **Default credentials:** the default admin user and database password described above.
-- **CSRF protection is disabled** for the whole application, including the form-based pages. Browsers' default `SameSite=Lax` cookie handling limits the practical risk, but the app does not enforce it.
 - **WebSocket origin** is read from the public base URL at startup; restart after changing it in Admin → Settings.
 - **No brute-force protection:** no login rate limiting or lockout, and no rate limit on the public mock endpoints (only MCP has one). Use the proxy or a firewall.
-- **Logout is a GET request** (`/logout`), so a page can sign a user out.
 - **Session cookie and headers** use the framework defaults: no explicit `Secure`/`SameSite` configuration (set `Secure` through the proxy or `server.servlet.session.cookie.*`), no Content-Security-Policy, and pages may be framed by the same origin (needed by the H2 console).
 - **Password policy** is only a minimum length of 6.
 - **In-memory MCP state:** the MCP rate limiter and SSE sessions are kept in memory, so they reset on restart and are not shared between instances.

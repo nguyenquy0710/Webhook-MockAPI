@@ -300,6 +300,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             <form id="deleteForm" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}">
               <button type="submit" class="btn btn-danger">Delete</button>
             </form>
           </div>
@@ -346,12 +347,20 @@
         });
       })();
 
+      function csrfToken() {
+        return document.querySelector('meta[name="_csrf"]').content;
+      }
+
       function backupApiConfigs() {
         const username = document.querySelector('body').dataset.username;
         fetch(`/api/configs/backup/@${username}`, {
-          method: 'POST'
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': csrfToken() }
         })
-        .then(response => response.blob())
+        .then(response => {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.blob();
+        })
         .then(blob => {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -382,7 +391,8 @@
           fetch(`/api/configs/restore/@${username}`, {
             method: 'POST',
             headers: {
-              'Content-Type': 'text/plain'
+              'Content-Type': 'text/plain',
+              'X-CSRF-TOKEN': csrfToken()
             },
             body: backupData
           })
