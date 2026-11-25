@@ -39,7 +39,7 @@ class CorsTest {
     HttpResponse<String> response = new TestBrowser(port).send("OPTIONS", "/api/logs/@admin", "",
         "Origin", EVIL, "Access-Control-Request-Method", "DELETE");
 
-    assertEquals(403, response.statusCode());
+    assertEquals(401, response.statusCode());
     assertFalse(response.headers().firstValue(ALLOW_ORIGIN).isPresent());
   }
 

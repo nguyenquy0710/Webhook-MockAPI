@@ -84,7 +84,7 @@
         var domain = /*[[${domain}]]*/ 'https://domain';
         function updateUrl() { $('urlPreview').textContent = domain + '/api/@' + ($('username').value.trim() || 'username'); }
         // Password strength: length, mixed case, digits and symbols
-        function strength(v) { var s = 0; if (v.length >= 6) s++; if (v.length >= 10) s++; if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++; if (/\d/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++; return s; }
+        function strength(v) { var s = 0; if (v.length >= 8) s++; if (v.length >= 10) s++; if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++; if (/\d/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++; return s; }
         function check() {
             var p = $('password').value, c = $('confirmPassword').value, bar = $('strengthBar'), s = p ? Math.max(1, strength(p)) : 0;
             bar.style.width = (s * 20) + '%';

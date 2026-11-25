@@ -65,7 +65,7 @@
 **Validation Rules**:
 - Username: 3-20 chars, alphanumeric + underscore/hyphen
 - Email: Valid RFC 5322 format
-- Password: Minimum 6 characters
+- Password: Minimum 8 characters
 - Password confirmation must match
 
 **Response**:

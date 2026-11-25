@@ -36,13 +36,13 @@
 |-------|----------|-------------|
 | Username | Yes | 3-20 characters, alphanumeric + underscore/hyphen |
 | Email | Yes | Valid email address |
-| Password | Yes | Minimum 6 characters |
+| Password | Yes | Minimum 8 characters |
 | Confirm Password | Yes | Must match password |
 
 ### Validation Rules
 - Username must be unique
 - Email must be unique and valid format
-- Password must be at least 6 characters
+- Password must be at least 8 characters
 - Password and confirm password must match
 
 ### After Registration

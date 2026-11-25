@@ -141,7 +141,7 @@ public class User {
 **Business Rules**:
 - Username uniqueness enforced
 - Email uniqueness enforced
-- Password minimum 6 characters
+- Password minimum 8 characters
 - At least one admin must exist
 - Last admin cannot be disabled/deleted
 
@@ -372,7 +372,7 @@ Stores logs of all incoming webhook requests.
 ### Input Validation
 - **Username**: 3-20 chars, alphanumeric + underscore/hyphen
 - **Email**: RFC 5322 compliant
-- **Password**: Minimum 6 characters
+- **Password**: Minimum 8 characters
 - **HTTP Methods**: GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD
 - **Status Code**: 100-599
 - **Delay**: 0-60000ms

@@ -35,14 +35,14 @@ If a report is declined (for example it is a known limitation listed below, or n
 |---|---|---|
 | `/api/@<username>/**` (your mock endpoints) | Anyone | Public by design so third parties can call them. Responses are sandboxed by a `Content-Security-Policy` header and cannot set or clear cookies (`Set-Cookie`, `Clear-Site-Data`). Do not put secrets in response bodies. Whatever is sent to an endpoint is logged. |
 | `/mcp/@<username>/**` (MCP server) | Holders of that user's MCP token | `Authorization: Bearer mcp_...`; the token must belong to the `@username` in the path; the server can be switched off in Admin → Settings; per-token rate limit; browser `Origin` allow-list; every tool call is audited. |
-| `/swagger-ui`, `/swagger/**`, `/swagger.json` | Anyone | Documentation of the mock endpoints only. |
+| `/swagger-ui`, `/swagger.json` | Anyone | General API documentation. The per-user specs at `/swagger/@<username>` are visible to their owner only. |
 | `/register`, `/login`, static files | Anyone | Registration can be switched off in Admin → Settings. |
 | `/admin/**` | Role `ADMIN` | Spring Security role check. |
 | Everything else (dashboard, API configs, logs, MCP activity) | Signed-in users | Form login, a server-side session and CSRF tokens; each user only sees their own data. |
 
 Authentication and storage:
 
-- Passwords are hashed with **BCrypt**. Minimum length is 6 characters (no other complexity rule).
+- Passwords are hashed with **BCrypt**. Minimum length is 8 characters and the most common passwords are refused; existing passwords are not checked.
 - **MCP tokens** are random (32 bytes), shown once, and only their SHA-256 hash is stored. Renewing a token invalidates the old one at once.
 - Request logs keep headers, bodies and source IPs of whatever was sent to your endpoints, with the values of cookies and of sensitive-looking headers and query parameters replaced by `***` before storage. Bodies are stored as received. MCP tools that return logs mask values of keys that look sensitive (authorization, cookie, token, password, secret, api key) and cut long bodies; the MCP activity log stores arguments redacted and truncated.
 - The database is a local H2 file (`./data/mockwebhook.mv.db`). It contains password hashes, MCP token hashes and the request logs, so treat the file and its backups as sensitive.
@@ -68,9 +68,9 @@ These are known and listed so you can decide whether they matter for your deploy
 
 - **Default credentials:** the default admin user and database password described above.
 - **WebSocket origin** is read from the public base URL at startup; restart after changing it in Admin → Settings.
-- **No brute-force protection:** no login rate limiting or lockout, and no rate limit on the public mock endpoints (only MCP has one). Use the proxy or a firewall.
+- **Login and registration limits** are per client address and in memory (30 logins, 10 per username and 5 registrations a minute): they reset on restart, do not stop attempts spread over many addresses, and there is no account lockout, CAPTCHA or email verification. The public mock endpoints have no rate limit; use the proxy or a firewall.
 - **Session cookie and headers** use the framework defaults: no Content-Security-Policy, and pages may be framed by the same origin (SockJS fallback transports use iframes).
-- **Password policy** is only a minimum length of 6.
+- **Password policy** is a minimum length of 8 and a short list of common passwords; there is no check against leaked passwords.
 - **In-memory MCP state:** the MCP rate limiter and SSE sessions are kept in memory, so they reset on restart and are not shared between instances.
 - **MCP token scope:** one token per user with access to every tool; there is no read-only token and no OAuth.
 - **Sensitive data in logs:** request bodies, header names that do not look sensitive, and logs written before masking was introduced are stored as received.

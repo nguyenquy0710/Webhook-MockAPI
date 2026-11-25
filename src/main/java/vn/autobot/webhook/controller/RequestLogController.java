@@ -12,11 +12,14 @@ import vn.autobot.webhook.service.RequestLogService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/logs")
 @RequiredArgsConstructor
 public class RequestLogController {
+
+    private static final Set<String> SORTABLE = Set.of("id", "timestamp", "method", "path", "responseStatus");
 
     private final RequestLogService requestLogService;
 
@@ -26,6 +29,10 @@ public class RequestLogController {
                                                        Pageable pageable) {
         if (!username.equals(userDetails.getUsername())) {
             return ResponseEntity.status(403).build();
+        }
+
+        if (!pageable.getSort().stream().allMatch(order -> SORTABLE.contains(order.getProperty()))) {
+            return ResponseEntity.badRequest().build();
         }
 
         Page<RequestLogDto> logs = requestLogService.getRequestLogs(username, pageable);
