@@ -8,13 +8,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 // Cookie-keeping client for tests through the real filter chain; unlike TestRestTemplate it can send Origin
 public class TestBrowser {
 
   private static final Pattern CSRF = Pattern.compile("name=\"_csrf\"[^>]*value=\"([^\"]+)\"");
 
-  private final HttpClient client = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
+  private final CookieManager cookies = new CookieManager();
+  private final HttpClient client = HttpClient.newBuilder().cookieHandler(cookies).build();
   private final String base;
 
   public TestBrowser(int port) {
@@ -30,6 +32,12 @@ public class TestBrowser {
   public String csrfField(String page) {
     Matcher matcher = CSRF.matcher(get(page).body());
     return matcher.find() ? "&_csrf=" + matcher.group(1) : "";
+  }
+
+  /** @return the Cookie header for other clients */
+  public String cookieHeader() {
+    return cookies.getCookieStore().getCookies().stream().map(c -> c.getName() + "=" + c.getValue())
+        .collect(Collectors.joining("; "));
   }
 
   public HttpResponse<String> get(String path, String... headers) {
