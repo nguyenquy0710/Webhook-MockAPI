@@ -21,6 +21,7 @@ services:
       - TZ=Asia/Ho_Chi_Minh
       - SPRING_PROFILES_ACTIVE=default
       - JAVA_OPTS=-Xms256m -Xmx512m -Djava.awt.headless=true # Tùy chỉnh bộ nhớ Java
+      - SERVER_TOMCAT_REMOTEIP_REMOTE_IP_HEADER=X-HaEsms-Forwarded-For  # Header IP do HAProxy ghi đè; proxy khác thì bỏ dòng này (mặc định X-Forwarded-For)
       - APP_DOMAIN=https://mock-api.quyit.id.vn  # ✅ biến môi trường được Spring Boot hiểu là app.domain
     volumes:
       - ./data:/app/data  # Lưu trữ database H2 bền vững

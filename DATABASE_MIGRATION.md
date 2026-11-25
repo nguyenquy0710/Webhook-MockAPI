@@ -13,7 +13,7 @@ How WebHookMock stores its data, how the schema is upgraded, and how to back up,
 - [Writing a new migration](#writing-a-new-migration)
 - [Troubleshooting](#troubleshooting)
 - [Rolling back](#rolling-back)
-- [Using the H2 console](#using-the-h2-console)
+- [Inspecting the database](#inspecting-the-database)
 - [Scripts](#scripts)
 
 ## How it works
@@ -70,18 +70,12 @@ cp ./data/mockwebhook.mv.db ./data/mockwebhook_backup_$(date +%Y%m%d_%H%M%S).mv.
 
 Docker: `docker-compose stop mockapi`, copy the file from the mounted `./data` directory, then `docker-compose start mockapi`.
 
-**Online backup:** open the [H2 console](#using-the-h2-console) and run
-
-```sql
-BACKUP TO './data/backup.zip';
-```
-
-This writes a ZIP of the database files without stopping the application. Do not copy `mockwebhook.mv.db` while the application is running; the copy may be inconsistent.
+Do not copy `mockwebhook.mv.db` while the application is running; the copy may be inconsistent. There is no online backup: the application has no H2 web console and H2 lets one process open the file.
 
 **Restore:**
 
 1. Stop the application.
-2. Put the backup back as `./data/mockwebhook.mv.db` (unzip it first if it came from `BACKUP TO`). Delete a stale `mockwebhook.trace.db` if you like.
+2. Put the backup back as `./data/mockwebhook.mv.db`. Delete a stale `mockwebhook.trace.db` if you like.
 3. Start the application **of the same or a newer version** than the one that wrote the backup.
 
 The database file contains password hashes, MCP token hashes and request logs. Store backups with the same care as the live file.
@@ -90,7 +84,7 @@ The database file contains password hashes, MCP token hashes and request logs. S
 
 **From the log:** look for `Current database version: N` and `Database is up to date`. `There are N pending migrations` or `Migration error` mean something needs attention.
 
-**From SQL** (H2 console, or the H2 shell while the application is stopped):
+**From SQL** (H2 shell, while the application is stopped):
 
 ```sql
 SELECT "installed_rank", "version", "description", "success"
@@ -129,7 +123,7 @@ The database is kept tidy by a **maintenance run**: it deletes request logs olde
 | `Detected resolved migration not applied to database` | A migration with a number lower than the latest applied one was added later. Renumber it above the latest version (see [Writing a new migration](#writing-a-new-migration)). |
 | A migration is marked failed in `flyway_schema_history` (the application does not start) | Read the SQL error in the log and fix its cause (or restore a backup). With the application stopped, run `./mvnw flyway:repair -Dflyway.url=jdbc:h2:file:./data/mockwebhook -Dflyway.user=sa -Dflyway.password=password` to remove the failed entry, then start again so the migration is re-applied. |
 | `Table already exists` or `Column already exists` | The migration is not idempotent. Use `IF NOT EXISTS` (the existing ones do). |
-| `Database may be already in use` / locked | Another process has the file open (a running app, a stuck process, or the H2 console). Stop all of them, wait a few seconds, start again. |
+| `Database may be already in use` / locked | Another process has the file open (a running app, a stuck process, or an H2 shell). Stop all of them, wait a few seconds, start again. |
 | The application starts but a page fails with a missing table/column | The code is newer than the database (migrations did not run) or the other way round. Check `Current database version` in the log and the table above. |
 | Everything is broken and there is no backup | Last resort: stop the app and delete the `./data` directory to start from an empty database. **This deletes all users, endpoints and logs.** A new administrator is created on start. |
 
@@ -145,15 +139,9 @@ There are **no down migrations**. To go back:
 
 Do not run an older version against a database that a newer version has already upgraded: Flyway tolerates the unknown newer migrations (`ignore-future-migrations=true`) but the old code does not know the new columns and tables. To undo a change in a released schema, write a new migration instead of editing or deleting an old one.
 
-## Using the H2 console
+## Inspecting the database
 
-For inspection and manual fixes. It is **enabled by default** and is a security risk on a public server (see [SECURITY.md](SECURITY.md)); turn it off in production with `SPRING_H2_CONSOLE_ENABLED=false`.
-
-1. Start the application and open `http://localhost:8081/h2-console`.
-2. JDBC URL `jdbc:h2:file:./data/mockwebhook`, user `sa`, password `password` (or the one you set).
-3. Take a backup before running any statement that changes data.
-
-For a database file the application is not using, you can also use the H2 shell: `java -cp <h2.jar> org.h2.tools.Shell -url jdbc:h2:file:./data/mockwebhook -user sa -password password`.
+The application has no H2 web console. Stop it, take a backup, then use the H2 shell: `java -cp <h2.jar> org.h2.tools.Shell -url jdbc:h2:file:./data/mockwebhook -user sa -password password` (or the password you set).
 
 ## Scripts
 

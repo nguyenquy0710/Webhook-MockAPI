@@ -36,7 +36,7 @@
 | Session hijacking | Low | High | HttpOnly cookies, secure transport (HTTPS), session timeout |
 | SQL Injection | Low | Critical | Parameterized queries, input validation, ORM usage |
 | XSS Attacks | Low | High | Output encoding, Thymeleaf auto-escaping, CSP headers |
-| CSRF Attacks | Low | Medium | CSRF tokens for forms, disabled for stateless APIs |
+| CSRF Attacks | Low | Medium | CSRF tokens for all session-based requests, disabled for mock endpoints and MCP |
 | Unauthorized Access | Low | High | Role-based access control, ownership verification, audit logging |
 
 **Mitigation Details**:

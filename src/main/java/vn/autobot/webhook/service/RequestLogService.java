@@ -16,16 +16,23 @@ import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.repository.RequestLogRepository;
 import vn.autobot.webhook.utils.RequestUtils;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,18 +45,15 @@ public class RequestLogService {
   private final ObjectMapper objectMapper;
 
   @Transactional
-  public RequestLog logRequest(User user, HttpServletRequest request, String body,
+  public RequestLog logRequest(User user, HttpServletRequest original, String body,
       int status, String responseBody) {
+    HttpServletRequest request = new MaskedRequest(original);
     RequestLog requestLog = new RequestLog();
     requestLog.setUser(user);
     requestLog.setMethod(request.getMethod());
     requestLog.setPath(request.getRequestURI());
 
-    String remoteIp = request.getHeader("X-Forwarded-For");
-    if (remoteIp != null && remoteIp.contains(",")) {
-      remoteIp = remoteIp.split(",")[0];
-    }
-    requestLog.setSourceIp(remoteIp);
+    requestLog.setSourceIp(request.getRemoteAddr());
 
     // Log query parameters
     Map<String, String[]> queryParams = request.getParameterMap();
@@ -105,22 +109,72 @@ public class RequestLogService {
       while (headerNames.hasMoreElements()) {
         String name = headerNames.nextElement();
         String value = request.getHeader(name);
-        curl.append(" -H '").append(name).append(": ").append(value).append("'");
+        curl.append(" -H ").append(shellQuote(name + ": " + value));
       }
     }
 
     if (body != null && !body.isEmpty()) {
-      String escapedBody = body.replace("'", "'\\''");
-      curl.append(" -d '").append(escapedBody).append("'");
+      curl.append(" -d ").append(shellQuote(body));
     }
 
     String url = request.getRequestURL().toString();
     if (request.getQueryString() != null && !request.getQueryString().isEmpty()) {
       url += "?" + request.getQueryString();
     }
-    curl.append(" '").append(url).append("'");
+    curl.append(" ").append(shellQuote(url));
 
     return curl.toString();
+  }
+
+  private static String shellQuote(String value) {
+    return "'" + value.replace("'", "'\\''") + "'";
+  }
+
+  /** What is stored of a request: values of sensitive-looking headers, cookies and parameters are masked. */
+  private static class MaskedRequest extends HttpServletRequestWrapper {
+
+    MaskedRequest(HttpServletRequest request) {
+      super(request);
+    }
+
+    @Override
+    public String getHeader(String name) {
+      String value = super.getHeader(name);
+      return value != null && McpRedactor.isSensitiveKey(name) ? McpRedactor.MASK : value;
+    }
+
+    @Override
+    public Cookie[] getCookies() {
+      Cookie[] cookies = super.getCookies();
+      return cookies == null ? null
+          : Arrays.stream(cookies).map(c -> new Cookie(c.getName(), McpRedactor.MASK)).toArray(Cookie[]::new);
+    }
+
+    @Override
+    public Map<String, String[]> getParameterMap() {
+      Map<String, String[]> masked = new LinkedHashMap<>(super.getParameterMap());
+      masked.replaceAll((name, values) -> McpRedactor.isSensitiveKey(name) ? new String[] {McpRedactor.MASK} : values);
+      return masked;
+    }
+
+    @Override
+    public String getQueryString() {
+      String query = super.getQueryString();
+      if (query == null) {
+        return null;
+      }
+      return Arrays.stream(query.split("&")).map(pair -> {
+        String name = pair.split("=", 2)[0];
+        // Names may be percent-encoded; a malformed one is checked as it is
+        String decoded = name;
+        try {
+          decoded = URLDecoder.decode(name, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+          log.debug("Malformed query parameter name", e);
+        }
+        return McpRedactor.isSensitiveKey(decoded) ? name + "=" + McpRedactor.MASK : pair;
+      }).collect(Collectors.joining("&"));
+    }
   }
 
   private String buildResponseBody(HttpServletRequest request, String responseBody, int status) {

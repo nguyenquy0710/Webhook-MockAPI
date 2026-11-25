@@ -1,0 +1,19 @@
+# Build output
+target/
+build/
+*.jar
+
+# Local data, logs, secrets
+data/
+logs/
+*.db
+*.log
+.env
+.env.*
+cookies.txt
+
+# IDE / tooling
+.idea/
+.vscode/
+.settings/
+node_modules/

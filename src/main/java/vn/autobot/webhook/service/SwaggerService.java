@@ -1,14 +1,9 @@
 package vn.autobot.webhook.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import vn.autobot.webhook.dto.ApiConfigDto;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 @Service
@@ -16,12 +11,7 @@ import java.util.*;
 public class SwaggerService {
 
     private final ApiMockService apiMockService;
-    private final ObjectMapper objectMapper;
     private final SettingsService settingsService;
-
-    public Path getSwaggerPath(String username) {
-        return Paths.get("data", "swagger", username, "swagger.json");
-    }
 
     public Map<String, Object> generateSwaggerSpec(String username) {
         List<ApiConfigDto> configs = apiMockService.getApiConfigs(username);
@@ -59,18 +49,4 @@ public class SwaggerService {
         return spec;
     }
 
-    public void writeSwaggerFile(String username) throws IOException {
-        Map<String, Object> spec = generateSwaggerSpec(username);
-        Path path = getSwaggerPath(username);
-        Files.createDirectories(path.getParent());
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), spec);
-    }
-
-    public Map<String, Object> readSwagger(String username) throws IOException {
-        Path path = getSwaggerPath(username);
-        if (!Files.exists(path)) {
-            writeSwaggerFile(username);
-        }
-        return objectMapper.readValue(path.toFile(), Map.class);
-    }
 }

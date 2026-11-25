@@ -112,7 +112,7 @@ This specification covers all functional requirements for:
 **Validation Rules**:
 - Username: 3-20 characters, alphanumeric + underscore/hyphen only
 - Email: Valid email format, must be unique
-- Password: Minimum 6 characters
+- Password: Minimum 8 characters
 - Password confirmation must match password
 
 **Response**:
@@ -162,7 +162,7 @@ This specification covers all functional requirements for:
 
 **Validation Rules**:
 - Current password must match stored password
-- New password must be at least 6 characters
+- New password must be at least 8 characters
 - New password confirmation must match
 
 **Response**:
@@ -178,7 +178,7 @@ This specification covers all functional requirements for:
 
 #### 3.1.4 User Logout
 
-**Endpoint**: `GET /logout`
+**Endpoint**: `POST /logout` (CSRF token required)
 
 **Response**: Redirect to `/login?logout`
 
@@ -728,7 +728,7 @@ This specification covers all functional requirements for:
 | POST | /login | Public | Login action |
 | GET | /register | Public | Registration page |
 | POST | /register | Public | Registration action |
-| GET | /logout | Auth | Logout action |
+| POST | /logout | Auth | Logout action |
 | GET | /change-password | Auth | Change password page |
 | POST | /change-password | Auth | Change password action |
 
@@ -786,7 +786,7 @@ This specification covers all functional requirements for:
 ### 6.1 User Management Rules
 - Username must be unique
 - Email must be unique
-- Password minimum 6 characters
+- Password minimum 8 characters
 - Username 3-20 characters, alphanumeric + underscore/hyphen
 - At least one admin must exist
 - Last admin cannot be disabled

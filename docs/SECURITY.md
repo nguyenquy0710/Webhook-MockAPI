@@ -18,7 +18,7 @@
 ### Security Features
 - **Password Hashing**: BCrypt with cost factor 12
 - **Session Management**: Secure cookies with HttpOnly flag
-- **CSRF Protection**: Enabled for forms, disabled for webhook APIs
+- **CSRF Protection**: Enabled for all session-based requests, disabled for mock endpoints (`/api/@{username}/**`) and MCP
 - **Role-Based Access Control**: USER/ADMIN roles
 - **Data Isolation**: Users can only access their own data
 - **Input Validation**: Server-side validation for all inputs
@@ -30,7 +30,7 @@
 ### Password Hashing
 - **Algorithm**: BCrypt
 - **Cost Factor**: 12
-- **Minimum Length**: 6 characters
+- **Minimum Length**: 8 characters
 
 ### Session Management
 - **Cookie Name**: JSESSIONID
@@ -76,7 +76,7 @@
 ## Password Security
 
 ### Password Requirements
-- Minimum 6 characters
+- Minimum 8 characters
 - No maximum length
 - No special character requirements (user-friendly)
 
@@ -101,7 +101,7 @@
 |-------|-------|
 | **Username** | 3-20 chars, alphanumeric + underscore/hyphen |
 | **Email** | Valid RFC 5322 format |
-| **Password** | Minimum 6 characters |
+| **Password** | Minimum 8 characters |
 | **HTTP Method** | GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD |
 | **Status Code** | 100-599 |
 | **Delay** | 0-60000ms |
@@ -140,15 +140,15 @@
 ## API Security
 
 ### Webhook API Security
-- **CSRF Disabled**: For easier integration
+- **CSRF Disabled**: Mock endpoints (`/api/@{username}/**`) only
 - **Ownership Verification**: Verify user ownership
 - **Input Validation**: Validate all inputs
 - **Rate Limiting**: Planned for future
 
 ### Authentication for Webhook APIs
 - **Session-based**: JSESSIONID cookie
-- **CSRF Disabled**: For stateless APIs
-- **CORS**: Configured for cross-origin requests
+- **CSRF Token**: Required for session-based APIs (`X-CSRF-TOKEN`)
+- **CORS**: Mock endpoints and MCP only, without credentials
 
 ### Security Headers
 - **X-Frame-Options**: SAMEORIGIN
@@ -200,7 +200,6 @@
 - [ ] Rate limiting enabled
 - [ ] Security headers set
 - [ ] Database password strong
-- [ ] H2 console disabled in production
 
 ### Monitoring Checklist
 - [ ] Security events logged

@@ -5,12 +5,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.RequestLogDto;
@@ -19,6 +21,7 @@ import vn.autobot.webhook.service.McpCallService;
 import vn.autobot.webhook.service.McpTokenService;
 import vn.autobot.webhook.service.SettingsService;
 import vn.autobot.webhook.service.RequestLogService;
+import vn.autobot.webhook.utils.RequestUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -178,7 +181,12 @@ public class WebhookViewController {
                                   @RequestParam(required = false) String status,
                                   @AuthenticationPrincipal UserDetails userDetails,
                                   Model model) {
-        Pageable pageable = PageRequest.of(page, size);
+        // Admins read other users' logs through /admin/user/@{username}/logs
+        if (!username.equals(userDetails.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        Pageable pageable = RequestUtils.pageRequest(page, size);
         Page<RequestLogDto> logs = requestLogService.searchRequestLogs(username, path, method, status, pageable);
         long totalLogs = logs.getTotalElements();
         model.addAttribute("methodFilter", method != null ? method : "");
@@ -189,7 +197,7 @@ public class WebhookViewController {
         model.addAttribute("username", userDetails.getUsername());
         model.addAttribute("totalLogs", totalLogs);
         model.addAttribute("currentPage", pageable.getPageNumber());
-        model.addAttribute("pageSize", size);
+        model.addAttribute("pageSize", pageable.getPageSize());
         model.addAttribute("totalPages", logs.getTotalPages());
         model.addAttribute("domain", settingsService.getDomain());
         model.addAttribute("pathFilter", path != null ? path : "");

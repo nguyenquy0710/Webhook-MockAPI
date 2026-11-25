@@ -10,13 +10,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.model.ApiConfig;
 import vn.autobot.webhook.model.User;
 import vn.autobot.webhook.repository.ApiConfigRepository;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ValidationException;
+import javax.validation.Validator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +31,7 @@ public class ApiConfigService {
   private final ApiConfigRepository apiConfigRepository;
   private final UserService userService;
   private final ObjectMapper objectMapper;
+  private final Validator validator;
 
   private ApiConfigDto convertToDto(ApiConfig apiConfig) {
     ApiConfigDto dto = new ApiConfigDto();
@@ -73,10 +79,19 @@ public class ApiConfigService {
     }
   }
 
+  /** Saves every configuration of the backup, or none when one of them is invalid. */
+  @Transactional
   public void restoreApiConfigs(String username, String backupData) {
     User user = userService.findByUsername(username);
     try {
       List<ApiConfigDto> dtos = objectMapper.readValue(backupData, objectMapper.getTypeFactory().constructCollectionType(List.class, ApiConfigDto.class));
+      for (int i = 0; i < dtos.size(); i++) {
+        Set<ConstraintViolation<ApiConfigDto>> violations = validator.validate(dtos.get(i));
+        if (!violations.isEmpty()) {
+          ConstraintViolation<ApiConfigDto> first = violations.iterator().next();
+          throw new ValidationException("Item " + (i + 1) + ", " + first.getPropertyPath() + ": " + first.getMessage());
+        }
+      }
       for (ApiConfigDto dto : dtos) {
         ApiConfig apiConfig = new ApiConfig();
         apiConfig.setUser(user);
@@ -95,6 +110,8 @@ public class ApiConfigService {
         apiConfig.setRetryAfterSeconds(dto.getRetryAfterSeconds() != null ? dto.getRetryAfterSeconds() : 1);
         apiConfigRepository.save(apiConfig);
       }
+    } catch (ValidationException e) {
+      throw e;
     } catch (Exception e) {
       log.error("Error deserializing API configs for restore", e);
       throw new RuntimeException("Failed to restore API configurations", e);

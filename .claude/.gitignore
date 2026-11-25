@@ -1,0 +1,3 @@
+.env
+*.share.json
+dev.local.json

@@ -188,10 +188,10 @@
 - **Expected**: 302 redirect to /dashboard
 - **Assertions**: Session created, JSESSIONID cookie set
 
-#### 3.1.4 GET /logout
+#### 3.1.4 POST /logout
 **Test Case**: TC-AC-004
 - **Description**: Logout user
-- **Method**: GET
+- **Method**: POST with CSRF token
 - **Input**: Authenticated session
 - **Expected**: 302 redirect to /login?logout
 - **Assertions**: Session invalidated, cookie deleted
