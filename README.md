@@ -24,7 +24,7 @@ Every user gets a namespace: `https://<your-domain>/api/@<username>/<path>`.
 
 ### API configuration
 
-- Endpoints per user, defined by **method + path**, with status code, content type, response body and response headers.
+- Endpoints per user, defined by **method + path**, with status code, content type, response body and response headers. Responses carry `Content-Security-Policy: sandbox` (HTML opened in a browser runs no scripts or forms) and `Set-Cookie` and `Clear-Site-Data` are dropped, because endpoints share the host with the signed-in pages.
 - **Response templates**: use request values in the body or headers, for example `{{headers.User-Agent}}`, `{{queryParams.utm_source}}`, `{{status}}`.
 - **Response delay** (0–60000 ms) to simulate latency.
 - **Description and note** per endpoint; the description becomes the summary in the generated Swagger spec.

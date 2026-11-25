@@ -33,7 +33,7 @@ If a report is declined (for example it is a known limitation listed below, or n
 
 | Area | Who can access | How it is protected |
 |---|---|---|
-| `/api/@<username>/**` (your mock endpoints) | Anyone | Public by design so third parties can call them. Do not put secrets in response bodies. Whatever is sent to an endpoint is logged. |
+| `/api/@<username>/**` (your mock endpoints) | Anyone | Public by design so third parties can call them. Responses are sandboxed by a `Content-Security-Policy` header and cannot set or clear cookies (`Set-Cookie`, `Clear-Site-Data`). Do not put secrets in response bodies. Whatever is sent to an endpoint is logged. |
 | `/mcp/@<username>/**` (MCP server) | Holders of that user's MCP token | `Authorization: Bearer mcp_...`; the token must belong to the `@username` in the path; the server can be switched off in Admin → Settings; per-token rate limit; browser `Origin` allow-list; every tool call is audited. |
 | `/swagger-ui`, `/swagger/**`, `/swagger.json` | Anyone | Documentation of the mock endpoints only. |
 | `/register`, `/login`, static files | Anyone | Registration can be switched off in Admin → Settings. |

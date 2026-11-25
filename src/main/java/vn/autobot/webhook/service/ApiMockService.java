@@ -226,7 +226,11 @@ public class ApiMockService {
             apiConfig.getResponseHeaders(), HashMap.class);
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-          responseBuilder.header(entry.getKey(), entry.getValue());
+          // These act on the cookies of the host shared with the signed-in pages
+          String name = entry.getKey().trim();
+          if (!"Set-Cookie".equalsIgnoreCase(name) && !"Clear-Site-Data".equalsIgnoreCase(name)) {
+            responseBuilder.header(entry.getKey(), entry.getValue());
+          }
         }
       } catch (JsonProcessingException e) {
         log.error("Error parsing response headers", e);

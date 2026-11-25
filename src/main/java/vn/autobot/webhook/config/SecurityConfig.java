@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -36,13 +38,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
             .logout()
                 .logoutUrl("/logout")
-                .logoutRequestMatcher(new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/logout", "GET"))
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
                 .and()
-            .headers().frameOptions().sameOrigin(); // For H2 console
+            .headers()
+                // Mock bodies are user-written: run them in an opaque origin, away from the signed-in pages.
+                // Added, not set: a CSP from the endpoint's own headers must not replace it.
+                .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(new AntPathRequestMatcher("/api/@*/**"),
+                        (request, response) -> {
+                            // Async mock responses pass here twice
+                            if (!response.getHeaders("Content-Security-Policy").contains("sandbox")) {
+                                response.addHeader("Content-Security-Policy", "sandbox");
+                            }
+                        }))
+                .frameOptions().sameOrigin(); // For H2 console
     }
 
     @Override
