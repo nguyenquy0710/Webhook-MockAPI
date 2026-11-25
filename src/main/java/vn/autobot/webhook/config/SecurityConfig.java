@@ -15,9 +15,11 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import vn.autobot.webhook.service.McpRateLimiter;
 
 import java.util.LinkedHashMap;
 
@@ -30,6 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String[] SESSION_APIS = {"/api/logs/**", "/api/configs/**"};
 
     private final UserDetailsService userDetailsService;
+    private final McpRateLimiter rateLimiter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -37,6 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             // Only paths that do not act on the session: mock endpoints, MCP (Bearer token), SockJS (checks Origin)
             .csrf().ignoringAntMatchers("/api/@*/**", "/mcp/**", "/ws/**")
                 .and()
+            .addFilterBefore(new AuthRateLimitFilter(rateLimiter), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
                 .antMatchers(SESSION_APIS).authenticated()
                 .antMatchers("/api/**").permitAll() // Allow all webhook API requests

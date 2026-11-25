@@ -68,7 +68,7 @@ These are known and listed so you can decide whether they matter for your deploy
 
 - **Default credentials:** the default admin user and database password described above.
 - **WebSocket origin** is read from the public base URL at startup; restart after changing it in Admin → Settings.
-- **No brute-force protection:** no login rate limiting or lockout, and no rate limit on the public mock endpoints (only MCP has one). Use the proxy or a firewall.
+- **Login and registration limits** are per client address and in memory (30 logins, 10 per username and 5 registrations a minute): they reset on restart, do not stop attempts spread over many addresses, and there is no account lockout, CAPTCHA or email verification. The public mock endpoints have no rate limit; use the proxy or a firewall.
 - **Session cookie and headers** use the framework defaults: no Content-Security-Policy, and pages may be framed by the same origin (SockJS fallback transports use iframes).
 - **Password policy** is only a minimum length of 6.
 - **In-memory MCP state:** the MCP rate limiter and SSE sessions are kept in memory, so they reset on restart and are not shared between instances.
