@@ -5,12 +5,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.autobot.webhook.dto.ApiConfigDto;
 import vn.autobot.webhook.dto.RequestLogDto;
@@ -178,6 +180,11 @@ public class WebhookViewController {
                                   @RequestParam(required = false) String status,
                                   @AuthenticationPrincipal UserDetails userDetails,
                                   Model model) {
+        // Admins read other users' logs through /admin/user/@{username}/logs
+        if (!username.equals(userDetails.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
         Pageable pageable = PageRequest.of(page, size);
         Page<RequestLogDto> logs = requestLogService.searchRequestLogs(username, path, method, status, pageable);
         long totalLogs = logs.getTotalElements();
