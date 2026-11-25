@@ -178,7 +178,7 @@ This specification covers all functional requirements for:
 
 #### 3.1.4 User Logout
 
-**Endpoint**: `GET /logout`
+**Endpoint**: `POST /logout` (CSRF token required)
 
 **Response**: Redirect to `/login?logout`
 
@@ -728,7 +728,7 @@ This specification covers all functional requirements for:
 | POST | /login | Public | Login action |
 | GET | /register | Public | Registration page |
 | POST | /register | Public | Registration action |
-| GET | /logout | Auth | Logout action |
+| POST | /logout | Auth | Logout action |
 | GET | /change-password | Auth | Change password page |
 | POST | /change-password | Auth | Change password action |
 

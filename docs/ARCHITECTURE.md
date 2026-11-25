@@ -317,7 +317,7 @@ Stores logs of all incoming webhook requests.
 | POST | /login | Login action |
 | GET | /register | Registration page |
 | POST | /register | Register user |
-| GET | /logout | Logout |
+| POST | /logout | Logout |
 | GET | /change-password | Password change page |
 | POST | /change-password | Change password |
 
@@ -362,7 +362,7 @@ Stores logs of all incoming webhook requests.
 - **Method**: Form-based with Spring Security
 - **Password Hashing**: BCrypt (cost factor 12)
 - **Session Management**: Secure cookies with HttpOnly flag
-- **CSRF**: Enabled for forms, disabled for webhook APIs
+- **CSRF**: Enabled for all session-based requests, disabled for mock endpoints (`/api/@{username}/**`) and MCP
 
 ### Authorization
 - **Role-Based Access Control**: USER/ADMIN roles

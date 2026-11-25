@@ -267,7 +267,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 | POST | /login | Login action |
 | GET | /register | Registration page |
 | POST | /register | Register user |
-| GET | /logout | Logout |
+| POST | /logout | Logout |
 | GET | /change-password | Password change page |
 | POST | /change-password | Change password |
 
@@ -365,7 +365,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 - **Method**: Form-based with Spring Security
 - **Password Hashing**: BCrypt (cost factor 12)
 - **Session Management**: Secure cookies with HttpOnly flag
-- **CSRF**: Enabled for forms, disabled for webhook APIs
+- **CSRF**: Enabled for all session-based requests, disabled for mock endpoints (`/api/@{username}/**`) and MCP
 
 ### 5.2 Authorization
 - **Role-Based Access Control**: USER/ADMIN roles
@@ -451,7 +451,7 @@ CREATE INDEX idx_request_logs_timestamp ON request_logs(timestamp);
 ### 7.1 Development
 - **Database**: H2 file-based at `./data/mockwebhook`
 - **Port**: 8081
-- **H2 Console**: `/h2-console`
+- **H2 Console**: not available
 
 ### 7.2 Production
 - **Database**: H2 file-based or external database

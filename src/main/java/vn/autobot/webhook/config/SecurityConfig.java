@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -21,11 +23,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            .csrf().disable()
+            // Only paths that do not act on the session: mock endpoints, MCP (Bearer token), SockJS (checks Origin)
+            .csrf().ignoringAntMatchers("/api/@*/**", "/mcp/**", "/ws/**")
+                .and()
             .authorizeRequests()
                 .antMatchers("/api/**").permitAll() // Allow all webhook API requests
                 .antMatchers("/mcp/**").permitAll() // MCP clients authenticate with their own Bearer token
-                .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/swagger/**", "/h2-console/**").permitAll()
+                .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/swagger/**", "/error").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
@@ -36,13 +40,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
             .logout()
                 .logoutUrl("/logout")
-                .logoutRequestMatcher(new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/logout", "GET"))
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
                 .and()
-            .headers().frameOptions().sameOrigin(); // For H2 console
+            .headers()
+                // Mock bodies are user-written: run them in an opaque origin, away from the signed-in pages.
+                // Added, not set: a CSP from the endpoint's own headers must not replace it.
+                .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(new AntPathRequestMatcher("/api/@*/**"),
+                        (request, response) -> {
+                            // Async mock responses pass here twice
+                            if (!response.getHeaders("Content-Security-Policy").contains("sandbox")) {
+                                response.addHeader("Content-Security-Policy", "sandbox");
+                            }
+                        }))
+                .frameOptions().sameOrigin(); // SockJS fallback transports use iframes
     }
 
     @Override

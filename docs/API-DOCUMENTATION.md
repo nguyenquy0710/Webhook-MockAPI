@@ -21,7 +21,7 @@
 
 ### Authentication
 - **Method**: Session-based (JSESSIONID cookie)
-- **CSRF**: Disabled for `/api/**` endpoints
+- **CSRF**: Token required for every state-changing request that uses the session cookie (including `/api/logs/**` and `/api/configs/**`, header `X-CSRF-TOKEN`); not for `/api/@{username}/**` and `/mcp/**`
 
 ### Content Types
 - **Request**: `application/json` (for REST APIs)
@@ -76,7 +76,7 @@
 ---
 
 ### Logout
-**Endpoint**: `GET /logout`
+**Endpoint**: `POST /logout` (CSRF token required)
 
 **Response**:
 - **302 Found**: Redirects to `/login?logout`

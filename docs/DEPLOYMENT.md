@@ -171,9 +171,6 @@ spring.flyway.enabled=true
 spring.flyway.baseline-on-migrate=true
 spring.flyway.locations=classpath:db/migration
 
-# H2 Console (disable in production)
-spring.h2.console.enabled=false
-
 # Thymeleaf (enable cache in production)
 spring.thymeleaf.cache=true
 
@@ -406,7 +403,6 @@ docker run --rm -v mockapi_data:/data -v $(pwd):/backup ubuntu tar xzf /backup/b
 ## Security Best Practices
 
 ### Production Checklist
-- [ ] Disable H2 console in production
 - [ ] Use strong database password
 - [ ] Enable HTTPS with valid SSL certificate
 - [ ] Set up firewall rules

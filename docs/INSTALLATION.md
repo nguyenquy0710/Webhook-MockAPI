@@ -101,7 +101,7 @@ java -jar target/WebHookMock-0.0.1-SNAPSHOT.jar
 
 ### Truy cập ứng dụng / Access Application
 - **URL**: http://localhost:8081
-- **H2 Console**: http://localhost:8081/h2-console
+- **Database** (H2 shell, application stopped; there is no web console):
   - JDBC URL: `jdbc:h2:file:./data/mockwebhook`
   - Username: `sa`
   - Password: `password`

@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- For fetch calls; reading it here also creates the session before the response is committed -->
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
     <title>WebHookMock - Webhook Testing Made Simple | QuyIT Platform</title>
     <meta name="description"
       content="WebHookMock is a powerful webhook testing tool that allows developers to create, manage, and test webhook APIs with ease. Part of QuyIT Platform tools suite.">

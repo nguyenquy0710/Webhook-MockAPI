@@ -84,7 +84,6 @@ cd Webhook-MockAPI
 
 ### Access Application
 - **URL**: http://localhost:8081
-- **H2 Console**: http://localhost:8081/h2-console
 
 ---
 

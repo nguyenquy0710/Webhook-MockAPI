@@ -152,7 +152,8 @@ public class ApiMockService {
   public DeferredResult<ResponseEntity<Object>> processWebhook(ApiConfig apiConfig, HttpServletRequest request) {
     DeferredResult<ResponseEntity<Object>> deferredResult = new DeferredResult<>();
 
-    Integer delay = apiConfig.getDelayMs() != null ? apiConfig.getDelayMs() : 0;
+    // Older restores stored delays above the form's limit
+    int delay = apiConfig.getDelayMs() != null ? Math.min(apiConfig.getDelayMs(), 60000) : 0;
     // Decided once per call, before the delay, so concurrent calls of one caller are counted in arrival order
     Optional<FailureSimulationService.Failure> failure = failureSimulation.next(apiConfig, request);
 
@@ -226,7 +227,11 @@ public class ApiMockService {
             apiConfig.getResponseHeaders(), HashMap.class);
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-          responseBuilder.header(entry.getKey(), entry.getValue());
+          // These act on the cookies of the host shared with the signed-in pages
+          String name = entry.getKey().trim();
+          if (!"Set-Cookie".equalsIgnoreCase(name) && !"Clear-Site-Data".equalsIgnoreCase(name)) {
+            responseBuilder.header(entry.getKey(), entry.getValue());
+          }
         }
       } catch (JsonProcessingException e) {
         log.error("Error parsing response headers", e);
