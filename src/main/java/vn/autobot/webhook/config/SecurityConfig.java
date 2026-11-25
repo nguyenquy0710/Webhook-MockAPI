@@ -16,12 +16,16 @@ import org.springframework.security.web.authentication.DelegatingAuthenticationE
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.Header;
 import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import vn.autobot.webhook.service.McpRateLimiter;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -30,6 +34,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     // JSON endpoints of the signed-in user; the rest of /api/** is mock endpoints
     private static final String[] SESSION_APIS = {"/api/logs/**", "/api/configs/**"};
+
+    private static final RequestMatcher MOCK_ENDPOINTS = new AntPathRequestMatcher("/api/@*/**");
+
+    // CSP only reports (browser console): the templates still have inline scripts, styles and handlers
+    private static final List<Header> PAGE_HEADERS = List.of(
+            new Header("Referrer-Policy", "strict-origin-when-cross-origin"),
+            new Header("Permissions-Policy", "camera=(), geolocation=(), microphone=(), payment=(), usb=()"),
+            new Header("Content-Security-Policy-Report-Only", "default-src 'self'; "
+                    + "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://code.jquery.com https://cdn.datatables.net; "
+                    + "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
+                    + "font-src 'self' data: https://cdnjs.cloudflare.com; img-src 'self' data:; "
+                    + "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"));
 
     private final UserDetailsService userDetailsService;
     private final McpRateLimiter rateLimiter;
@@ -45,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(SESSION_APIS).authenticated()
                 .antMatchers("/api/**").permitAll() // Allow all webhook API requests
                 .antMatchers("/mcp/**").permitAll() // MCP clients authenticate with their own Bearer token
-                .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/error").permitAll()
+                .antMatchers("/register", "/login", "/css/**", "/js/**", "/images/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/error").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
@@ -66,13 +82,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .headers()
                 // Mock bodies are user-written: run them in an opaque origin, away from the signed-in pages.
                 // Added, not set: a CSP from the endpoint's own headers must not replace it.
-                .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(new AntPathRequestMatcher("/api/@*/**"),
+                .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(MOCK_ENDPOINTS,
                         (request, response) -> {
                             // Async mock responses pass here twice
                             if (!response.getHeaders("Content-Security-Policy").contains("sandbox")) {
                                 response.addHeader("Content-Security-Policy", "sandbox");
                             }
                         }))
+                .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(new NegatedRequestMatcher(MOCK_ENDPOINTS),
+                        new StaticHeadersWriter(PAGE_HEADERS)))
                 .frameOptions().sameOrigin(); // SockJS fallback transports use iframes
     }
 
