@@ -45,7 +45,7 @@ Authentication and storage:
 
 - Passwords are hashed with **BCrypt**. Minimum length is 6 characters (no other complexity rule).
 - **MCP tokens** are random (32 bytes), shown once, and only their SHA-256 hash is stored. Renewing a token invalidates the old one at once.
-- Request logs keep headers, bodies and source IPs of whatever was sent to your endpoints. MCP tools that return logs mask values of keys that look sensitive (authorization, cookie, token, password, secret, api key) and cut long bodies; the MCP activity log stores arguments redacted and truncated.
+- Request logs keep headers, bodies and source IPs of whatever was sent to your endpoints, with the values of cookies and of sensitive-looking headers and query parameters replaced by `***` before storage. Bodies are stored as received. MCP tools that return logs mask values of keys that look sensitive (authorization, cookie, token, password, secret, api key) and cut long bodies; the MCP activity log stores arguments redacted and truncated.
 - The database is a local H2 file (`./data/mockwebhook.mv.db`). It contains password hashes, MCP token hashes and the request logs, so treat the file and its backups as sensitive.
 
 ## Hardening checklist for operators
@@ -74,7 +74,7 @@ These are known and listed so you can decide whether they matter for your deploy
 - **Password policy** is only a minimum length of 6.
 - **In-memory MCP state:** the MCP rate limiter and SSE sessions are kept in memory, so they reset on restart and are not shared between instances.
 - **MCP token scope:** one token per user with access to every tool; there is no read-only token and no OAuth.
-- **Sensitive data in logs** is stored as received (only the MCP views redact it).
+- **Sensitive data in logs:** request bodies, header names that do not look sensitive, and logs written before masking was introduced are stored as received.
 
 ## Dependencies and updates
 
