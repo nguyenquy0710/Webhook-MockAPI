@@ -55,7 +55,7 @@ Do these before the instance is reachable from the Internet:
 1. **Change the default administrator password.** On first start the app creates `admin` / `admin123` and writes that password to the log (`logs/app.log`) as a warning. Change it at once, then remove or rotate old log files that contain it.
 2. **Keep the H2 console off** (the default; do not set `SPRING_H2_CONSOLE_ENABLED=true`). Its "localhost only" restriction does not protect it behind a reverse proxy, because the proxy may connect from localhost and forwarded addresses can be spoofed. Block `/h2-console` at the proxy as well.
 3. **Change the database password.** The default (`sa` / `password`) is in the repository. H2 stores the password in the database file, so changing the property alone is not enough: connect with the old credentials and run `ALTER USER SA SET PASSWORD '<new>';` while the app is stopped, then set `SPRING_DATASOURCE_PASSWORD`. Take a backup first.
-4. **Serve over HTTPS** only (terminate TLS at a reverse proxy) and set the public base URL (`APP_DOMAIN` or Admin → Settings) to the `https://` address.
+4. **Serve over HTTPS** only (terminate TLS at a reverse proxy, redirect HTTP to HTTPS, and send `X-Forwarded-Proto`; the session cookie is `SameSite=Lax`, and `Secure` with HSTS on HTTPS requests) and set the public base URL (`APP_DOMAIN` or Admin → Settings) to the `https://` address.
 5. **Restrict registration** if the instance is not meant to be open: switch off "Allow new user registration" in Admin → Settings.
 6. **Limit what the proxy exposes**: block `/h2-console`, consider restricting `/admin/` to trusted addresses, and set sensible request size limits (`client_max_body_size`).
 7. **Decide on log retention.** Request logs can contain personal data or secrets sent by callers. Set a retention period in Admin → Settings → General (the default keeps everything) and avoid sending real secrets to mock endpoints.
@@ -70,7 +70,7 @@ These are known and listed so you can decide whether they matter for your deploy
 - **Default credentials:** the default admin user and database password described above.
 - **WebSocket origin** is read from the public base URL at startup; restart after changing it in Admin → Settings.
 - **No brute-force protection:** no login rate limiting or lockout, and no rate limit on the public mock endpoints (only MCP has one). Use the proxy or a firewall.
-- **Session cookie and headers** use the framework defaults: no explicit `Secure`/`SameSite` configuration (set `Secure` through the proxy or `server.servlet.session.cookie.*`), no Content-Security-Policy, and pages may be framed by the same origin (needed by the H2 console).
+- **Session cookie and headers** use the framework defaults: no Content-Security-Policy, and pages may be framed by the same origin (needed by the H2 console).
 - **Password policy** is only a minimum length of 6.
 - **In-memory MCP state:** the MCP rate limiter and SSE sessions are kept in memory, so they reset on restart and are not shared between instances.
 - **MCP token scope:** one token per user with access to every tool; there is no read-only token and no OAuth.

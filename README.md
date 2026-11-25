@@ -142,6 +142,8 @@ Defaults are in `src/main/resources/application.properties`. Any property can be
 |---|---|---|---|
 | `server.port` | `SERVER_PORT` | `8081` | HTTP port |
 | `app.domain` | `APP_DOMAIN` | `https://mock-api.quyit.id.vn` | Public base URL used to build webhook URLs (also editable in Admin → Settings) |
+| `server.tomcat.remoteip.remote-ip-header` | `SERVER_TOMCAT_REMOTEIP_REMOTE_IP_HEADER` | `X-Forwarded-For` | Header with the client IP. Use one the proxy overwrites, if it has one; otherwise the proxy must append the real address |
+| `server.tomcat.remoteip.internal-proxies` | `SERVER_TOMCAT_REMOTEIP_INTERNAL_PROXIES` | private and loopback ranges | Regular expression of proxy addresses that are trusted |
 | `spring.datasource.url` | `SPRING_DATASOURCE_URL` | `jdbc:h2:file:./data/mockwebhook` | Database location |
 | `spring.datasource.username` / `password` | `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | `sa` / `password` | Database credentials (see [SECURITY.md](SECURITY.md) before changing) |
 | `spring.h2.console.enabled` | `SPRING_H2_CONSOLE_ENABLED` | `false` | H2 web console at `/h2-console` (ADMIN login required); **keep off in production** |
@@ -163,7 +165,7 @@ The first administrator is created on first start (`admin` / `admin123`). Admins
 
 ## Deployment
 
-- Run behind a reverse proxy that terminates HTTPS, forwards `X-Forwarded-*` headers (the source IP in the logs comes from `X-Forwarded-For`) and allows WebSocket upgrades.
+- Run behind a reverse proxy that terminates HTTPS, forwards `X-Forwarded-*` headers (trusted only when the proxy connects from a private or loopback address) and allows WebSocket upgrades.
 - Set the public base URL (`APP_DOMAIN` or Admin → Settings).
 - Mount `./data` and `./logs` as volumes; back up `./data` (see [DATABASE_MIGRATION.md](DATABASE_MIGRATION.md)).
 

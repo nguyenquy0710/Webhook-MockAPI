@@ -109,10 +109,6 @@ public class FailureSimulationService {
                 return header + ":" + value.trim();
             }
         }
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.trim().isEmpty()) {
-            return forwarded.split(",")[0].trim();
-        }
         return String.valueOf(request.getRemoteAddr());
     }
 }

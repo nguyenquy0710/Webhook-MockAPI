@@ -41,7 +41,7 @@ public class TestBrowser {
         .method(method, form.isEmpty() ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(form))
         .header("Content-Type", "application/x-www-form-urlencoded");
     for (int i = 0; i < headers.length; i += 2) {
-      request.setHeader(headers[i], headers[i + 1]);
+      request.header(headers[i], headers[i + 1]);
     }
     try {
       return client.send(request.build(), HttpResponse.BodyHandlers.ofString());
