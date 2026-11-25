@@ -18,7 +18,7 @@
 ### Security Features
 - **Password Hashing**: BCrypt with cost factor 12
 - **Session Management**: Secure cookies with HttpOnly flag
-- **CSRF Protection**: Enabled for forms, disabled for webhook APIs
+- **CSRF Protection**: Enabled for all session-based requests, disabled for mock endpoints (`/api/@{username}/**`) and MCP
 - **Role-Based Access Control**: USER/ADMIN roles
 - **Data Isolation**: Users can only access their own data
 - **Input Validation**: Server-side validation for all inputs
@@ -140,15 +140,15 @@
 ## API Security
 
 ### Webhook API Security
-- **CSRF Disabled**: For easier integration
+- **CSRF Disabled**: Mock endpoints (`/api/@{username}/**`) only
 - **Ownership Verification**: Verify user ownership
 - **Input Validation**: Validate all inputs
 - **Rate Limiting**: Planned for future
 
 ### Authentication for Webhook APIs
 - **Session-based**: JSESSIONID cookie
-- **CSRF Disabled**: For stateless APIs
-- **CORS**: Configured for cross-origin requests
+- **CSRF Token**: Required for session-based APIs (`X-CSRF-TOKEN`)
+- **CORS**: Mock endpoints and MCP only, without credentials
 
 ### Security Headers
 - **X-Frame-Options**: SAMEORIGIN
