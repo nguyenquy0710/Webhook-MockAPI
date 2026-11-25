@@ -24,14 +24,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             // Only paths that do not act on the session: mock endpoints, MCP (Bearer token), SockJS (checks Origin)
-            // and the H2 console (own session token)
-            .csrf().ignoringAntMatchers("/api/@*/**", "/mcp/**", "/ws/**", "/h2-console/**")
+            .csrf().ignoringAntMatchers("/api/@*/**", "/mcp/**", "/ws/**")
                 .and()
             .authorizeRequests()
                 .antMatchers("/api/**").permitAll() // Allow all webhook API requests
                 .antMatchers("/mcp/**").permitAll() // MCP clients authenticate with their own Bearer token
                 .antMatchers("/register", "/login", "/css/**", "/js/**", "/swagger.json", "/swagger-ui", "/swagger-ui/**", "/swagger/**", "/error").permitAll()
-                .antMatchers("/admin/**", "/h2-console/**").hasRole("ADMIN")
+                .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
             .formLogin()
@@ -56,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                 response.addHeader("Content-Security-Policy", "sandbox");
                             }
                         }))
-                .frameOptions().sameOrigin(); // For H2 console
+                .frameOptions().sameOrigin(); // SockJS fallback transports use iframes
     }
 
     @Override

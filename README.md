@@ -146,7 +146,6 @@ Defaults are in `src/main/resources/application.properties`. Any property can be
 | `server.tomcat.remoteip.internal-proxies` | `SERVER_TOMCAT_REMOTEIP_INTERNAL_PROXIES` | private and loopback ranges | Regular expression of proxy addresses that are trusted |
 | `spring.datasource.url` | `SPRING_DATASOURCE_URL` | `jdbc:h2:file:./data/mockwebhook` | Database location |
 | `spring.datasource.username` / `password` | `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | `sa` / `password` | Database credentials (see [SECURITY.md](SECURITY.md) before changing) |
-| `spring.h2.console.enabled` | `SPRING_H2_CONSOLE_ENABLED` | `false` | H2 web console at `/h2-console` (ADMIN login required); **keep off in production** |
 | `logging.file.name` | `LOGGING_FILE_NAME` | `logs/app.log` | Log file |
 | `JAVA_OPTS` | `JAVA_OPTS` | `-Xms256m -Xmx512m ...` (Docker) | JVM options |
 
@@ -204,7 +203,6 @@ server {
     }
 
     # Do not expose the database console
-    location /h2-console { return 404; }
 }
 ```
 
@@ -243,7 +241,7 @@ plans/          Plans and work logs
 
 ## Security
 
-Read [SECURITY.md](SECURITY.md) before exposing an instance: it lists how to report a vulnerability, the security model, a hardening checklist (default admin password, H2 console, database password, HTTPS) and the known limitations.
+Read [SECURITY.md](SECURITY.md) before exposing an instance: it lists how to report a vulnerability, the security model, a hardening checklist (default admin password, database password, HTTPS) and the known limitations.
 
 ## Documentation
 

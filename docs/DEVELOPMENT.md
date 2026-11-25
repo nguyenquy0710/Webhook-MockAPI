@@ -66,7 +66,7 @@ java -jar target/WebHookMock-0.0.1-SNAPSHOT.jar
 
 ### Access Application
 - **Main URL**: http://localhost:8081
-- **H2 Console**: http://localhost:8081/h2-console (off by default; set `SPRING_H2_CONSOLE_ENABLED=true` and sign in as ADMIN)
+- **Database** (H2 shell, application stopped; there is no web console):
   - JDBC URL: `jdbc:h2:file:./data/mockwebhook`
   - Username: `sa`
   - Password: `password`
@@ -221,14 +221,8 @@ mvnw.cmd spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transpor
 
 Then attach your IDE debugger to port 5005.
 
-### H2 Console
-```properties
-# Enable H2 console
-spring.h2.console.enabled=true
-spring.h2.console.path=/h2-console
-```
-
-Access at: http://localhost:8081/h2-console (sign in to the app as ADMIN first)
+### Database
+There is no H2 web console. Stop the application and use the H2 shell (see `DATABASE_MIGRATION.md`).
 
 ---
 

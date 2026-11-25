@@ -2,11 +2,13 @@ package vn.autobot.webhook;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
-@SpringBootApplication
+// No H2 web console, whatever the configuration says: it would expose the database on the public port
+@SpringBootApplication(exclude = H2ConsoleAutoConfiguration.class)
 @EnableScheduling
 public class WebHookMockApplication {
 

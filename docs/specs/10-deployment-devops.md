@@ -16,7 +16,7 @@
 - **Build Tool**: Maven 3.8.8+
 - **Database**: H2 (file-based at `./data/mockwebhook`)
 - **Port**: 8081 (configurable via `server.port`)
-- **H2 Console**: Off by default; when enabled, `/h2-console` for ADMIN only (development only)
+- **H2 Console**: not available
 
 ### 1.2 Production Environment
 - **Operating System**: Linux (Alpine-based Docker image)
@@ -463,7 +463,6 @@ spring.datasource.url=jdbc:h2:file:./data/mockwebhook
 spring.datasource.username=sa
 spring.datasource.password=
 spring.jpa.show-sql=true
-spring.h2.console.enabled=true
 app.domain=http://localhost:8081
 ```
 
@@ -473,7 +472,6 @@ spring.datasource.url=jdbc:h2:file:./data/mockwebhook
 spring.datasource.username=sa
 spring.datasource.password=${DB_PASSWORD}
 spring.jpa.show-sql=false
-spring.h2.console.enabled=false
 app.domain=https://mock-api.autobot.site
 ```
 

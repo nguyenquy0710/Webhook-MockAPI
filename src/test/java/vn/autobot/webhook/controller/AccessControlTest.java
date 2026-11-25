@@ -37,11 +37,6 @@ class AccessControlTest {
       assertEquals(200, get("/admin/user/@owner/logs", admin));
       assertEquals(403, get("/view/@owner", admin));
     }
-
-    @Test
-    void h2ConsoleIsOffByDefault() {
-      assertEquals(404, get("/h2-console/", login("admin", "admin123")));
-    }
   }
 
   @Nested
@@ -50,10 +45,9 @@ class AccessControlTest {
   class ConsoleEnabled extends Base {
 
     @Test
-    void h2ConsoleNeedsAdmin() {
+    void h2ConsoleDoesNotExistEvenWhenEnabled() {
       assertEquals(302, get("/h2-console/", new TestBrowser(port))); // to the app's login page
-      assertEquals(403, get("/h2-console/", login("other", "secret123")));
-      assertEquals(200, get("/h2-console/", login("admin", "admin123")));
+      assertEquals(404, get("/h2-console/", login("admin", "admin123")));
     }
   }
 

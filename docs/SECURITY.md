@@ -200,7 +200,6 @@
 - [ ] Rate limiting enabled
 - [ ] Security headers set
 - [ ] Database password strong
-- [ ] H2 console disabled in production
 
 ### Monitoring Checklist
 - [ ] Security events logged

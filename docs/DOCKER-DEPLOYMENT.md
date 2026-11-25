@@ -79,7 +79,7 @@ docker run -d -p 8081:8081 \
 
 ### Access Application
 - **URL**: http://localhost:8081
-- **H2 Console**: http://localhost:8081/h2-console (off by default; set `SPRING_H2_CONSOLE_ENABLED=true` and sign in as ADMIN)
+- **Database** (H2 shell, application stopped; there is no web console):
   - JDBC URL: `jdbc:h2:file:/app/data/mockwebhook`
   - Username: `sa`
   - Password: `password`
@@ -143,7 +143,6 @@ spring.datasource.url=jdbc:h2:file:/app/data/mockwebhook
 spring.datasource.username=sa
 spring.datasource.password=${DB_PASSWORD}
 spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.h2.console.enabled=false
 app.domain=https://your-domain.com
 EOF
 
