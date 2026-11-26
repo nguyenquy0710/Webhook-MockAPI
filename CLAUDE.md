@@ -13,4 +13,4 @@ Full text in [.claude/rules/code-rules.md](.claude/rules/code-rules.md).
 - **Workflow Safety:** analyse and write a plan first; code only after the plan is approved.
 
 ## Draft
-`draft/` chứa file nháp tạm (không commit), `draft/docs/` chứa nháp tài liệu.
+`draft/` chứa file nháp tạm, bị `.gitignore` bỏ qua hoàn toàn (không bao giờ commit); `draft/docs/` chứa nháp tài liệu.

@@ -77,9 +77,5 @@ HELP.md
 *.tar.gz
 *.tar.bz2
 *.7z
-# draft/ là thư mục tạm để lưu các file draft, không commit các file trong đó trừ .gitkeep
-draft/*
-!draft/.gitkeep
-!draft/docs/
-draft/docs/*
-!draft/docs/.gitkeep
+# draft/: file nháp tạm, không bao giờ commit (kể cả thư mục con)
+draft/
